@@ -1,4 +1,4 @@
-import { parseCaptions, normalizeSegments, buildWindows, subtitleCoverageMs, rankHotspots, progress, fingerprint, MODEL, WINDOW_MS } from "./core.js";
+import { parseCaptions, normalizeSegments, buildWindows, buildVideoExport, subtitleCoverageMs, rankHotspots, progress, fingerprint, MODEL, WINDOW_MS } from "./core.js";
 
 const $ = (id) => document.getElementById(id);
 const COLORS = ["#5ddbc8", "#f4b860", "#a895f2", "#e879a2", "#8eb7f3"];
@@ -36,7 +36,8 @@ function probeFromOption(input, option) {
   const id = crypto.randomUUID();
   const previous = state.probes.find((probe) => probe.id === state.revisingId);
   return { id, input, name: option.name.slice(0, 40), description: option.description, criterion: option.criterion, positive: option.positive, negative: option.negative,
-    primitive: option.primitive, criteria: option.primitive === "score" ? [option.negative, `部分满足：${option.criterion}`, option.positive] : null,
+    primitive: option.primitive, middle: option.primitive === "score" ? option.middle : null,
+    criteria: option.primitive === "score" ? [option.negative, option.middle, option.positive] : null,
     color: previous?.color || COLORS[state.probes.length], enabled: true, revision: (previous?.revision || 0) + 1, previousId: previous?.id || null };
 }
 async function checkInput(input) {
@@ -58,9 +59,12 @@ async function checkInput(input) {
         && previous.criterion === `只根据目标字幕判断是否明确表达「${previous.input}」，不核验事实真伪。`)
         || (previous.description === "目标片段是否包含与当前视频主线无关的广告推荐或销售口播。"
           && previous.criterion === "先用 videoTitle 和 context 确定视频原本介绍或评测的对象。仅当 target 明确转向推荐或推销另一独立商品或服务、形成偏离主线的插播广告时为是；即使同属一个领域，自家产品的独立销售口播也算。原本评测对象的正常介绍、优缺点及购买建议不算；无法判断是否偏离主线时不算。"));
-    if (result.manual && previous?.input === input && !legacyPromotion) {
+    const legacyGeneric = ["具体程度", "实操步骤", "幽默程度", "buzzword含量", "无聊程度"].includes(previous?.input)
+      && previous.description === previous.input
+      && previous.criterion === `只根据目标字幕判断是否明确表达「${previous.input}」，不核验事实真伪。`;
+    if (result.manual && previous?.input === input && !legacyPromotion && !legacyGeneric) {
       result.options = [{ name: previous.name, description: previous.description, criterion: previous.criterion,
-        positive: previous.positive, negative: previous.negative, primitive: previous.primitive }];
+        positive: previous.positive, middle: previous.middle || previous.criteria?.[1] || "", negative: previous.negative, primitive: previous.primitive }];
     }
     state.options = { input, result, cached: false }; renderOptions();
     status(result.manual ? "请手动校准判断标准和读数类型，然后确认。" : result.ambiguous ? "发现歧义：请选择最符合意图的定义。" : "请核对标准与例子，然后确认。");
@@ -76,12 +80,14 @@ function renderOptions() {
   const intro = document.createElement("p"); intro.className = "hint"; intro.textContent = `${result.manual ? "手动定义 · 未检查歧义" : result.ambiguous ? "有歧义" : "含义较明确"} · ${result.reason}${cached ? " · 已缓存检查" : ""}`; box.append(intro);
   for (const draft of state.options.drafts) {
     const card = document.createElement("div"); card.className = "option";
-    for (const [key, label] of [["name", "探针名称"], ["description", "观察什么"], ["criterion", "判断标准"], ["positive", "高值 / 是"], ["negative", "低值 / 否"]]) {
+    let middleField;
+    for (const [key, label] of [["name", "探针名称"], ["description", "观察什么"], ["criterion", "判断标准"], ["positive", "高值 / 是"], ["middle", "中值（仅 Score）"], ["negative", "低值 / 否"]]) {
       const field = document.createElement("label"); field.className = "option-field"; field.textContent = label;
       const control = document.createElement(key === "name" ? "input" : "textarea");
-      control.value = draft[key]; control.maxLength = key === "name" ? 40 : 800;
+      control.value = draft[key] || ""; control.maxLength = key === "name" ? 40 : 800;
       if (key !== "name") control.rows = 2;
       control.addEventListener("input", () => { draft[key] = control.value; });
+      if (key === "middle") middleField = field;
       field.append(control); card.append(field);
     }
     const typeField = document.createElement("label"); typeField.className = "option-field"; typeField.textContent = "Jev 读数类型";
@@ -90,13 +96,15 @@ function renderOptions() {
       const choice = document.createElement("option"); choice.value = value; choice.textContent = label; primitive.append(choice);
     }
     primitive.value = draft.primitive;
-    primitive.addEventListener("change", () => { draft.primitive = primitive.value; });
+    middleField.hidden = draft.primitive !== "score";
+    primitive.addEventListener("change", () => { draft.primitive = primitive.value; middleField.hidden = primitive.value !== "score"; });
     typeField.append(primitive); card.append(typeField);
     const button = document.createElement("button"); button.textContent = "确认此定义";
     button.addEventListener("click", async () => {
       if (state.running || !state.options || state.options.input !== input || (state.probes.length >= 5 && !state.revisingId)) return;
-      const option = Object.fromEntries(["name", "description", "criterion", "positive", "negative", "primitive"].map((key) => [key, String(draft[key] || "").trim()]));
+      const option = Object.fromEntries(["name", "description", "criterion", "positive", "middle", "negative", "primitive"].map((key) => [key, String(draft[key] || "").trim()]));
       if (["name", "description", "criterion", "positive", "negative"].some((key) => !option[key])) return status("请填写完整的名称、观察内容、标准和高低值定义。", true);
+      if (option.primitive === "score" && !option.middle) return status("Score 探针还需要填写中值标准。", true);
       state.options = null; renderOptions();
       const probe = probeFromOption(input, option);
       const previous = state.probes.find((p) => p.id === state.revisingId);
@@ -205,6 +213,7 @@ function renderRankings() {
 }
 function renderProgress() {
   const p = progress(state.windows, state.readings, state.probes);
+  $("save-button").disabled = !state.videoId || !state.segments.length || p.done === 0;
   $("progress-fill").style.width = `${p.total ? p.done / p.total * 100 : 0}%`;
   $("progress-text").textContent = state.windows.length ? `${p.done}/${p.total} 个探针窗口完成 · 有效 ${p.ok} · 失败 ${p.failed} · 无文本窗口 ${p.noText} · 字幕覆盖与分析覆盖分开计算` : "确认探针并取得字幕后手动开始。";
   $("analysis-state").textContent = state.running ? "分析中" : p.total && p.done === p.total ? "已完成" : p.done ? "部分完成" : "未开始";
@@ -271,6 +280,26 @@ async function fetchAuto() {
 $("auto-button").addEventListener("click", fetchAuto);
 $("import-file").addEventListener("change", async (event) => { const file = event.target.files?.[0]; if (!file) return; try { await useSegments(parseCaptions(await file.text()), `导入 ${file.name}`); } catch (error) { status(error.message, true); } event.target.value = ""; });
 $("analyze-button").addEventListener("click", analyze);
+$("save-button").addEventListener("click", async () => {
+  try {
+    const exported = buildVideoExport({ videoId: state.videoId, title: $("video-title").textContent || "", durationMs: state.durationMs,
+      source: state.source, segments: state.segments, windows: state.windows, probes: state.probes, readings: state.readings,
+      savedAt: new Date().toISOString() });
+    const file = new Blob([JSON.stringify(exported, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(file);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `CueWave-${state.videoId}-${exported.savedAt.replace(/[:.]/g, "-")}.json`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    let cacheError = null;
+    try { await save(); } catch (error) { cacheError = error; }
+    const p = exported.analysis.progress;
+    status(`已发起下载：${link.download}。包含 ${exported.transcript.segments.length} 段字幕及 ${p.ok} 个有效读数${p.done < p.total ? "；未完成窗口标为 pending" : ""}${cacheError ? "；浏览器内缓存未能更新，但下载已发起" : ""}。`);
+  } catch (error) { status(`保存失败：${error.message}`, true); }
+});
 $("cancel-button").addEventListener("click", () => { state.cancelled = true; status("当前请求结束后停止派发。"); });
 chrome.runtime.onMessage.addListener((message) => { if (message.action === "cuewave:evidence" && message.videoId === state.videoId) showEvidence(selectedReading(message.readingId)); if (message.action === "cuewave:navigated" && message.videoId !== state.videoId) { state.cancelled = true; transcriptEpoch++; status("视频已切换；重新打开对应视频侧栏。", true); } });
 

@@ -5,6 +5,10 @@
   font-size: 11px;
 }
 
+.option-field[hidden] {
+  display: none;
+}
+
 .option-field input,
 .option-field textarea,
 .option-field select {

@@ -11,7 +11,7 @@
     <div id="status" role="status" class="notice">启动本机辅助进程后开始。</div>
     <section class="card"><div class="section-head"><div><span class="eyebrow">01 · DEFINE</span><h3>语义探针</h3></div><span id="probe-count" class="muted">0 / 5</span></div>
       <p id="probe-hint" class="hint">Gemini 已暂停。先输入探针，再手动校准标准、正反例和 Jev 读数类型。</p>
-      <div class="chips"><button class="seed" data-value="具体程度">具体程度 +</button><button class="seed" data-value="实操步骤">实操步骤 +</button><button class="seed" data-value="推广信息">推广信息 +</button></div>
+      <div class="chips"><button class="seed" data-value="具体程度">具体程度 +</button><button class="seed" data-value="实操步骤">实操步骤 +</button><button class="seed" data-value="推广信息">推广信息 +</button><button class="seed" data-value="幽默程度">幽默程度 +</button><button class="seed" data-value="buzzword含量">buzzword含量 +</button><button class="seed" data-value="无聊程度">无聊程度 +</button></div>
       <form id="probe-form"><input id="probe-input" maxlength="400" placeholder="或输入自定义探针，例如：训练数据采集" aria-label="探针描述"><button id="probe-submit" type="submit">编辑定义</button></form>
       <div id="options"></div><div id="probes"></div>
     </section>
@@ -21,7 +21,8 @@
       <div id="transcript-info" class="muted">尚无字幕</div>
     </section>
     <section class="card analysis"><div class="section-head"><div><span class="eyebrow">03 · ANALYZE</span><h3>视频语义时间轴</h3></div><span id="analysis-state" class="muted">未开始</span></div>
-      <div class="actions"><button id="analyze-button" class="primary" disabled>分析视频</button><button id="cancel-button" hidden>停止后续请求</button></div>
+      <div class="actions"><button id="analyze-button" class="primary" disabled>分析视频</button><button id="save-button" disabled>保存结果</button><button id="cancel-button" hidden>停止后续请求</button></div>
+      <p class="hint">保存结果会下载 JSON 文件，包含字幕时间戳、探针定义和对应时间窗口的读数；分析未完成时保存当前进度。</p>
       <div class="progress"><div id="progress-fill"></div></div><p id="progress-text" class="hint">确认探针并取得字幕后手动开始。</p>
       <div class="legend"><span><i class="pending"></i>未分析</span><span><i class="no-text"></i>无文本</span><span><i class="failed"></i>失败</span><span><i class="low"></i>低值</span></div>
       <div id="tracks"></div>

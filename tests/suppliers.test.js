@@ -37,6 +37,8 @@ test("Jev request batches typed questions and validates response", async () => {
     assert.equal(sent.model, "jev-1.13.0");
     assert.equal(sent.state.videoTitle, "产品评测视频");
     assert.equal(sent.questions.probe_0.type, "score");
+    assert.match(sent.questions.probe_0.instructions, /context 仅用于理解指代、铺垫和话题延续/);
+    assert.deepEqual(sent.questions.probe_0.criteria, ["少", "中", "多"]);
     assert.equal(sent.questions.probe_1.type, "noul");
     assert.match(sent.questions.probe_1.instructions, /仅判断 target 是否符合探针定义/);
     assert.match(sent.questions.probe_1.instructions, /context 仅用于理解指代及语段延续/);

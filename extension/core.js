@@ -101,6 +101,42 @@ export function progress(windows, readings, probes) {
   return { total, done, ok: active.filter((r) => r.status === "ok").length, failed: active.filter((r) => r.status === "failed").length, noText: windows.length - analyzable.length };
 }
 
+export function buildVideoExport({ videoId, title, durationMs, source, segments, windows, probes, readings, savedAt }) {
+  if (!/^[A-Za-z0-9_-]{11}$/.test(videoId) || !segments.length || !windows.length) throw new Error("没有可保存的视频字幕与时间轴");
+  const videoDurationMs = Math.max(durationMs || 0, segments.at(-1).endMs, windows.at(-1).endMs);
+  const activeProbeIds = new Set(probes.map((probe) => probe.id));
+  const windowIds = new Set(windows.map((window) => window.id));
+  const byWindowAndProbe = new Map();
+  for (const reading of readings) {
+    if (activeProbeIds.has(reading.probeId) && windowIds.has(reading.windowId)) {
+      byWindowAndProbe.set(`${reading.windowId}:${reading.probeId}`, reading);
+    }
+  }
+  const timeline = windows.map((window) => ({
+    windowId: window.id,
+    startMs: window.startMs,
+    endMs: window.endMs,
+    text: window.text,
+    context: window.context,
+    segmentIds: [...window.segmentIds],
+    readings: probes.map((probe) => {
+      const reading = byWindowAndProbe.get(`${window.id}:${probe.id}`);
+      if (window.status === "no_text") return { probeId: probe.id, status: "no_text" };
+      if (!reading) return { probeId: probe.id, status: "pending" };
+      if (reading.status === "failed") return { probeId: probe.id, status: "failed", error: reading.error };
+      return { probeId: probe.id, status: "ok", model: reading.model, raw: reading.raw,
+        value: reading.value, label: reading.label, confidence: reading.confidence };
+    })
+  }));
+  return {
+    format: "cuewave-video-analysis", version: 1, savedAt,
+    video: { id: videoId, title, url: `https://www.youtube.com/watch?v=${videoId}`, durationMs: videoDurationMs },
+    transcript: { source, segments: segments.map(({ id, startMs, endMs, text }) => ({ id, startMs, endMs, text })) },
+    analysis: { model: MODEL, windowWidthMs: WINDOW_MS, probes: probes.map((probe) => ({ ...probe })),
+      progress: progress(windows, readings, probes), timeline }
+  };
+}
+
 export async function fingerprint(value) {
   const bytes = new TextEncoder().encode(JSON.stringify(value));
   const digest = await crypto.subtle.digest("SHA-256", bytes);
