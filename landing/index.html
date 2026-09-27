@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#091018" />
+    <meta name="description" content="CueWave 把长视频与实时发言变成可跳转的语义热力图。定义你的语义探针，把注意力留给真正关心的片段。" />
+    <title>CueWave — 把注意力留给真正值得看的片段</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='17' fill='%23091018'/%3E%3Cpath d='M9 37h11l7-15 9 25 7-16h12' fill='none' stroke='%23d9ff76' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class="site-header">
+      <div class="container nav-inner">
+        <a class="brand" href="#top" aria-label="CueWave，返回页面顶部">
+          <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M3 23h8l5-10 7 17 5-11h9" /></svg>
+          <span>CueWave<span class="brand-dot">.</span></span>
+        </a>
+        <nav class="nav-links" aria-label="页面导航">
+          <a href="#scenes">适用场景</a>
+          <a href="#how">工作方式</a>
+          <a href="#why-jev">为什么 Jev</a>
+        </nav>
+        <a class="nav-cta" href="#demo">看语义热力图 <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero container" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="signal-dot" aria-hidden="true"></span> SEE WHAT MATTERS · 听见声音，看见重点</div>
+          <h1 id="hero-title">内容很长。<br /><span>重点，不必难找。</span></h1>
+          <p class="hero-lede">CueWave 将 YouTube 长视频与实时发言变成可快速跳转的<span class="text-accent">语义热力图</span>。定义你关心的“语义探针”，让精彩、具体、值得深挖的片段自己浮现。</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#demo">看看它如何工作 <span aria-hidden="true">↗</span></a>
+            <a class="button button-secondary" href="#scenes">探索使用场景 <span aria-hidden="true">↓</span></a>
+          </div>
+          <p class="hero-note">不是替你看完所有内容，而是帮你决定哪里值得看。</p>
+        </div>
+
+        <div class="hero-art" aria-hidden="true">
+          <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
+          <div class="art-card art-card-back"><span class="art-code">01 / INPUT</span><span>LONG-FORM CONTENT</span><span class="art-dots">••••••••••••</span></div>
+          <div class="art-card art-card-front">
+            <div class="art-topline"><span class="art-live-dot"></span> SEMANTIC SIGNAL <span class="art-topline-right">CUEWAVE / 01</span></div>
+            <div class="art-video"><span class="art-play">▶</span><span class="art-video-caption">“接下来，我会展示实际的实现过程…”</span></div>
+            <div class="art-wave"><span class="art-wave-label">实操步骤</span><div class="art-wave-bars"></div></div>
+            <div class="art-timeline"><span>00:00</span><div class="art-track"><i></i></div><span>18:42</span></div>
+          </div>
+          <span class="art-float art-float-one">↗ 跳到重点</span>
+          <span class="art-float art-float-two">04 个探针正在观察</span>
+        </div>
+      </section>
+
+      <section class="statement" aria-label="产品理念">
+        <div class="container statement-inner">
+          <span class="section-index">01 / THE PROBLEM</span>
+          <p>信息爆炸的时代，难的不是找到内容，<br />而是从<span>大量与你无关的内容里找到那几分钟。</span></p>
+          <div class="statement-rule" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <section class="demo-section section-pad container" id="demo" aria-labelledby="demo-title">
+        <div class="section-heading">
+          <div><span class="section-index">02 / THE EXPERIENCE</span><h2 id="demo-title">把“我关心什么”，<br /><em>画在时间轴上。</em></h2></div>
+          <p>同一段内容，可以同时观察多个语义维度。每个探针都有自己的读数与高峰；选中一条，就能把它从叠加的颜色中高亮出来。</p>
+        </div>
+        <div class="demo-panel" id="how">
+          <div class="demo-topbar"><div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div><span>SEMANTIC TIMELINE / 交互示意</span><span class="demo-topbar-right">CUEWAVE</span></div>
+          <div class="demo-content">
+            <div class="demo-player">
+              <div class="demo-player-stage"><div class="player-glow"></div><div class="player-ring"></div><span class="demo-player-tag">长内容，不再盲看</span><span class="demo-play" aria-hidden="true">▶</span><span class="demo-player-subtitle" id="demo-subtitle">“我们直接看一下具体是怎么做的。”</span></div>
+              <div class="demo-player-foot"><span>▶</span><span id="demo-time">06:18 / 24:00</span><div class="demo-player-progress"><i id="demo-progress"></i></div><span>◖))</span><span>⛶</span></div>
+            </div>
+            <div class="demo-sidebar">
+              <div class="sidebar-kicker">YOUR PROBES <span>04 ACTIVE</span></div>
+              <h3>你来定义重点。</h3>
+              <p class="sidebar-intro">选一个探针，看看它在同一段内容中的高峰。</p>
+              <div class="probe-list" role="group" aria-label="选择语义探针">
+                <button type="button" class="probe-chip is-active" data-probe="steps" aria-pressed="true"><span class="probe-color color-green"></span><span>实操步骤</span><span class="probe-chip-arrow" aria-hidden="true">↗</span></button>
+                <button type="button" class="probe-chip" data-probe="knowledge" aria-pressed="false"><span class="probe-color color-purple"></span><span>知识科普</span><span class="probe-chip-arrow" aria-hidden="true">↗</span></button>
+                <button type="button" class="probe-chip" data-probe="specific" aria-pressed="false"><span class="probe-color color-blue"></span><span>具体程度</span><span class="probe-chip-arrow" aria-hidden="true">↗</span></button>
+                <button type="button" class="probe-chip" data-probe="humor" aria-pressed="false"><span class="probe-color color-pink"></span><span>幽默程度</span><span class="probe-chip-arrow" aria-hidden="true">↗</span></button>
+              </div>
+              <div class="probe-result" aria-live="polite"><span class="result-label">当前高峰 · <span id="result-timestamp">06:18</span></span><p id="result-text">从概念进入演示，开始逐步展示如何完成操作。</p><span class="result-link">实际产品中可点击高峰跳转 <span aria-hidden="true">↗</span></span></div>
+            </div>
+          </div>
+          <div class="heatmap-wrap">
+            <div class="heatmap-meta"><span>多探针语义热力图</span><span>时间 →</span></div>
+            <div class="heatmap" id="heatmap" aria-label="四个语义探针的示意热力图"></div>
+            <div class="heatmap-ruler"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+          </div>
+          <div class="demo-disclaimer">示意交互，用于说明探针与时间轴的关系；此处不是对真实视频的分析结果。</div>
+        </div>
+        <div class="three-steps" aria-label="工作方式">
+          <div><span>01</span><h3>定义问题</h3><p>“有没有实操步骤？”“是否只在堆概念？”把好奇心变成明确的探针。</p></div>
+          <div><span>02</span><h3>看见分布</h3><p>逐段判断，按时间排列。不同颜色的高峰告诉你哪些地方值得留意。</p></div>
+          <div><span>03</span><h3>回到原文</h3><p>点击热点，核对字幕与原片段。判断可以辅助选择，证据仍由你亲自确认。</p></div>
+        </div>
+      </section>
+
+      <section class="scenes-section section-pad" id="scenes" aria-labelledby="scenes-title">
+        <div class="container">
+          <div class="section-heading scenes-heading"><div><span class="section-index">03 / WHERE IT WORKS</span><h2 id="scenes-title">从长视频，<br /><em>到正在发生的对话。</em></h2></div><p>同一套语义探针，进入不同的信息流。已实现的体验与未来方向，在这里清楚区分。</p></div>
+          <div class="scene-grid">
+            <article class="scene-card featured"><div class="scene-top"><span class="scene-number">01 / WATCH</span><span class="status status-live"><i></i> 已实现 · 可体验</span></div><div class="scene-icon video-icon" aria-hidden="true">▶</div><h3>YouTube 长视频</h3><p>不必从头等到重点出现。基于带时间戳的字幕，CueWave 逐段绘制多探针热力图；点击高峰，直接跳到对应片段，核对原话。</p><div class="scene-bottom"><span>字幕 → 探针读数 → 点击跳转</span><span aria-hidden="true">↗</span></div></article>
+            <article class="scene-card"><div class="scene-top"><span class="scene-number">02 / LISTEN</span><span class="status status-check"><i></i> 已接入 · 待实测</span></div><div class="scene-icon mic-icon" aria-hidden="true">≋</div><h3>实时发言</h3><p>发言过程中持续转写并判断：哪里开始变得具体？哪里可能只剩空洞概念？结束后保留转写与探针结果，供你回看。</p><div class="scene-bottom"><span>麦克风 → 转写 → 实时读数</span><span aria-hidden="true">↗</span></div></article>
+            <article class="scene-card"><div class="scene-top"><span class="scene-number">03 / MEET</span><span class="status status-future"><i></i> 规划中</span></div><div class="scene-icon meeting-icon" aria-hidden="true">⌘</div><h3>线上会议</h3><p>未来希望在你关心的议题、结论或行动项出现时提醒你，并在会后按语义线索回看讨论、生成纪要。</p><div class="scene-bottom"><span>目标能力，尚未交付</span><span aria-hidden="true">↗</span></div></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="why-section section-pad container" id="why-jev" aria-labelledby="why-title">
+        <div class="section-heading why-heading"><div><span class="section-index">04 / THE ENGINE</span><h2 id="why-title">Why Jev?<br /><em>Why not just an LLM?</em></h2></div><p>通用 LLM 擅长生成内容；CueWave 更需要对大量短片段反复做判断。这里，速度、成本和一次回答多个问题都很关键。</p></div>
+        <div class="why-grid">
+          <div class="why-card why-primary"><span class="why-card-label">01 / SPEED &amp; COST</span><div class="why-symbol" aria-hidden="true">↯</div><h3>细到每个片段，<br />成本也要撑得住。</h3><p>长视频会被拆成许多短片段。如果每段都反复调用通用 LLM，费用和等待会不断累积。Jev 专为结构化判断设计，当前输入单价低、输出不计费；TypeSafe 公布的特定任务对照中，它也比所测通用 LLM 更快、更便宜。</p><span class="why-detail">低成本、快速判断 → 更细颗粒度的语义扫描</span></div>
+          <div class="why-card why-secondary"><span class="why-card-label">02 / PARALLEL QUESTIONS</span><div class="why-symbol why-symbol-alt" aria-hidden="true">✳</div><h3>多个探针，<br />同一次请求。</h3><p>你可以同时定义“知识科普”“具体程度”“推广信息”等关注点。对于同一个字幕片段，CueWave 在一次 Jev 请求中提交多个独立问题，并行拿回每个探针的读数；再沿时间轴逐段排列，形成多轨热力图。</p><span class="why-detail">同一片段 × 多个探针 → 一次请求，多条读数</span></div>
+        </div>
+        <p class="source-note">依据：<a href="https://docs.typesafe.ai/models" target="_blank" rel="noopener noreferrer">TypeSafe 模型与定价 ↗</a>、<a href="https://docs.typesafe.ai/cookbooks/parallel_questions" target="_blank" rel="noopener noreferrer">并行问题示例 ↗</a>、<a href="https://typesafe.ai/blog/introducing-system-one-models-and-jev" target="_blank" rel="noopener noreferrer">TypeSafe 性能对照及说明 ↗</a>。速度与成本对照为供应商在特定任务中的结果，并非 CueWave 对所有通用 LLM 的实测；整条视频仍需按片段分析。Jev 只处理文本，语音须先转写。</p>
+      </section>
+
+      <section class="closing-section"><div class="container closing-inner"><span class="section-index">ONE LAST THOUGHT</span><h2>少一点被动刷完。<br /><em>多一点主动选择。</em></h2><p>CueWave 让内容沿着你的问题展开，而不是让你的注意力被时间轴牵着走。</p><a href="#top" class="back-top">回到顶部 <span aria-hidden="true">↑</span></a></div></section>
+    </main>
+    <footer class="site-footer"><div class="container footer-inner"><span class="brand footer-brand">CueWave<span class="brand-dot">.</span></span><span>See what matters.</span><span>产品介绍 · 2026</span></div></footer>
+  </body>
+</html>

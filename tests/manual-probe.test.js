@@ -61,3 +61,18 @@ test("promotion probe finds spoken ad inserts across video genres", () => {
     assert.match(probe.negative, /点赞订阅/);
   }
 });
+
+test("knowledge probe identifies teachable information rather than jargon or a topic preview", () => {
+  const result = draftManualProbe("知识科普");
+  const probe = result.options[0];
+  assert.equal(result.manual, true);
+  assert.equal(probe.name, "知识科普");
+  assert.equal(probe.primitive, "noul");
+  assert.match(probe.description, /知识|见闻/);
+  assert.match(probe.criterion, /target/);
+  assert.match(probe.criterion, /context/);
+  assert.match(probe.criterion, /事实真伪/);
+  assert.match(probe.criterion, /术语/);
+  assert.match(probe.positive, /原理|背景|知识/);
+  assert.match(probe.negative, /预告|口号/);
+});

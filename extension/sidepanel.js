@@ -127,7 +127,7 @@ async function checkInput(input) {
         && previous.criterion === `只根据目标字幕判断是否明确表达「${previous.input}」，不核验事实真伪。`)
         || (previous.description === "目标片段是否包含与当前视频主线无关的广告推荐或销售口播。"
           && previous.criterion === "先用 videoTitle 和 context 确定视频原本介绍或评测的对象。仅当 target 明确转向推荐或推销另一独立商品或服务、形成偏离主线的插播广告时为是；即使同属一个领域，自家产品的独立销售口播也算。原本评测对象的正常介绍、优缺点及购买建议不算；无法判断是否偏离主线时不算。"));
-    const legacyGeneric = ["具体程度", "实操步骤", "幽默程度", "buzzword含量", "无聊程度"].includes(previous?.input)
+    const legacyGeneric = ["具体程度", "实操步骤", "知识科普", "幽默程度", "buzzword含量", "无聊程度"].includes(previous?.input)
       && previous.description === previous.input
       && previous.criterion === `只根据目标字幕判断是否明确表达「${previous.input}」，不核验事实真伪。`;
     if (result.manual && previous?.input === input && !legacyPromotion && !legacyGeneric) {
