@@ -8,6 +8,30 @@ let transcriptEpoch = 0;
 let checkSequence = 0;
 const format = (ms) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms % 60000 / 1000)).padStart(2, "0")}`;
 function status(message, error = false) { $("status").textContent = message; $("status").classList.toggle("error", error); }
+const playerIssues = new Map();
+function playerStatus(area, message = "") {
+  if (message) playerIssues.set(area, message); else playerIssues.delete(area);
+  const node = $("player-status"); node.textContent = [...playerIssues.values()].join("；"); node.hidden = playerIssues.size === 0;
+}
+let contentRecovery = null;
+async function sendToContent(message, valid = (reply) => reply?.ok === true) {
+  let reply;
+  try { reply = await chrome.tabs.sendMessage(state.tabId, message); }
+  catch (error) {
+    if (!/receiving end does not exist|could not establish connection|message port closed|extension context invalidated/i.test(error.message || "")) throw error;
+    if (!contentRecovery) contentRecovery = (async () => {
+      const tab = await chrome.tabs.get(state.tabId).catch(() => null);
+      if (new URL(tab?.url || "https://invalid.example").searchParams.get("v") !== state.videoId) throw new Error("视频已切换，无法恢复播放器连接");
+      if (!chrome.scripting?.executeScript || !chrome.scripting?.insertCSS) throw new Error("扩展缺少播放器恢复权限，请重新加载扩展");
+      await chrome.scripting.insertCSS({ target: { tabId: state.tabId }, files: ["content.css"] });
+      await chrome.scripting.executeScript({ target: { tabId: state.tabId }, files: ["content.js"] });
+    })();
+    try { await contentRecovery; } finally { contentRecovery = null; }
+    reply = await chrome.tabs.sendMessage(state.tabId, message);
+  }
+  if (!valid(reply)) throw new Error("视频页未确认操作；请核对当前视频并刷新标签页");
+  return reply;
+}
 async function api(path, body) {
   const response = await fetch(`${API}${path}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
   const result = await response.json();
@@ -228,7 +252,8 @@ async function jump(startMs) {
   if (!state.tabId || !state.videoId) return;
   const tab = await chrome.tabs.get(state.tabId).catch(() => null);
   if (new URL(tab?.url || "https://invalid.example").searchParams.get("v") !== state.videoId) return status("视频已经切换，请重新打开对应视频的侧栏。", true);
-  await chrome.tabs.sendMessage(state.tabId, { action: "cuewave:seek", videoId: state.videoId, ms: Math.max(0, startMs - 2000) }).catch(() => {});
+  try { await sendToContent({ action: "cuewave:seek", videoId: state.videoId, ms: Math.max(0, startMs - 2000) }); playerStatus("seek"); }
+  catch (error) { playerStatus("seek", `播放器跳转失败：${error.message}`); status("跳转失败；分析读数已保留，请查看播放器连接提示。", true); }
 }
 async function assertBoundTab() {
   const tab = await chrome.tabs.get(state.tabId).catch(() => null);
@@ -249,9 +274,9 @@ function renderTracks() {
     const cells = document.createElement("div"); cells.className = "cells";
     for (const window of state.windows) {
       const reading = state.readings.find((r) => r.windowId === window.id && r.probeId === probe.id);
-      const cell = document.createElement("div"); cell.className = `cell ${window.status === "no_text" ? "no-text" : reading?.status === "failed" ? "failed" : reading?.status === "ok" ? "" : "pending"}`;
+      const cell = document.createElement("div"); cell.className = `cell ${window.status === "no_text" ? "no-text" : reading?.status === "failed" ? "failed" : reading?.status === "ok" ? "ok" : "pending"}`;
       cell.style.left = `${window.startMs / duration * 100}%`; cell.style.width = `${(window.endMs - window.startMs) / duration * 100}%`;
-      if (reading?.status === "ok") { cell.style.background = probe.color; cell.style.opacity = String(Math.max(.18, reading.value)); }
+      if (reading?.status === "ok") { cell.style.background = probe.color; cell.style.opacity = String(Math.max(.18, reading.value)); cell.style.minWidth = "8px"; cell.style.zIndex = "2"; }
       cell.title = `${format(window.startMs)}–${format(window.endMs)} · ${window.status === "no_text" ? "无文本" : reading?.status === "ok" ? reading.label : reading?.status === "failed" ? "分析失败" : "未分析"}`;
       cell.addEventListener("click", () => { if (reading?.status === "ok") { showEvidence(reading); jump(window.startMs); } else $("evidence").textContent = cell.title; });
       cells.append(cell);
@@ -347,12 +372,14 @@ async function pushGraph() {
   const graph = { videoId: state.videoId, durationMs: Math.max(state.durationMs, state.windows.at(-1)?.endMs || 0), selectedId: state.selectedId,
     probes: state.probes, readings: state.readings.filter((r) => r.status === "ok" && visibleIds.has(r.probeId)),
     adBoundaries: state.adBoundaries.filter((boundary) => visibleIds.has(boundary.probeId)) };
-  await chrome.tabs.sendMessage(state.tabId, { action: "cuewave:graph", graph }).catch(() => {});
+  try { await sendToContent({ action: "cuewave:graph", graph }); playerStatus("graph"); }
+  catch (error) { playerStatus("graph", `热力图无法显示：${error.message}。已完成的分析仍保存在侧栏。`); }
 }
 async function pushCaptions() {
   if (!state.tabId || !state.videoId) return;
-  await chrome.tabs.sendMessage(state.tabId, { action: "cuewave:captions", videoId: state.videoId,
-    enabled: state.subtitleEnabled, segments: state.subtitleEnabled ? state.segments : [] }).catch(() => {});
+  try { await sendToContent({ action: "cuewave:captions", videoId: state.videoId,
+    enabled: state.subtitleEnabled, segments: state.subtitleEnabled ? state.segments : [] }); playerStatus("captions"); }
+  catch (error) { playerStatus("captions", `播放器连接失败：${error.message}。已完成的分析仍保存在侧栏。`); }
 }
 function recordUsage(usage) {
   state.usage.requests = (state.usage.requests || 0) + 1;
@@ -525,8 +552,11 @@ async function init() {
   if (!Number.isSafeInteger(panelTabId) || panelTabId <= 0) return status("侧栏缺少标签页身份；请在 chrome://extensions 重新加载扩展后，从 YouTube 视频标签页打开 CueWave。", true);
   const tab = await chrome.tabs.get(panelTabId).catch(() => null);
   if (!tab?.id || !/^https:\/\/www\.youtube\.com\/watch\?/.test(tab.url || "")) return status("此侧栏所属标签页不是 YouTube 视频。", true);
-  state.tabId = tab.id; const info = await chrome.tabs.sendMessage(tab.id, { action: "cuewave:info" }).catch(() => null);
-  state.videoId = info?.videoId || new URL(tab.url).searchParams.get("v"); state.durationMs = info?.durationMs || 0;
+  state.tabId = tab.id; state.videoId = new URL(tab.url).searchParams.get("v");
+  let info = null;
+  try { info = await sendToContent({ action: "cuewave:info" }, (reply) => reply?.videoId === state.videoId); playerStatus("info"); }
+  catch (error) { playerStatus("info", `播放器连接失败：${error.message}。可先查看已保存结果；请刷新视频页或重新加载扩展。`); }
+  state.durationMs = info?.durationMs || 0;
   $("video-title").textContent = info?.title || tab.title || "YouTube 视频";
   $("video-meta").textContent = `${state.videoId || "未知视频"} · ${state.durationMs ? format(state.durationMs) : "时长待获取"}`;
   const settings = await chrome.storage.local.get(["cuewave:captionOverlay"]);

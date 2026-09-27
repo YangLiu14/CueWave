@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "minimum_chrome_version": "116",
   "description": "在 YouTube 原页面查看可核对的语义热点。",
-  "permissions": ["sidePanel", "tabs", "storage"],
+  "permissions": ["sidePanel", "tabs", "storage", "scripting"],
   "host_permissions": ["https://www.youtube.com/*", "http://127.0.0.1:4318/*"],
   "action": { "default_title": "打开 CueWave" },
   "background": { "service_worker": "background.js" },
