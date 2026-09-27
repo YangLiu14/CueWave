@@ -53,7 +53,12 @@ async function checkInput(input) {
     const result = await api("/probe/check", { input });
     if (sequence !== checkSequence) return;
     const previous = state.probes.find((probe) => probe.id === state.revisingId);
-    if (result.manual && previous?.input === input) {
+    const legacyPromotion = ["推广信息", "推广信号"].includes(previous?.input)
+      && ((previous.description === previous.input
+        && previous.criterion === `只根据目标字幕判断是否明确表达「${previous.input}」，不核验事实真伪。`)
+        || (previous.description === "目标片段是否包含与当前视频主线无关的广告推荐或销售口播。"
+          && previous.criterion === "先用 videoTitle 和 context 确定视频原本介绍或评测的对象。仅当 target 明确转向推荐或推销另一独立商品或服务、形成偏离主线的插播广告时为是；即使同属一个领域，自家产品的独立销售口播也算。原本评测对象的正常介绍、优缺点及购买建议不算；无法判断是否偏离主线时不算。"));
+    if (result.manual && previous?.input === input && !legacyPromotion) {
       result.options = [{ name: previous.name, description: previous.description, criterion: previous.criterion,
         positive: previous.positive, negative: previous.negative, primitive: previous.primitive }];
     }
@@ -220,13 +225,14 @@ async function useSegments(segments, source) {
 async function analyze() {
   if (state.running || !state.probes.length || !state.segments.length) return;
   const runVideo = state.videoId;
+  const videoTitle = $("video-title").textContent || "";
   state.running = true; state.cancelled = false; render(); status("正在逐批分析，完成的区间会立即出现。");
   try {
   await assertBoundTab();
   const keys = {};
   for (const probe of state.probes) {
     const { id, name, color, enabled, ...semantic } = probe;
-    keys[id] = await fingerprint({ segments: state.segments, semantic, model: MODEL, widthMs: WINDOW_MS });
+    keys[id] = await fingerprint({ segments: state.segments, semantic, videoTitle, model: MODEL, widthMs: WINDOW_MS });
   }
   await save();
   for (const window of state.windows) {
@@ -235,7 +241,7 @@ async function analyze() {
     const missing = state.probes.filter((p) => !state.readings.some((r) => r.windowId === window.id && r.probeId === p.id && r.probeKey === keys[p.id] && r.status === "ok"));
     if (!missing.length) continue;
     try {
-      const answers = await api("/decide", { window: { text: window.text, context: window.context }, probes: missing });
+      const answers = await api("/decide", { window: { text: window.text, context: window.context, videoTitle }, probes: missing });
       if (state.cancelled || state.videoId !== runVideo) break;
       missing.forEach((probe, i) => { const answer = answers[i]; state.readings = state.readings.filter((r) => !(r.windowId === window.id && r.probeId === probe.id)); state.readings.push({ id: `${window.id}:${probe.id}`, probeKey: keys[probe.id], windowId: window.id, startMs: window.startMs, endMs: window.endMs, text: window.text, status: "ok", ...answer }); });
     } catch (error) {
