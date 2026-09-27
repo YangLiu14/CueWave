@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CueWave</title><link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <header><div class="brand"><span class="logo">≋</span><div><h1>CueWave</h1><small>SEE WHAT MATTERS</small></div></div><span class="pill">YOUTUBE · PHASE 1</span></header>
+  <main>
+    <section class="video"><div class="eyebrow">当前视频</div><h2 id="video-title">正在连接 YouTube…</h2><div id="video-meta" class="muted"></div></section>
+    <div id="status" role="status" class="notice">启动本机辅助进程后开始。</div>
+    <section class="card"><div class="section-head"><div><span class="eyebrow">01 · DEFINE</span><h3>语义探针</h3></div><span id="probe-count" class="muted">0 / 5</span></div>
+      <p class="hint">先用 Gemini 检查含义；有歧义时请选择具体判断对象。</p>
+      <div class="chips"><button class="seed" data-value="具体程度">具体程度 +</button><button class="seed" data-value="实操步骤">实操步骤 +</button><button class="seed" data-value="推广信号">推广信号 +</button></div>
+      <form id="probe-form"><input id="probe-input" maxlength="400" placeholder="或输入自定义探针，例如：训练数据采集" aria-label="探针描述"><button type="submit">检查含义</button></form>
+      <div id="options"></div><div id="probes"></div>
+    </section>
+    <section class="card"><div class="section-head"><div><span class="eyebrow">02 · TRANSCRIPT</span><h3>完整时间戳字幕</h3></div></div>
+      <p class="hint">优先取视频原生字幕；也可导入对应视频的 SRT / VTT。字幕文本会送至 Jev 分析。</p>
+      <div class="actions"><button id="auto-button">自动获取字幕</button><label class="file-button">导入 SRT / VTT<input id="import-file" type="file" accept=".srt,.vtt,text/vtt"></label></div>
+      <div id="transcript-info" class="muted">尚无字幕</div>
+    </section>
+    <section class="card analysis"><div class="section-head"><div><span class="eyebrow">03 · ANALYZE</span><h3>视频语义时间轴</h3></div><span id="analysis-state" class="muted">未开始</span></div>
+      <div class="actions"><button id="analyze-button" class="primary" disabled>分析视频</button><button id="cancel-button" hidden>停止后续请求</button></div>
+      <div class="progress"><div id="progress-fill"></div></div><p id="progress-text" class="hint">确认探针并取得字幕后手动开始。</p>
+      <div class="legend"><span><i class="pending"></i>未分析</span><span><i class="no-text"></i>无文本</span><span><i class="failed"></i>失败</span><span><i class="low"></i>低值</span></div>
+      <div id="tracks"></div>
+    </section>
+    <section class="card"><div class="section-head"><div><span class="eyebrow">04 · VERIFY</span><h3>独立排名热点</h3></div></div><div id="rankings" class="muted">分析后显示各探针的最高热点。</div></section>
+    <section class="card evidence"><div class="eyebrow">EVIDENCE · 原句核对</div><div id="evidence">点击柱形、轨道或热点可查看实际分析窗口与原句。</div></section>
+  </main>
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

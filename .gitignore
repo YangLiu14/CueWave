@@ -1,1 +1,29 @@
+# Local credentials. Keep .env.example as a safe configuration template.
 .env
+.env.*
+!.env.example
+
+# Node dependencies, logs, and caches.
+node_modules/
+*.log
+npm-debug.log*
+.cache/
+.tmp/
+
+# Generated build, test, and Chrome extension packages.
+/dist/
+/build/
+/coverage/
+/test-results/
+/playwright-report/
+*.crx
+*.pem
+*.zip
+
+# Local Chrome profiles and OS/editor files.
+/.chrome-profile/
+/chrome-profile/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

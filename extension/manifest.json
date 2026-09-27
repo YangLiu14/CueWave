@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "CueWave · YouTube 语义热力图",
+  "version": "0.1.0",
+  "minimum_chrome_version": "116",
+  "description": "在 YouTube 原页面查看可核对的语义热点。",
+  "permissions": ["sidePanel", "tabs", "storage"],
+  "host_permissions": ["https://www.youtube.com/*", "http://127.0.0.1:4318/*"],
+  "action": { "default_title": "打开 CueWave" },
+  "background": { "service_worker": "background.js" },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "content_scripts": [{ "matches": ["https://www.youtube.com/*"], "js": ["content.js"], "css": ["content.css"], "run_at": "document_idle" }]
+}
