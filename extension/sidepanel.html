@@ -19,15 +19,24 @@
       <p class="hint">优先取视频原生字幕；也可导入对应视频的 SRT / VTT。字幕文本会送至 Jev 分析。</p>
       <div class="actions"><button id="auto-button">自动获取字幕</button><label class="file-button">导入 SRT / VTT<input id="import-file" type="file" accept=".srt,.vtt,text/vtt"></label></div>
       <div id="transcript-info" class="muted">尚无字幕</div>
+      <label class="caption-choice"><input id="caption-toggle" type="checkbox"> 在视频底部显示 CueWave 同步字幕</label>
+      <p class="hint">若 YouTube 自带字幕已开启，可关闭其中一处以免重叠；CueWave 字幕依据当前导入/获取的时间戳显示。</p>
     </section>
     <section class="card analysis"><div class="section-head"><div><span class="eyebrow">03 · ANALYZE</span><h3>视频语义时间轴</h3></div><span id="analysis-state" class="muted">未开始</span></div>
-      <div class="actions"><button id="analyze-button" class="primary" disabled>分析视频</button><button id="save-button" disabled>保存结果</button><button id="cancel-button" hidden>停止后续请求</button></div>
+      <div class="actions"><button id="analyze-button" class="primary" disabled>分析视频</button><button id="refine-button" disabled>细化广告边界</button><button id="save-button" disabled>保存结果</button><button id="cancel-button" hidden>停止后续请求</button></div>
       <p class="hint">保存结果会下载 JSON 文件，包含字幕时间戳、探针定义和对应时间窗口的读数；分析未完成时保存当前进度。</p>
       <div class="progress"><div id="progress-fill"></div></div><p id="progress-text" class="hint">确认探针并取得字幕后手动开始。</p>
+      <p id="estimate-text" class="hint">取得字幕和确认探针后显示预计请求量。</p>
       <div class="legend"><span><i class="pending"></i>未分析</span><span><i class="no-text"></i>无文本</span><span><i class="failed"></i>失败</span><span><i class="low"></i>低值</span></div>
       <div id="tracks"></div>
     </section>
     <section class="card"><div class="section-head"><div><span class="eyebrow">04 · VERIFY</span><h3>独立排名热点</h3></div></div><div id="rankings" class="muted">分析后显示各探针的最高热点。</div></section>
+    <section class="card"><div class="section-head"><div><span class="eyebrow">05 · LIBRARY</span><h3>已保存视频</h3></div></div>
+      <p class="hint">本机历史记录可重开原视频的字幕、探针和时间轴；也可导入之前下载的 CueWave JSON。导入其他视频的文件不会覆盖当前画面。</p>
+      <label class="file-button">导入 CueWave JSON<input id="import-analysis-file" type="file" accept=".json,application/json"></label>
+      <p id="storage-text" class="hint">正在检查本机存储容量…</p>
+      <div id="history-list" class="history-list"></div>
+    </section>
     <section class="card evidence"><div class="eyebrow">EVIDENCE · 原句核对</div><div id="evidence">点击柱形、轨道或热点可查看实际分析窗口与原句。</div></section>
   </main>
   <script type="module" src="sidepanel.js"></script>

@@ -17,7 +17,7 @@ try {
   }
   if (health.capabilities.jev) {
     const probe = { id: "smoke", primitive: "noul", description: "是否明确给出可执行的操作步骤", criterion: "需要具体动作和顺序", positive: "提供点击或操作动作", negative: "只抽象提及教程" };
-    try { const result = await post("/decide", { window: windows[1], probes: [probe] }); console.log("Jev model", result[0].model, "noul", result[0].raw, "status", "ok"); }
+    try { const result = await post("/decide", { window: windows[1], probes: [probe] }); console.log("Jev model", result.answers[0].model, "noul", result.answers[0].raw, "status", "ok", "input tokens", result.usage?.inputTokens ?? "unavailable"); }
     catch (error) { console.log("Jev unavailable", error.message); }
   }
   if (health.capabilities.supadata && process.argv.includes("--transcript")) {

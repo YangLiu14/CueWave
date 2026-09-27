@@ -8,6 +8,5 @@
   "host_permissions": ["https://www.youtube.com/*", "http://127.0.0.1:4318/*"],
   "action": { "default_title": "打开 CueWave" },
   "background": { "service_worker": "background.js" },
-  "side_panel": { "default_path": "sidepanel.html" },
   "content_scripts": [{ "matches": ["https://www.youtube.com/*"], "js": ["content.js"], "css": ["content.css"], "run_at": "document_idle" }]
 }

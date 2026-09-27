@@ -91,5 +91,9 @@ export async function decide(window, probes, key) {
     }
   }
   if (!result?.answers || !String(result.model || "").startsWith("jev-1.13")) throw new Error("Jev 返回未知模型或结构");
-  return probes.map((probe, index) => ({ probeId: probe.id, model: result.model, ...readingValue(result.answers[`probe_${index}`], probe) }));
+  return {
+    answers: probes.map((probe, index) => ({ probeId: probe.id, model: result.model, ...readingValue(result.answers[`probe_${index}`], probe) })),
+    usage: { inputTokens: Number.isFinite(result.usage?.input_tokens) ? result.usage.input_tokens : null,
+      outputTokens: Number.isFinite(result.usage?.output_tokens) ? result.usage.output_tokens : null }
+  };
 }
