@@ -47,10 +47,27 @@ test("Jev request batches typed questions and validates response", async () => {
   } finally { globalThis.fetch = original; }
 });
 
+test("Jev retries a temporary network failure", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalTimeout = globalThis.setTimeout;
+  let calls = 0;
+  globalThis.setTimeout = (callback) => { callback(); return 0; };
+  globalThis.fetch = async () => {
+    calls++;
+    if (calls === 1) throw new TypeError("fetch failed");
+    return new Response(JSON.stringify({ model: "jev-1.13.0", answers: { probe_0: { type: "noul", noul: .9 } } }), { status: 200 });
+  };
+  try {
+    const probe = { id: "steps", primitive: "noul", description: "步骤", criterion: "明确动作", positive: "有", negative: "无" };
+    assert.equal((await decide({ text: "点击保存", context: "" }, [probe], "test-key"))[0].raw, .9);
+    assert.equal(calls, 2);
+  } finally { globalThis.fetch = originalFetch; globalThis.setTimeout = originalTimeout; }
+});
+
 test("Gemini returns reviewable options", async () => {
   const original = globalThis.fetch;
   globalThis.fetch = async (url, options) => {
-    assert.match(url, /gemini-2\.5-flash:generateContent$/);
+    assert.match(url, /gemini-3\.8-flash:generateContent$/);
     assert.equal(JSON.parse(options.body).generationConfig.responseMimeType, "application/json");
     return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ ambiguous: true, reason: "两种含义", options: [{ name: "A", description: "A", criterion: "B", positive: "C", negative: "D", primitive: "noul" }] }) }] } }] }), { status: 200 });
   };

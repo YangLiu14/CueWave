@@ -2,6 +2,7 @@ import http from "node:http";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { checkProbe, decide, getTranscript } from "./suppliers.js";
+import { draftManualProbe } from "./manual-probe.js";
 
 const envPath = resolve(process.cwd(), ".env");
 const env = {};
@@ -11,6 +12,7 @@ try {
     if (match) env[match[1]] = match[2].trim().replace(/^['"]|['"]$/g, "");
   }
 } catch { /* local file may be absent */ }
+const geminiEnabled = process.env.CUEWAVE_GEMINI_ENABLED === "1" && !!env.GEMINI_API_KEY;
 
 function respond(response, status, body) {
   response.writeHead(status, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" });
@@ -23,7 +25,7 @@ const server = http.createServer(async (request, response) => {
   response.setHeader("access-control-allow-headers", "content-type");
   response.setHeader("access-control-allow-methods", "GET, POST, OPTIONS");
   if (request.method === "OPTIONS") { response.writeHead(204); response.end(); return; }
-  if (request.method === "GET" && request.url === "/health") return respond(response, 200, { ok: true, capabilities: { gemini: !!env.GEMINI_API_KEY, jev: !!env.JEV_API_KEY, supadata: !!env.SUPADATA_API_KEY } });
+  if (request.method === "GET" && request.url === "/health") return respond(response, 200, { ok: true, capabilities: { gemini: geminiEnabled, manualProbes: !geminiEnabled, jev: !!env.JEV_API_KEY, supadata: !!env.SUPADATA_API_KEY } });
   if (request.method !== "POST" || !["/probe/check", "/transcript", "/decide"].includes(request.url)) return respond(response, 404, { error: "未找到接口" });
   if (!request.headers["content-type"]?.startsWith("application/json")) return respond(response, 415, { error: "需要 JSON" });
   let size = 0; const chunks = [];
@@ -33,7 +35,7 @@ const server = http.createServer(async (request, response) => {
     let result;
     if (request.url === "/probe/check") {
       if (typeof data.input !== "string" || !data.input.trim() || data.input.length > 400) throw new Error("请输入不超过 400 字的探针描述");
-      result = await checkProbe(data.input, env.GEMINI_API_KEY);
+      result = geminiEnabled ? await checkProbe(data.input, env.GEMINI_API_KEY) : draftManualProbe(data.input);
     } else if (request.url === "/transcript") result = await getTranscript(data.videoId, env.SUPADATA_API_KEY);
     else {
       if (!data.window || !Array.isArray(data.probes)) throw new Error("无效分析请求");

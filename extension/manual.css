@@ -1,0 +1,25 @@
+.option-field {
+  display: block;
+  margin: 9px 0;
+  color: #b4c7d3;
+  font-size: 11px;
+}
+
+.option-field input,
+.option-field textarea,
+.option-field select {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 9px;
+  border: 1px solid #466075;
+  border-radius: 8px;
+  color: #eaf0f7;
+  background: #0b1a29;
+  font: inherit;
+}
+
+.option-field textarea {
+  resize: vertical;
+  line-height: 1.4;
+}

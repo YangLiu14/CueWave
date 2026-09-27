@@ -43,28 +43,55 @@ async function checkInput(input) {
   if (state.running) return status("请等待本轮分析结束或停止后修改探针。", true);
   if (state.probes.length >= 5 && !state.revisingId) return status("最多可启用 5 个探针", true);
   const sequence = ++checkSequence;
-  const cache = (await chrome.storage.local.get("cuewave:checked"))["cuewave:checked"] || {};
-  if (sequence !== checkSequence) return;
-  if (cache[input]) { state.options = { input, result: cache[input], cached: true }; renderOptions(); return; }
-  status("Gemini 正在检查探针含义…");
-  try { const result = await api("/probe/check", { input }); if (sequence !== checkSequence) return; state.options = { input, result, cached: false }; renderOptions(); status(result.ambiguous ? "发现歧义：请选择最符合意图的定义。" : "请核对标准与例子，然后确认。"); }
-  catch (error) { if (sequence === checkSequence) status(error.code === "GEMINI_PAYMENT_REQUIRED" ? `${error.message}。额度恢复后再检查；已确认探针仍可使用。` : `${error.message}。新探针可稍后重试检查。`, true); }
+  if (state.helper?.capabilities.gemini) {
+    const cache = (await chrome.storage.local.get("cuewave:checked"))["cuewave:checked"] || {};
+    if (sequence !== checkSequence) return;
+    if (cache[input]) { state.options = { input, result: cache[input], cached: true }; renderOptions(); return; }
+  }
+  status(state.helper?.capabilities.manualProbes ? "正在准备手动探针草稿…" : "Gemini 正在检查探针含义…");
+  try {
+    const result = await api("/probe/check", { input });
+    if (sequence !== checkSequence) return;
+    const previous = state.probes.find((probe) => probe.id === state.revisingId);
+    if (result.manual && previous?.input === input) {
+      result.options = [{ name: previous.name, description: previous.description, criterion: previous.criterion,
+        positive: previous.positive, negative: previous.negative, primitive: previous.primitive }];
+    }
+    state.options = { input, result, cached: false }; renderOptions();
+    status(result.manual ? "请手动校准判断标准和读数类型，然后确认。" : result.ambiguous ? "发现歧义：请选择最符合意图的定义。" : "请核对标准与例子，然后确认。");
+  } catch (error) {
+    if (sequence === checkSequence) status(error.code === "GEMINI_PAYMENT_REQUIRED" ? `${error.message}。额度恢复后再检查；已确认探针仍可使用。` : `${error.message}。请稍后重试。`, true);
+  }
 }
 function renderOptions() {
   const box = $("options"); box.replaceChildren();
   if (!state.options) return;
   const { input, result, cached } = state.options;
-  const intro = document.createElement("p"); intro.className = "hint"; intro.textContent = `${result.ambiguous ? "有歧义" : "含义较明确"} · ${result.reason}${cached ? " · 已缓存检查" : ""}`; box.append(intro);
-  for (const option of result.options) {
+  state.options.drafts ||= result.options.map((option) => ({ ...option }));
+  const intro = document.createElement("p"); intro.className = "hint"; intro.textContent = `${result.manual ? "手动定义 · 未检查歧义" : result.ambiguous ? "有歧义" : "含义较明确"} · ${result.reason}${cached ? " · 已缓存检查" : ""}`; box.append(intro);
+  for (const draft of state.options.drafts) {
     const card = document.createElement("div"); card.className = "option";
-    const title = document.createElement("h4"); title.textContent = option.name;
-    const desc = document.createElement("p"); desc.textContent = option.description;
-    const criterion = document.createElement("small"); criterion.textContent = `判断标准：${option.criterion}`;
-    const positive = document.createElement("small"); positive.textContent = `正例：${option.positive}`;
-    const negative = document.createElement("small"); negative.textContent = `反例：${option.negative}`;
+    for (const [key, label] of [["name", "探针名称"], ["description", "观察什么"], ["criterion", "判断标准"], ["positive", "高值 / 是"], ["negative", "低值 / 否"]]) {
+      const field = document.createElement("label"); field.className = "option-field"; field.textContent = label;
+      const control = document.createElement(key === "name" ? "input" : "textarea");
+      control.value = draft[key]; control.maxLength = key === "name" ? 40 : 800;
+      if (key !== "name") control.rows = 2;
+      control.addEventListener("input", () => { draft[key] = control.value; });
+      field.append(control); card.append(field);
+    }
+    const typeField = document.createElement("label"); typeField.className = "option-field"; typeField.textContent = "Jev 读数类型";
+    const primitive = document.createElement("select");
+    for (const [value, label] of [["noul", "Noul · 是否明确出现"], ["score", "Score · 强度分级"]]) {
+      const choice = document.createElement("option"); choice.value = value; choice.textContent = label; primitive.append(choice);
+    }
+    primitive.value = draft.primitive;
+    primitive.addEventListener("change", () => { draft.primitive = primitive.value; });
+    typeField.append(primitive); card.append(typeField);
     const button = document.createElement("button"); button.textContent = "确认此定义";
     button.addEventListener("click", async () => {
       if (state.running || !state.options || state.options.input !== input || (state.probes.length >= 5 && !state.revisingId)) return;
+      const option = Object.fromEntries(["name", "description", "criterion", "positive", "negative", "primitive"].map((key) => [key, String(draft[key] || "").trim()]));
+      if (["name", "description", "criterion", "positive", "negative"].some((key) => !option[key])) return status("请填写完整的名称、观察内容、标准和高低值定义。", true);
       state.options = null; renderOptions();
       const probe = probeFromOption(input, option);
       const previous = state.probes.find((p) => p.id === state.revisingId);
@@ -74,13 +101,15 @@ function renderOptions() {
         state.probes = state.probes.map((p) => p.id === previous.id ? probe : p);
       } else state.probes.push(probe);
       state.revisingId = null; state.selectedId = probe.id;
-      const cache = (await chrome.storage.local.get("cuewave:checked"))["cuewave:checked"] || {};
-      cache[input] = result; await chrome.storage.local.set({ "cuewave:checked": cache });
+      if (!result.manual) {
+        const cache = (await chrome.storage.local.get("cuewave:checked"))["cuewave:checked"] || {};
+        cache[input] = result; await chrome.storage.local.set({ "cuewave:checked": cache });
+      }
       await storeDefinitions(); $("probe-input").value = ""; render(); pushGraph(); status(`已确认「${probe.name}」。分析前可继续添加探针。`);
     });
-    card.append(title, desc, criterion, positive, negative, button); box.append(card);
+    card.append(button); box.append(card);
   }
-  const retry = document.createElement("button"); retry.textContent = "这些定义不合适 · 改写";
+  const retry = document.createElement("button"); retry.textContent = result.manual ? "重新输入探针" : "这些定义不合适 · 改写";
   retry.addEventListener("click", () => { $("probe-input").value = input; $("probe-input").focus(); state.options = null; renderOptions(); }); box.append(retry);
   if (state.revisingId) { const cancel = document.createElement("button"); cancel.textContent = "取消修改"; cancel.addEventListener("click", () => { state.revisingId = null; state.options = null; render(); }); box.append(cancel); }
 }
@@ -94,7 +123,7 @@ function renderProbes() {
     const label = document.createElement("div"); label.textContent = probe.name;
     const type = document.createElement("small"); type.textContent = probe.primitive === "score" ? "Score · 强度" : "Noul · 命题概率"; label.append(type);
     const buttons = document.createElement("div");
-    const revise = document.createElement("button"); revise.textContent = state.revisingId === probe.id ? "取消修改" : "修改"; revise.addEventListener("click", () => { if (state.running) return; if (state.revisingId === probe.id) { state.revisingId = null; state.options = null; $("probe-input").value = ""; status("已取消修改。"); } else { state.revisingId = probe.id; state.options = null; $("probe-input").value = probe.input; $("probe-input").focus(); status(`正在修改「${probe.name}」：改写后重新检查含义，旧读数会保留。`); } render(); });
+    const revise = document.createElement("button"); revise.textContent = state.revisingId === probe.id ? "取消修改" : "修改"; revise.addEventListener("click", () => { if (state.running) return; if (state.revisingId === probe.id) { state.revisingId = null; state.options = null; $("probe-input").value = ""; status("已取消修改。"); } else { state.revisingId = probe.id; state.options = null; $("probe-input").value = probe.input; $("probe-input").focus(); status(`正在修改「${probe.name}」：重新设置判断标准，旧读数会保留。`); } render(); });
     const remove = document.createElement("button"); remove.textContent = "移除"; remove.addEventListener("click", async () => { if (state.running) return; const archived = (await chrome.storage.local.get("cuewave:archivedDefinitions"))["cuewave:archivedDefinitions"] || []; archived.push(probe); await chrome.storage.local.set({ "cuewave:archivedDefinitions": archived }); state.probes = state.probes.filter((p) => p.id !== probe.id); if (state.selectedId === probe.id) state.selectedId = state.probes[0]?.id; await storeDefinitions(); render(); pushGraph(); });
     buttons.append(revise, remove); left.append(dot, label); row.append(left, buttons); box.append(row);
   }
@@ -247,7 +276,17 @@ async function init() {
   $("video-title").textContent = info?.title || tab.title || "YouTube 视频";
   $("video-meta").textContent = `${state.videoId || "未知视频"} · ${state.durationMs ? format(state.durationMs) : "时长待获取"}`;
   await loadDefinitions(); await loadVideo();
-  try { const response = await fetch(`${API}/health`); state.helper = await response.json(); status(`本机辅助进程已连接 · Gemini ${state.helper.capabilities.gemini ? "已配置" : "未配置"} · Jev ${state.helper.capabilities.jev ? "已配置" : "未配置"} · Supadata ${state.helper.capabilities.supadata ? "已配置" : "未配置"}（使用时验证）`); }
+  try {
+    const response = await fetch(`${API}/health`); state.helper = await response.json();
+    if (state.helper.capabilities.manualProbes) {
+      $("probe-hint").textContent = "Gemini 已暂停。先输入探针，再手动校准标准、正反例和 Jev 读数类型。";
+      $("probe-submit").textContent = "编辑定义";
+    } else {
+      $("probe-hint").textContent = "先用 Gemini 检查含义；有歧义时请选择具体判断对象。";
+      $("probe-submit").textContent = "检查含义";
+    }
+    status(`本机辅助进程已连接 · Gemini ${state.helper.capabilities.manualProbes ? "已暂停" : state.helper.capabilities.gemini ? "已配置" : "未配置"} · Jev ${state.helper.capabilities.jev ? "已配置" : "未配置"} · Supadata ${state.helper.capabilities.supadata ? "已配置" : "未配置"}（使用时验证）`);
+  }
   catch { status("本机辅助进程未启动：在仓库运行 npm start。", true); }
   render(); pushGraph();
   if (state.helper?.capabilities.supadata && !state.segments.length) void fetchAuto();

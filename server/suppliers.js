@@ -2,7 +2,7 @@ import { normalizeSegments, readingValue, MODEL } from "../extension/core.js";
 
 const JEV_URL = "https://api.typesafe.ai/v1/systemone";
 const SUPADATA_URL = "https://api.supadata.ai/v1/transcript";
-const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_MODEL = "gemini-3.8-flash";
 
 async function fetchJson(url, options, timeoutMs = 30000) {
   const response = await fetch(url, { ...options, signal: AbortSignal.timeout(timeoutMs) });
@@ -84,7 +84,11 @@ export async function decide(window, probes, key) {
   let result;
   for (let attempt = 0; attempt < 3; attempt++) {
     try { result = (await fetchJson(JEV_URL, { method: "POST", headers: { authorization: `Bearer ${key}`, "content-type": "application/json" }, body: JSON.stringify(payload) })).body; break; }
-    catch (error) { if (!error.retryable || attempt === 2) throw error; await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** attempt)); }
+    catch (error) {
+      const transient = error.retryable || error instanceof TypeError || error.name === "TimeoutError";
+      if (!transient || attempt === 2) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** attempt));
+    }
   }
   if (!result?.answers || !String(result.model || "").startsWith("jev-1.13")) throw new Error("Jev 返回未知模型或结构");
   return probes.map((probe, index) => ({ probeId: probe.id, model: result.model, ...readingValue(result.answers[`probe_${index}`], probe) }));
