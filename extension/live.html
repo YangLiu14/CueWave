@@ -1,20 +1,21 @@
 <!doctype html>
 <html lang="zh-CN">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CueWave · 现场 Pitch</title><link rel="stylesheet" href="live.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CueWave · 实时判断</title><link rel="stylesheet" href="live.css"></head>
 <body>
-  <header><div class="brand"><span class="logo">≋</span><div><strong>CueWave</strong><small>LIVE PITCH · PHASE 2</small></div></div><span id="connection" class="connection">未连接</span></header>
+  <header><div class="brand"><span class="logo">≋</span><div><strong>CueWave</strong><small>REAL-TIME · PHASE 2</small></div></div><span id="connection" class="connection">未连接</span></header>
   <main>
-    <section class="hero"><div><div class="eyebrow">现场语义雷达</div><h1>让每一句 Pitch 都有迹可循。</h1><p>中文与英文自动识别。关注表达是否缺乏推进、是否用空洞概念代替说明；读数只评价语言，不判断项目真假或观众真实感受。</p></div><div class="timer"><span id="clock">00:00</span><small id="mic-name">麦克风未开启</small></div></section>
-    <section class="notice"><strong>采集说明</strong><p>点击开始后，麦克风音频经本机辅助进程发送至 Gemini 实时转写；定稿文字发送至 Jev 分析。原始录音不保存。结束后可选择下载字幕与读数 JSON，或直接删除。本页面须保持打开，切换其他标签页不影响采集；请事先告知现场发言者。</p></section>
-    <section class="toolbar"><button id="start" class="primary">开始收音与分析</button><button id="stop" disabled>停止并释放麦克风</button><button id="next-project" disabled>新项目</button><button id="save" disabled>保存 JSON</button><button id="discard" disabled>删除本次场次</button><span id="project-label">项目 1</span></section>
+    <section class="hero"><div><div class="eyebrow">实时语义判断</div><h1>让每一句话的语义信号都可见。</h1><p>中文与英文自动识别。关注表达是否缺乏推进、是否用空洞概念代替说明；读数只评价语言，不判断项目真假或观众真实感受。</p></div><div class="timer"><span id="clock">00:00</span><small id="mic-name">麦克风未开启</small></div></section>
+    <section class="notice"><strong>采集说明</strong><p>点击开始后，麦克风音频经本机辅助进程发送至 Gemini 实时转写；定稿文字发送至 Jev 分析。最终字幕与读数会自动保存在此浏览器，点击“新项目”可查看刚结束项目，停止后可查看整场结果。原始录音不保存；本页面须保持打开才能持续采集。请事先告知发言者。</p></section>
+    <section class="toolbar"><button id="start" class="primary">开始收音与分析</button><button id="stop" disabled>停止并释放麦克风</button><button id="next-project" disabled>新项目</button><button id="view-results">查看结果／历史 ↗</button><button id="save" disabled>保存 JSON</button><button id="discard" disabled>删除本次场次</button><span id="project-label">项目 1</span></section>
     <div id="status" class="status" role="status">正在检查本机辅助进程…</div>
+    <div id="storage-warning" class="status error" role="alert" hidden></div>
     <section class="layout"><div class="main-column">
       <section class="card"><div class="section-head"><div><span class="eyebrow">01 · LIVE TRANSCRIPT</span><h2>实时字幕</h2></div><span class="muted">临时字幕不生成正式读数</span></div><div id="interim" class="interim">等待讲话…</div><div id="transcript" class="transcript"></div></section>
       <section class="card"><div class="section-head"><div><span class="eyebrow">02 · SEMANTIC TIMELINE</span><h2>语义时间轴</h2></div><span id="coverage" class="muted">等待定稿字幕</span></div><div id="tracks"></div><p class="hint">位置根据本机采集时间近似定位；Gemini 实时接口不提供词级时间戳。灰色间隔表示未分析或音频缺口，不能读作低分。</p></section>
     </div><div class="side-column">
-      <section class="card"><div class="eyebrow">CURRENT SIGNAL</div><div id="signals"></div></section>
-      <section class="card"><div class="eyebrow">HOTSPOTS</div><div id="hotspots" class="muted">正式读数出现后显示。</div></section>
-      <section class="card"><div class="eyebrow">EVIDENCE · 原句核对</div><div id="evidence" class="muted">点击字幕、读数或热点查看原句。现场模式没有录音回放。</div></section>
+      <section class="card"><div class="eyebrow">CURRENT PROJECT · SIGNAL</div><div id="signals"></div></section>
+      <section class="card"><div class="eyebrow">CURRENT PROJECT · HOTSPOTS</div><div id="hotspots" class="muted">正式读数出现后显示。</div></section>
+      <section class="card"><div class="eyebrow">EVIDENCE · 原句核对</div><div id="evidence" class="muted">点击字幕、读数或热点查看原句。此模式没有录音回放。</div></section>
       <section class="card"><div class="eyebrow">PROJECTS</div><div id="projects"></div><p class="hint">长时间停顿后出现明确新项目开场语时自动推测切段；也可随时手动点“新项目”。自动边界需人工核对。</p></section>
     </div></section>
   </main>

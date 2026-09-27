@@ -1,19 +1,42 @@
 import { rankHotspots } from "./core.js";
-import { addProject, commitFinal, createLiveSession, nextLiveWindow, shouldAutoStartProject } from "./live-core.js";
+import { addProject, commitFinal, createLiveSession, liveSessionKey, liveSessionSnapshot, nextLiveWindow, shouldAutoStartProject } from "./live-core.js";
+import { createLiveStore } from "./live-store.js";
 
 const API = "http://127.0.0.1:4318";
 const $ = (id) => document.getElementById(id);
-const state = { config: null, session: null, active: false, stopping: false, connected: false, analyzing: false,
+const state = { config: null, session: null, active: false, stopping: false, switchingProject: false, connected: false, analyzing: false,
   stream: null, audioContext: null, socket: null, startTick: 0, retryTimer: null, analyzeTimer: null, reconnects: 0 };
+const liveStore = createLiveStore(chrome.storage.local);
 const elapsed = () => Math.max(0, Math.round(performance.now() - state.startTick));
 const fmt = (ms) => `${String(Math.floor(ms / 60000)).padStart(2, "0")}:${String(Math.floor(ms % 60000 / 1000)).padStart(2, "0")}`;
 function status(message, error = false) { $("status").textContent = message; $("status").classList.toggle("error", error); }
+async function persistSession() {
+  if (!state.session || !state.config) return false;
+  const durationMs = state.active ? elapsed() : state.session.durationMs ?? elapsed();
+  const pending = !!state.config.jevAvailable && (state.analyzing || !!nextLiveWindow(state.session));
+  const record = liveSessionSnapshot(state.session, state.config.probes, durationMs, pending);
+  try {
+    await liveStore.save(record);
+    $("storage-warning").hidden = true;
+    return true;
+  } catch (error) {
+    $("storage-warning").textContent = `自动保存失败：${error.message}。请在停止后下载 JSON 备份；关闭页面会丢失未保存内容。`;
+    $("storage-warning").hidden = false;
+    return false;
+  }
+}
+async function openResults(projectId = "all") {
+  if (state.session && !await persistSession()) return;
+  const search = state.session ? `?sessionId=${encodeURIComponent(state.session.id)}&projectId=${encodeURIComponent(projectId)}` : "";
+  try { await chrome.tabs.create({ url: chrome.runtime.getURL(`results.html${search}`) }); }
+  catch (error) { status(`结果页未能打开：${error.message}`, true); }
+}
 function controls() {
-  $("start").disabled = state.active || state.stopping || !!state.session || !state.config?.asrAvailable;
+  $("start").disabled = state.active || state.stopping || state.analyzing
+    || (state.config?.jevAvailable && state.session && !!nextLiveWindow(state.session)) || !state.config?.asrAvailable;
   $("stop").disabled = !state.active || state.stopping;
-  $("next-project").disabled = !state.active || state.stopping;
-  $("save").disabled = !state.session || state.active || state.stopping || state.analyzing
-    || (state.config?.jevAvailable && !!nextLiveWindow(state.session));
+  $("next-project").disabled = !state.active || state.stopping || state.switchingProject;
+  $("save").disabled = !state.session || state.active || state.stopping;
   $("discard").disabled = !state.session || state.active || state.stopping || state.analyzing
     || (state.config?.jevAvailable && !!nextLiveWindow(state.session));
   $("connection").textContent = state.active ? state.connected ? "● 正在采集" : "● 连接中断" : "○ 未采集";
@@ -47,8 +70,9 @@ function renderTranscript() {
 }
 function renderSignals() {
   const box = $("signals"); box.replaceChildren();
+  const currentProjectId = state.session?.projects.at(-1)?.id;
   for (const probe of state.config?.probes || []) {
-    const latest = [...(state.session?.readings || [])].reverse().find((reading) => reading.probeId === probe.id);
+    const latest = [...(state.session?.readings || [])].reverse().find((reading) => reading.probeId === probe.id && reading.projectId === currentProjectId);
     const wrap = document.createElement("div"); wrap.className = "signal";
     const head = document.createElement("div"); head.className = "signal-head";
     const name = document.createElement("span"); name.textContent = probe.name;
@@ -93,9 +117,10 @@ function renderTracks() {
 }
 function renderHotspots() {
   const box = $("hotspots"); box.replaceChildren();
+  const currentProjectId = state.session?.projects.at(-1)?.id;
   let count = 0;
   for (const probe of state.config?.probes || []) {
-    const hits = rankHotspots(state.session?.readings || [], probe).slice(0, 3);
+    const hits = rankHotspots((state.session?.readings || []).filter((reading) => reading.projectId === currentProjectId), probe).slice(0, 3);
     for (const hit of hits) {
       const button = document.createElement("button"); button.className = "hotspot";
       const title = document.createElement("strong"); title.textContent = `${probe.name} · ${hit.peak.label}`;
@@ -110,7 +135,9 @@ function renderProjects() {
   for (const project of state.session?.projects || []) {
     const row = document.createElement("div"); row.className = "project"; row.textContent = project.name;
     const detail = document.createElement("small"); detail.textContent = `${fmt(project.startMs)} 开始 · ${project.source === "auto" ? "静音＋开场语自动推测" : project.source === "manual" ? "手动切换" : "初始项目"}`;
-    row.append(detail); box.append(row);
+    const view = document.createElement("button"); view.textContent = "查看结果 ↗";
+    view.addEventListener("click", () => void openResults(project.id));
+    row.append(detail, view); box.append(row);
   }
   $("project-label").textContent = state.session?.projects.at(-1)?.name || "项目 1";
 }
@@ -142,6 +169,7 @@ async function analyzePending() {
   } finally {
     state.session.nextSegmentIndex += segmentCount;
     state.analyzing = false; render();
+    void persistSession();
     if (nextLiveWindow(state.session)) scheduleAnalysis();
   }
 }
@@ -160,7 +188,7 @@ function onTranscript(message) {
   }
   commitFinal(state.session, message.text, now);
   $("interim").textContent = "等待讲话…";
-  render(); scheduleAnalysis();
+  render(); void persistSession(); scheduleAnalysis();
 }
 function connect() {
   if (!state.active || state.stopping) return;
@@ -194,7 +222,8 @@ function connect() {
   socket.onerror = () => { /* close handler owns visible failure and bounded retry */ };
 }
 async function startCapture() {
-  if (state.session || state.active || !state.config?.asrAvailable) return;
+  if (state.active || state.stopping || state.analyzing
+    || (state.config?.jevAvailable && state.session && nextLiveWindow(state.session)) || !state.config?.asrAvailable) return;
   $("start").disabled = true;
   try {
     let stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true }, video: false });
@@ -220,7 +249,7 @@ async function startCapture() {
     state.session = createLiveSession(); state.startTick = performance.now(); state.active = true;
     state.session.gaps.push({ startMs: 0, endMs: null, reason: "asr-connecting" });
     $("mic-name").textContent = stream.getAudioTracks()[0]?.label || "默认麦克风";
-    render(); connect(); status("麦克风已开启，正在连接 Gemini 实时转写…");
+    render(); void persistSession(); connect(); status("麦克风已开启，正在连接 Gemini 实时转写…");
   } catch (error) {
     state.stream?.getTracks().forEach((track) => track.stop()); state.stream = null;
     await state.audioContext?.close().catch(() => {}); state.audioContext = null;
@@ -240,36 +269,61 @@ async function stopCapture(flushProvider = true, failureMessage = "") {
   state.active = false; state.connected = false; clearTimeout(state.retryTimer); clearTimeout(state.analyzeTimer);
   if (state.socket && ![WebSocket.CLOSING, WebSocket.CLOSED].includes(state.socket.readyState)) state.socket.close(1000, "user stopped");
   const openGap = state.session?.gaps.at(-1); if (openGap && openGap.endMs == null) openGap.endMs = elapsed();
+  state.session.durationMs = elapsed(); state.session.endedAt = new Date().toISOString();
   state.stopping = false;
-  if (nextLiveWindow(state.session)) await analyzePending();
-  render(); status(failureMessage || "采集已停止，麦克风已释放。可保存字幕与读数 JSON，或删除本次场次。", !!failureMessage);
+  if (nextLiveWindow(state.session)) void analyzePending();
+  render();
+  const saved = await persistSession();
+  status(failureMessage || (saved ? "采集已停止；整场结果已自动保存，后续读数完成时会更新。" : "采集已停止，但自动保存失败；请下载 JSON 备份。"), !!failureMessage || !saved);
+  if (saved) await openResults();
 }
 function saveSession() {
   if (!state.session || state.active) return;
-  const data = { format: "cuewave-live-pitch", version: 1, ...state.session, probes: state.config.probes,
-    endedAt: new Date().toISOString(), timingNote: "utterance timings approximate local capture time; no raw audio stored" };
+  const pending = !!state.config.jevAvailable && (state.analyzing || !!nextLiveWindow(state.session));
+  const data = liveSessionSnapshot(state.session, state.config.probes, state.session.durationMs ?? elapsed(), pending);
   const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
   const link = document.createElement("a"); link.href = url; link.download = `cuewave-live-${state.session.id}.json`; link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000); status("已下载本次场次的最终字幕与读数；未保存原始音频。");
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  status(state.analyzing || (state.config?.jevAvailable && nextLiveWindow(state.session))
+    ? "已下载当前最终字幕与读数；仍有判断进行中，可稍后再次下载完整结果。" : "已下载本次场次的最终字幕与读数；未保存原始音频。");
 }
 $("start").addEventListener("click", startCapture);
 $("stop").addEventListener("click", () => void stopCapture());
-$("next-project").addEventListener("click", () => {
-  if (!state.active) return;
-  addProject(state.session, elapsed()); render(); scheduleAnalysis(); status("已手动切换到新项目，收音和总时间轴继续运行。");
+$("next-project").addEventListener("click", async () => {
+  if (!state.active || state.switchingProject) return;
+  state.switchingProject = true; controls();
+  const previous = state.session.projects.at(-1);
+  const next = addProject(state.session, elapsed());
+  try {
+    if (next === previous) return;
+    render(); scheduleAnalysis();
+    const saved = await persistSession();
+    status(saved ? "已切换到新项目；前一个项目的结果已打开，收音继续运行。" : "已切换到新项目；自动保存失败，请在停止后下载 JSON。", !saved);
+    if (saved) await openResults(previous.id);
+  } finally { state.switchingProject = false; controls(); }
 });
+$("view-results").addEventListener("click", () => void openResults());
 $("save").addEventListener("click", saveSession);
-$("discard").addEventListener("click", () => {
-  if (state.active || state.stopping || state.analyzing || (state.config?.jevAvailable && nextLiveWindow(state.session))) return;
+$("discard").addEventListener("click", async () => {
+  if (!state.session || state.active || state.stopping || state.analyzing || (state.config?.jevAvailable && nextLiveWindow(state.session))) return;
+  try { await liveStore.remove(state.session.id); }
+  catch (error) { status(`无法删除本机记录：${error.message}`, true); return; }
   state.session = null; $("clock").textContent = "00:00"; $("interim").textContent = "等待讲话…";
-  $("evidence").textContent = "点击字幕、读数或热点查看原句。现场模式没有录音回放。";
-  render(); status("本次场次已从页面内存删除。原始音频从未保存。");
+  $("evidence").textContent = "点击字幕、读数或热点查看原句。此模式没有录音回放。";
+  render(); status("本次场次的字幕与读数已从浏览器本机记录删除。原始音频从未保存。");
 });
 window.addEventListener("beforeunload", (event) => { if (state.active) { event.preventDefault(); event.returnValue = ""; } });
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local" || !state.session || state.active || state.analyzing) return;
+  const deleted = changes[liveSessionKey(state.session.id)];
+  if (!deleted || deleted.newValue !== undefined) return;
+  state.session = null; $("clock").textContent = "00:00"; $("interim").textContent = "等待讲话…";
+  render(); status("本次场次已从浏览器记录删除。", false);
+});
 setInterval(() => { if (state.active) { $("clock").textContent = fmt(elapsed()); renderTracks(); } }, 1000);
 try {
   state.config = await api("/live/config"); render();
-  status(!state.config.asrAvailable ? "未配置 GEMINI_API_KEY，无法开始现场转写。"
+  status(!state.config.asrAvailable ? "未配置 GEMINI_API_KEY，无法开始实时转写。"
     : !state.config.jevAvailable ? "GEMINI_API_KEY 可用，但未配置 JEV_API_KEY；可以试转写，暂时不会产生语义读数。"
       : "准备就绪。点击开始后会申请麦克风权限。", !state.config.asrAvailable || !state.config.jevAvailable);
 } catch (error) { status(`本机辅助进程未就绪：${error.message}。请运行 npm start 并刷新此页。`, true); }

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CueWave · 实时判断结果</title>
+  <link rel="stylesheet" href="live.css"><link rel="stylesheet" href="results.css">
+</head>
+<body>
+  <header><div class="brand"><span class="logo">≋</span><div><strong>CueWave</strong><small>REAL-TIME · RESULTS</small></div></div><button id="back-live">返回实时判断 ↗</button></header>
+  <main class="results-shell">
+    <aside class="session-sidebar card"><div class="eyebrow">SAVED SESSIONS</div><h2>历史记录</h2><p class="hint">最终字幕与正式读数保存在此浏览器。切换场次不会中断正在进行的收音。</p><div id="sessions" class="session-list"></div></aside>
+    <div class="result-main">
+      <section class="result-hero card"><div><div class="eyebrow">SEMANTIC READOUT</div><h1 id="result-title">实时判断结果</h1><p id="result-subtitle" class="muted">正在读取已保存的场次…</p></div><div class="result-actions"><span id="record-state" class="record-state">等待记录</span><button id="download" disabled>下载 JSON</button><button id="delete" disabled>删除记录</button></div></section>
+      <div id="result-notice" class="status" role="status" hidden></div>
+      <nav id="project-tabs" class="project-tabs" aria-label="项目段"></nav>
+      <section id="overview" class="overview" aria-label="本段概览"></section>
+      <section class="card"><div class="section-head"><div><div class="eyebrow">SEMANTIC DISTRIBUTION</div><h2>语义探针 · 时间分布</h2></div><span class="muted">柱形按最终转写的近似时间定位</span></div><div id="probe-results"></div><p class="hint">分数是 Jev 对语言表达的判断，不代表事实真假或真实观众反应。未分析和失败的片段不计入平均值。</p></section>
+      <div class="result-grid">
+        <section class="card"><div class="section-head"><div><div class="eyebrow">FINAL TRANSCRIPT</div><h2>逐句转写</h2></div><span id="transcript-count" class="muted"></span></div><div id="result-transcript" class="result-transcript"></div></section>
+        <div class="result-aside"><section class="card"><div class="eyebrow">HOTSPOTS</div><h2>值得核对的片段</h2><div id="result-hotspots"></div></section><section class="card"><div class="eyebrow">EVIDENCE</div><h2>原句与判断</h2><div id="result-evidence" class="muted">点击柱形、热点或字幕查看原句。</div></section></div>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="results.js"></script>
+</body>
+</html>

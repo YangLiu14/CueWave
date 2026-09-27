@@ -46,3 +46,39 @@ export function shouldAutoStartProject(session, text, atMs) {
   if (session.projects.length < 1 || session.lastFinalAtMs == null || atMs - session.lastFinalAtMs < 20000) return false;
   return /(?:大家好.{0,12}(?:我们|项目)|接下来.{0,12}(?:项目|团队)|下一个项目|our project|next project)/i.test(text);
 }
+
+export function liveSessionKey(id) {
+  if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(String(id))) throw new Error("无效的现场场次 ID");
+  return `cuewave:live:${id}`;
+}
+
+export function liveSessionSnapshot(session, probes, durationMs, analysisPending = false) {
+  return { format: "cuewave-live-pitch", version: 2, id: session.id, sourceType: session.sourceType,
+    scenarioId: session.scenarioId, startedAt: session.startedAt, endedAt: session.endedAt || null,
+    durationMs: Math.max(0, Math.round(durationMs)), analysisPending, projects: structuredClone(session.projects),
+    segments: structuredClone(session.segments), readings: structuredClone(session.readings),
+    gaps: structuredClone(session.gaps), probes: structuredClone(probes || []),
+    timingNote: "utterance timings approximate local capture time; no raw audio stored" };
+}
+
+export function liveProjectView(record, projectId = "all") {
+  const projects = record.projects || [];
+  const projectIndex = projects.findIndex((project) => project.id === projectId);
+  if (projectId !== "all" && projectIndex < 0) throw new Error("项目段不存在");
+  const startMs = projectIndex < 0 ? 0 : projects[projectIndex].startMs;
+  const nextStartMs = projectIndex < 0 ? null : projects[projectIndex + 1]?.startMs;
+  const endMs = Math.max(startMs, nextStartMs ?? Math.max(record.durationMs || 0, record.segments?.at(-1)?.endMs || 0));
+  return { project: projectIndex < 0 ? null : projects[projectIndex], startMs, endMs,
+    durationMs: endMs - startMs,
+    segments: (record.segments || []).filter((segment) => projectIndex < 0 || segment.projectId === projectId),
+    readings: (record.readings || []).filter((reading) => projectIndex < 0 || reading.projectId === projectId) };
+}
+
+export function liveProbeSummary(readings, probe) {
+  const matching = readings.filter((reading) => reading.probeId === probe.id);
+  const valid = matching.filter((reading) => reading.status === "ok" && Number.isFinite(reading.value));
+  const peak = valid.reduce((best, reading) => !best || reading.value > best.value ? reading : best, null);
+  return { count: valid.length, failed: matching.filter((reading) => reading.status === "failed").length,
+    average: valid.length ? valid.reduce((sum, reading) => sum + reading.value, 0) / valid.length : null,
+    peak };
+}
