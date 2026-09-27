@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { checkProbe, decide, getTranscript } from "./suppliers.js";
 import { draftManualProbe } from "./manual-probe.js";
+import { pitchProbes } from "./live-probes.js";
+import { attachLiveAsr, LIVE_ASR_MODEL } from "./live-asr.js";
 
 const envPath = resolve(process.cwd(), ".env");
 const env = {};
@@ -26,6 +28,7 @@ const server = http.createServer(async (request, response) => {
   response.setHeader("access-control-allow-methods", "GET, POST, OPTIONS");
   if (request.method === "OPTIONS") { response.writeHead(204); response.end(); return; }
   if (request.method === "GET" && request.url === "/health") return respond(response, 200, { ok: true, capabilities: { gemini: geminiEnabled, manualProbes: !geminiEnabled, jev: !!env.JEV_API_KEY, supadata: !!env.SUPADATA_API_KEY } });
+  if (request.method === "GET" && request.url === "/live/config") return respond(response, 200, { asrAvailable: !!env.GEMINI_API_KEY, jevAvailable: !!env.JEV_API_KEY, asrModel: LIVE_ASR_MODEL, probes: pitchProbes() });
   if (request.method !== "POST" || !["/probe/check", "/transcript", "/decide"].includes(request.url)) return respond(response, 404, { error: "未找到接口" });
   if (!request.headers["content-type"]?.startsWith("application/json")) return respond(response, 415, { error: "需要 JSON" });
   let size = 0; const chunks = [];
@@ -50,4 +53,5 @@ const server = http.createServer(async (request, response) => {
 
 const port = Number(process.env.CUEWAVE_PORT || 4318);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("CUEWAVE_PORT 必须是有效端口");
+attachLiveAsr(server, env.GEMINI_API_KEY);
 server.listen(port, "127.0.0.1", () => { process.stdout.write(`CueWave helper ready on 127.0.0.1:${port}\n`); });

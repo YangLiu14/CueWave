@@ -8,9 +8,18 @@
   let captionSegments = [];
   let captionOverlay = null;
   let captionTimer = null;
+  let contextInvalidated = false;
   const videoId = () => new URL(location.href).searchParams.get("v");
   const video = () => document.querySelector("video.html5-main-video");
-  function send(action, detail = {}) { chrome.runtime.sendMessage({ action, videoId: videoId(), ...detail }).catch(() => {}); }
+  function send(action, detail = {}) {
+    if (contextInvalidated) return;
+    try {
+      chrome.runtime.sendMessage({ action, videoId: videoId(), ...detail }).catch(() => {});
+    } catch (error) {
+      if (!/extension context invalidated/i.test(error?.message || "")) throw error;
+      contextInvalidated = true;
+    }
+  }
   function installOverlay() {
     const progress = document.querySelector(".ytp-progress-bar-container");
     if (!progress || !graph || graph.videoId !== videoId()) return;

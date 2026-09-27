@@ -41,3 +41,20 @@ test("the injected YouTube receiver draws a saved graph and acknowledges seeks",
   assert.equal(response.ok, true);
   assert.equal(video.currentTime, 70);
 });
+
+test("a stale YouTube content script survives an invalidated extension context", () => {
+  let navigated;
+  let sends = 0;
+  const location = { href: "https://www.youtube.com/watch?v=7xTGNNLPyMI" };
+  const document = { documentElement: {}, querySelector() { return null; },
+    addEventListener(type, callback) { if (type === "yt-navigate-finish") navigated = callback; } };
+  const chrome = { runtime: { sendMessage() { sends++; throw new Error("Extension context invalidated."); },
+    onMessage: { addListener() {} } } };
+  class MutationObserver { observe() {} }
+  assert.doesNotThrow(() => runInNewContext(readFileSync(new URL("../extension/content.js", import.meta.url), "utf8"), {
+    document, chrome, MutationObserver, URL, location, clearInterval() {}
+  }));
+  location.href = "https://www.youtube.com/watch?v=9bZkp7q19f0";
+  assert.doesNotThrow(() => navigated());
+  assert.equal(sends, 1, "do not keep calling a dead extension runtime");
+});

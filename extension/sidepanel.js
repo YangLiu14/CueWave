@@ -475,6 +475,7 @@ async function analyze(resumeOnly = false) {
 }
 
 $("probe-form").addEventListener("submit", (event) => { event.preventDefault(); const input = $("probe-input").value.trim(); if (input) checkInput(input); });
+$("live-button").addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("live.html") }));
 document.querySelectorAll(".seed").forEach((button) => button.addEventListener("click", () => checkInput(button.dataset.value)));
 let fetchingTranscript = false;
 async function fetchAuto() {
