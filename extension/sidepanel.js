@@ -1,13 +1,33 @@
 import { parseCaptions, parseVideoExport, normalizeSegments, buildWindows, buildVideoExport, adCandidateSegments, buildAdBoundaries, estimateAnalysisWork, hasReusableReading, hasPendingAnalysis, isProbeVisible, selectedVisibleProbeId, JEV_INPUT_USD_PER_MILLION, rankHotspots, progress, fingerprint, MODEL, WINDOW_MS } from "./core.js";
 
 const $ = (id) => document.getElementById(id);
-const COLORS = ["#5ddbc8", "#f4b860", "#a895f2", "#e879a2", "#8eb7f3"];
+const COLORS = ["#178d78", "#ec6445", "#8470cf", "#e879a2", "#8eb7f3"];
+const LEGACY_COLORS = new Map([["#5ddbc8", COLORS[0]], ["#f4b860", COLORS[1]], ["#a895f2", COLORS[2]]]);
 const API = "http://127.0.0.1:4318";
 const THEME_KEY = "cuewave:theme";
-const state = { tabId: null, videoId: null, durationMs: 0, segments: [], source: "", probes: [], options: null, revisingId: null, windows: [], readings: [], adCueReadings: [], adBoundaries: [], usage: { inputTokens: 0, requests: 0, reportedRequests: 0 }, history: [], selectedId: null, subtitleEnabled: false, cacheWarning: false, resumeOnOpen: false, running: false, cancelled: false, helper: null };
+const state = { tabId: null, videoId: null, durationMs: 0, currentTimeMs: 0, segments: [], source: "", probes: [], options: null, revisingId: null, windows: [], readings: [], adCueReadings: [], adBoundaries: [], usage: { inputTokens: 0, requests: 0, reportedRequests: 0 }, history: [], selectedId: null, subtitleEnabled: false, cacheWarning: false, resumeOnOpen: false, running: false, cancelled: false, helper: null };
+const normalizeProbeColors = (probes) => probes.map((probe) => ({ ...probe, color: LEGACY_COLORS.get(String(probe.color).toLowerCase()) || probe.color }));
 let transcriptEpoch = 0;
 let checkSequence = 0;
 const format = (ms) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms % 60000 / 1000)).padStart(2, "0")}`;
+function setCssVariable(node, name, value) {
+  if (node?.style?.setProperty) node.style.setProperty(name, value);
+  else if (node?.style) node.style[name] = value;
+}
+function setPlaybackTime(ms) {
+  state.currentTimeMs = Math.max(0, Number(ms) || 0);
+  const time = $("playback-time");
+  time.textContent = format(state.currentTimeMs);
+  time.setAttribute("datetime", `PT${Math.round(state.currentTimeMs / 1000)}S`);
+  const duration = Math.max(state.durationMs, state.windows.at(-1)?.endMs || 0, 1);
+  const position = `${Math.min(100, state.currentTimeMs / duration * 100)}%`;
+  document.querySelectorAll(".cue-cursor").forEach((cursor) => { cursor.style.left = position; });
+  document.querySelectorAll(".cue-cursor-time").forEach((label) => { label.textContent = format(state.currentTimeMs); });
+}
+function setHeaderClock(date = new Date()) {
+  const weekday = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][date.getDay()];
+  $("masthead-clock").textContent = `${weekday} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
 function applyTheme(value) {
   const theme = value === "transit" ? "transit" : "gate";
   if (document.documentElement?.dataset) document.documentElement.dataset.theme = theme;
@@ -17,7 +37,7 @@ function applyTheme(value) {
 }
 async function chooseTheme(theme) {
   const value = applyTheme(theme);
-  await chrome.storage.local.set({ [THEME_KEY]: value });
+  if (globalThis.chrome?.storage?.local) await chrome.storage.local.set({ [THEME_KEY]: value });
 }
 function status(message, error = false) { $("status").textContent = message; $("status").classList.toggle("error", error); }
 const playerIssues = new Map();
@@ -93,7 +113,7 @@ async function loadVideo() {
   const saved = (await chrome.storage.local.get(`cuewave:video:${state.videoId}`))[`cuewave:video:${state.videoId}`];
   if (!saved) return;
   state.segments = saved.segments || []; state.source = saved.source || ""; state.readings = saved.readings || [];
-  state.probes = saved.probes?.slice(0, 5) || state.probes;
+  state.probes = saved.probes ? normalizeProbeColors(saved.probes.slice(0, 5)) : state.probes;
   state.selectedId = selectedVisibleProbeId(state.probes, saved.selectedId);
   state.adCueReadings = saved.adCueReadings || []; state.adBoundaries = saved.adBoundaries || [];
   state.usage = saved.usage || { inputTokens: 0, requests: 0, reportedRequests: 0 };
@@ -104,7 +124,7 @@ async function loadVideo() {
 }
 async function loadDefinitions() {
   const saved = (await chrome.storage.local.get("cuewave:definitions"))["cuewave:definitions"] || [];
-  state.probes = saved.slice(0, 5); state.selectedId = selectedVisibleProbeId(state.probes, state.selectedId);
+  state.probes = normalizeProbeColors(saved.slice(0, 5)); state.selectedId = selectedVisibleProbeId(state.probes, state.selectedId);
   render();
 }
 async function storeDefinitions() {
@@ -209,15 +229,40 @@ function renderOptions() {
 }
 function renderProbes() {
   $("probe-count").textContent = `${state.probes.length} / 5`;
+  $("route-count-fact").textContent = String(state.probes.length).padStart(2, "0");
+  const lines = $("probe-lines"); lines.replaceChildren();
   const box = $("probes"); box.replaceChildren();
-  for (const probe of state.probes) {
+  if (!state.probes.length) {
+    const empty = document.createElement("p"); empty.className = "probe-lines-empty"; empty.textContent = "添加探针后，它会成为一条可选择的语义线路。"; lines.append(empty);
+  }
+  for (const [index, probe] of state.probes.entries()) {
+    const hotspotCount = rankHotspots(state.readings, probe).length;
+    const route = document.createElement("button"); route.type = "button"; route.className = "probe-line";
+    setCssVariable(route, "--probe-color", probe.color);
+    route.classList.toggle("selected", state.selectedId === probe.id);
+    route.classList.toggle("hidden-line", !isProbeVisible(probe));
+    route.setAttribute("aria-pressed", String(state.selectedId === probe.id));
+    route.setAttribute("aria-label", `选择语义探针「${probe.name}」，${hotspotCount} 个热点`);
+    const routeCode = document.createElement("span"); routeCode.className = "route-code"; routeCode.textContent = `P${String(index + 1).padStart(2, "0")}`;
+    const routeSwatch = document.createElement("i"); routeSwatch.className = "route-swatch";
+    const routeName = document.createElement("span"); routeName.className = "route-name"; routeName.textContent = probe.name;
+    const routeStat = document.createElement("span"); routeStat.className = "route-stat"; routeStat.textContent = `${hotspotCount} HOT`;
+    route.append(routeCode, routeSwatch, routeName, routeStat);
+    route.addEventListener("click", () => { state.selectedId = probe.id; render(); void pushGraph(); });
+    lines.append(route);
+
     const row = document.createElement("div"); row.className = "probe-row";
-    row.style.borderTopColor = probe.color;
+    setCssVariable(row, "--probe-color", probe.color);
     row.classList.toggle("hidden-probe", !isProbeVisible(probe));
-    const left = document.createElement("div"); left.className = "probe-left";
+    row.classList.toggle("selected-probe", state.selectedId === probe.id);
+    const left = document.createElement("button"); left.type = "button"; left.className = "probe-left";
+    left.setAttribute("aria-pressed", String(state.selectedId === probe.id));
+    left.setAttribute("aria-label", `选择语义探针「${probe.name}」`);
+    const code = document.createElement("span"); code.className = "probe-code"; code.textContent = `P${String(index + 1).padStart(2, "0")}`;
     const dot = document.createElement("span"); dot.className = "dot"; dot.style.background = probe.color;
     const label = document.createElement("div"); label.textContent = probe.name;
-    const type = document.createElement("small"); type.textContent = probe.primitive === "score" ? "Score · 强度" : "Noul · 命题概率"; label.append(type);
+    const type = document.createElement("small"); type.textContent = `${hotspotCount} 个热点 · ${probe.primitive === "score" ? "SCORE" : "NOUL"}`; label.append(type);
+    left.addEventListener("click", () => { state.selectedId = probe.id; render(); void pushGraph(); });
     const buttons = document.createElement("div");
     buttons.className = "probe-actions";
     const visibility = document.createElement("label"); visibility.className = "probe-visibility";
@@ -236,7 +281,7 @@ function renderProbes() {
     visibility.append(toggle, visibilityText);
     const revise = document.createElement("button"); revise.textContent = state.revisingId === probe.id ? "取消修改" : "修改"; revise.addEventListener("click", () => { if (state.running) return; if (state.revisingId === probe.id) { state.revisingId = null; state.options = null; $("probe-input").value = ""; status("已取消修改。"); } else { state.revisingId = probe.id; state.options = null; $("probe-input").value = probe.input; $("probe-input").focus(); status(`正在修改「${probe.name}」：重新设置判断标准，旧读数会保留。`); } render(); });
     const remove = document.createElement("button"); remove.textContent = "移除"; remove.addEventListener("click", async () => { if (state.running) return; const archived = (await chrome.storage.local.get("cuewave:archivedDefinitions"))["cuewave:archivedDefinitions"] || []; archived.push(probe); await chrome.storage.local.set({ "cuewave:archivedDefinitions": archived }); state.probes = state.probes.filter((p) => p.id !== probe.id); state.selectedId = selectedVisibleProbeId(state.probes, state.selectedId); await storeDefinitions(); render(); pushGraph(); });
-    buttons.append(visibility, revise, remove); left.append(dot, label); row.append(left, buttons); box.append(row);
+    buttons.append(visibility, revise, remove); left.append(code, dot, label); row.append(left, buttons); box.append(row);
   }
 }
 function renderTranscript() {
@@ -252,19 +297,30 @@ async function showEvidence(reading) {
   const probe = state.probes.find((p) => p.id === reading.probeId);
   const window = state.windows.find((w) => w.id === reading.windowId);
   if (!probe || !window) return;
-  const heading = document.createElement("div"); heading.textContent = `${probe.name} · ${format(window.startMs)}–${format(window.endMs)} · ${reading.label}`;
-  const quote = document.createElement("div"); quote.className = "quote"; quote.textContent = window.text;
+  const meta = document.createElement("div"); meta.className = "evidence-time";
+  const time = document.createElement("time"); time.textContent = format(window.startMs);
+  const probeIndex = state.probes.indexOf(probe);
+  const probeLabel = document.createElement("small"); probeLabel.textContent = `P${String(probeIndex + 1).padStart(2, "0")} / ${probe.name}`;
+  meta.append(time, probeLabel);
+  const copy = document.createElement("div"); copy.className = "evidence-copy";
+  const quote = document.createElement("blockquote"); quote.className = "quote"; quote.textContent = window.text;
   const standard = document.createElement("div"); standard.className = "subtle"; standard.textContent = `判断标准：${probe.criterion}`;
   const context = document.createElement("div"); context.className = "subtle"; context.textContent = window.context ? `前文（仅辅助理解）：${window.context}` : "无前文";
   const caveat = document.createElement("div"); caveat.className = "subtle"; caveat.textContent = probe.primitive === "score" ? `Score 原值 ${reading.raw.toFixed(2)} / ${probe.criteria.length - 1}；显示值是等级范围归一化，不是概率。${reading.confidence == null ? "" : ` 模型 confidence ${reading.confidence.toFixed(2)}，不是实测正确率。`}` : `Noul 为命题成立的模型概率；不表示文本真实性，也没有单独的 confidence。`;
-  const seek = document.createElement("button"); seek.textContent = "跳回 YouTube 核对"; seek.addEventListener("click", () => jump(window.startMs));
-  box.append(heading, quote, standard, context, caveat, seek);
+  const detail = document.createElement("details"); detail.className = "evidence-details";
+  const summary = document.createElement("summary"); summary.textContent = "查看判断依据"; detail.append(summary, standard, context, caveat);
+  const seek = document.createElement("button"); seek.className = "evidence-jump"; seek.textContent = "跳转并核对 →"; seek.addEventListener("click", () => jump(window.startMs));
+  copy.append(quote, seek, detail); box.append(meta, copy);
 }
 async function jump(startMs) {
   if (!state.tabId || !state.videoId) return;
   const tab = await chrome.tabs.get(state.tabId).catch(() => null);
   if (new URL(tab?.url || "https://invalid.example").searchParams.get("v") !== state.videoId) return status("视频已经切换，请重新打开对应视频的侧栏。", true);
-  try { await sendToContent({ action: "cuewave:seek", videoId: state.videoId, ms: Math.max(0, startMs - 2000) }); playerStatus("seek"); }
+  try {
+    const targetMs = Math.max(0, startMs - 2000);
+    await sendToContent({ action: "cuewave:seek", videoId: state.videoId, ms: targetMs });
+    setPlaybackTime(targetMs); playerStatus("seek");
+  }
   catch (error) { playerStatus("seek", `播放器跳转失败：${error.message}`); status("跳转失败；分析读数已保留，请查看播放器连接提示。", true); }
 }
 async function assertBoundTab() {
@@ -273,21 +329,35 @@ async function assertBoundTab() {
 }
 function renderTracks() {
   const box = $("tracks"); box.replaceChildren();
+  const ruler = $("timeline-ruler"); ruler.replaceChildren();
+  const duration = Math.max(state.durationMs, state.windows.at(-1)?.endMs || 0, 1);
+  for (const ratio of [0, 1 / 3, 2 / 3, 1]) {
+    const tick = document.createElement("span"); tick.textContent = format(duration * ratio); ruler.append(tick);
+  }
   if (!state.windows.length) return;
   if (!state.probes.some(isProbeVisible)) { box.textContent = "所有探针已设为不显示；读数仍保留并继续分析。"; return; }
-  const duration = Math.max(state.durationMs, state.windows.at(-1).endMs);
   for (const probe of state.probes.filter(isProbeVisible)) {
+    const index = state.probes.indexOf(probe);
     const section = document.createElement("div"); section.className = "track";
-    section.style.setProperty?.("--probe-color", probe.color);
+    setCssVariable(section, "--probe-color", probe.color);
     section.classList.toggle("selected-track", state.selectedId === probe.id);
-    const head = document.createElement("div"); head.className = "track-head";
-    const select = document.createElement("button"); select.textContent = `● ${probe.name}`; select.classList.toggle("selected", state.selectedId === probe.id);
-    select.addEventListener("click", () => { state.selectedId = probe.id; renderTracks(); pushGraph(); });
-    const unit = document.createElement("small"); unit.textContent = probe.primitive === "score" ? "强度 / 100" : "命题概率 / %";
-    head.append(select, unit);
+    const selectProbe = () => { state.selectedId = probe.id; renderTracks(); renderProbes(); void pushGraph(); };
+    const label = document.createElement("div"); label.className = "track-label";
+    const code = document.createElement("button"); code.type = "button"; code.className = "track-code";
+    code.textContent = `P${String(index + 1).padStart(2, "0")}`;
+    code.setAttribute("aria-label", `选择语义探针「${probe.name}」`);
+    code.setAttribute("aria-pressed", String(state.selectedId === probe.id));
+    code.addEventListener("click", selectProbe);
+    const select = document.createElement("button"); select.type = "button"; select.className = "track-select"; select.textContent = probe.name; select.classList.toggle("selected", state.selectedId === probe.id);
+    select.setAttribute("aria-pressed", String(state.selectedId === probe.id));
+    select.addEventListener("click", selectProbe);
+    const hotspots = rankHotspots(state.readings, probe).slice(0, 5);
+    const unit = document.createElement("small"); unit.className = "track-unit";
+    const hotspotStat = document.createElement("span"); hotspotStat.className = "track-hot-count"; hotspotStat.textContent = `${hotspots.length} 个热点 · `;
+    const primitive = document.createElement("span"); primitive.textContent = probe.primitive === "score" ? "SCORE" : "NOUL";
+    unit.append(hotspotStat, primitive); label.append(code, select, unit);
     const cells = document.createElement("button"); cells.type = "button"; cells.className = "cells";
     cells.setAttribute("aria-label", `${probe.name}语义时间轴。点击对应时间跳转，按回车跳到最高热点。`);
-    const hotspots = rankHotspots(state.readings, probe).slice(0, 5);
     cells.addEventListener("click", (event) => {
       if (event.target !== cells) return;
       if (event.detail === 0 && hotspots[0]?.peak) {
@@ -313,13 +383,21 @@ function renderTracks() {
       cell.addEventListener("click", (event) => { event?.stopPropagation?.(); if (reading?.status === "ok") { showEvidence(reading); jump(window.startMs); } else $("evidence").textContent = cell.title; });
       cells.append(cell);
     }
-    for (const hotspot of hotspots) {
-      const station = document.createElement("span"); station.className = "station";
-      station.style.left = `${hotspot.peak.startMs / duration * 100}%`;
-      cells.append(station);
-    }
-    section.append(head, cells); box.append(section);
+    hotspots.forEach((hotspot, hotspotIndex) => {
+      const marker = document.createElement("span"); marker.className = `peak-marker${hotspotIndex === 0 ? " is-first" : ""}`;
+      marker.textContent = String(hotspotIndex + 1).padStart(2, "0");
+      marker.title = `第 ${hotspotIndex + 1} 热点 · ${format(hotspot.peak.startMs)} · ${hotspot.peak.label}`;
+      setCssVariable(marker, "--peak-position", `${hotspot.peak.startMs / duration * 100}%`);
+      setCssVariable(marker, "--peak-height", `${Math.min(78, Math.max(12, hotspot.peak.value * 100))}%`);
+      cells.append(marker);
+    });
+    section.append(label, cells); box.append(section);
   }
+  const cursorZone = document.createElement("div"); cursorZone.className = "timeline-cursor-zone"; cursorZone.setAttribute("aria-hidden", "true");
+  const cursor = document.createElement("span"); cursor.className = "cue-cursor";
+  cursor.style.left = `${Math.min(100, state.currentTimeMs / duration * 100)}%`;
+  const cursorTime = document.createElement("span"); cursorTime.className = "cue-cursor-time"; cursorTime.textContent = format(state.currentTimeMs);
+  cursor.append(cursorTime); cursorZone.append(cursor); box.append(cursorZone);
 }
 function renderRankings() {
   const box = $("rankings"); box.replaceChildren();
@@ -372,13 +450,18 @@ function renderHistory() {
 }
 function renderProgress() {
   const p = progress(state.windows, state.readings, state.probes);
+  const complete = Boolean(p.total && p.done === p.total);
+  $("probe-workflow").classList.toggle("analysis-complete", complete);
+  $("duration-fact").textContent = state.durationMs ? format(state.durationMs) : "--:--";
+  $("coverage-fact").textContent = `${p.total ? Math.round(p.done / p.total * 100) : 0}%`;
   $("save-button").disabled = !state.videoId || !state.segments.length || p.done === 0;
   const refineJobs = adRefinementJobs();
   const refineCount = refineJobs.length;
   $("refine-button").disabled = state.running || !refineCount;
   $("progress-fill").style.width = `${p.total ? p.done / p.total * 100 : 0}%`;
   $("progress-text").textContent = state.windows.length ? `${p.done}/${p.total} 个探针窗口完成 · 有效 ${p.ok} · 失败 ${p.failed} · 无内容窗口 ${p.noText} · 视频解析范围与分析范围分开计算` : "确认探针并等待视频解析完成。";
-  $("analysis-state").textContent = state.running ? "分析中" : p.total && p.done === p.total ? "已完成" : p.done ? "部分完成" : "未开始";
+  $("analysis-state").textContent = state.running ? "分析中" : complete ? "已完成" : p.done ? "部分完成" : "未开始";
+  $("masthead-analysis").textContent = state.running ? "ANALYZING" : complete ? "ANALYSIS READY" : p.done ? "PARTIAL RESULT" : "READY TO SCAN";
   const estimate = estimateAnalysisWork(state.windows, state.probes, state.readings);
   const refineTokens = refineJobs.reduce((total, { probe, segment }) => total + Math.ceil(new TextEncoder().encode(JSON.stringify({ target: segment.text,
     description: probe.description, criterion: probe.criterion, positive: probe.positive, negative: probe.negative })).length / 3) + 120, 0);
@@ -571,25 +654,47 @@ $("save-button").addEventListener("click", async () => {
   } catch (error) { status(`保存失败：${error.message}`, true); }
 });
 $("cancel-button").addEventListener("click", () => { state.cancelled = true; state.resumeOnOpen = false; void safeSave(); status("当前请求结束后停止派发，重新打开侧栏也不会自动续跑；可手动点击分析继续。"); });
-chrome.runtime.onMessage.addListener((message, sender) => {
-  if (sender.tab?.id !== state.tabId) return;
-  if (message.action === "cuewave:evidence" && message.videoId === state.videoId) showEvidence(selectedReading(message.readingId));
-  if (message.action === "cuewave:navigated" && message.videoId !== state.videoId) {
-    state.cancelled = true; transcriptEpoch++; status("视频已切换；重新打开对应视频侧栏。", true);
+if (globalThis.chrome?.runtime?.onMessage) {
+  chrome.runtime.onMessage.addListener((message, sender) => {
+    if (sender.tab?.id !== state.tabId) return;
+    if (message.action === "cuewave:evidence" && message.videoId === state.videoId) showEvidence(selectedReading(message.readingId));
+    if (message.action === "cuewave:navigated" && message.videoId !== state.videoId) {
+      state.cancelled = true; transcriptEpoch++; status("视频已切换；重新打开对应视频侧栏。", true);
+    }
+  });
+}
+if (globalThis.chrome?.storage?.onChanged) {
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== "local") return;
+    for (const [key, change] of Object.entries(changes)) {
+      if (key === THEME_KEY) { applyTheme(change.newValue); continue; }
+      if (!key.startsWith("cuewave:video:")) continue;
+      historyRevision++;
+      if (change.newValue && typeof change.newValue === "object") updateHistoryItem({ ...change.newValue, videoId: key.slice("cuewave:video:".length) });
+      else { state.history = state.history.filter((item) => item.videoId !== key.slice("cuewave:video:".length)); renderHistory(); }
+    }
+  });
+}
+
+let playbackTimer = null;
+async function syncPlaybackTime() {
+  if (!state.tabId || !state.videoId || document.visibilityState === "hidden") return;
+  try {
+    const info = await chrome.tabs.sendMessage(state.tabId, { action: "cuewave:info" });
+    if (info?.videoId === state.videoId && Number.isFinite(info.currentTimeMs)) setPlaybackTime(info.currentTimeMs);
+  } catch {
+    // Playback sync is decorative; connection failures are handled by normal player actions.
   }
-});
-chrome.storage.onChanged?.addListener((changes, area) => {
-  if (area !== "local") return;
-  for (const [key, change] of Object.entries(changes)) {
-    if (key === THEME_KEY) { applyTheme(change.newValue); continue; }
-    if (!key.startsWith("cuewave:video:")) continue;
-    historyRevision++;
-    if (change.newValue && typeof change.newValue === "object") updateHistoryItem({ ...change.newValue, videoId: key.slice("cuewave:video:".length) });
-    else { state.history = state.history.filter((item) => item.videoId !== key.slice("cuewave:video:".length)); renderHistory(); }
-  }
-});
+}
+function startPlaybackSync() {
+  if (typeof window === "undefined" || typeof window.setInterval !== "function" || playbackTimer) return;
+  playbackTimer = window.setInterval(syncPlaybackTime, 750);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") void syncPlaybackTime(); });
+  window.addEventListener("pagehide", () => { window.clearInterval(playbackTimer); playbackTimer = null; }, { once: true });
+}
 
 async function init() {
+  setHeaderClock();
   const settings = await chrome.storage.local.get(["cuewave:captionOverlay", THEME_KEY]);
   state.subtitleEnabled = settings["cuewave:captionOverlay"] === true;
   applyTheme(settings[THEME_KEY]);
@@ -602,6 +707,7 @@ async function init() {
   try { info = await sendToContent({ action: "cuewave:info" }, (reply) => reply?.videoId === state.videoId); playerStatus("info"); }
   catch (error) { playerStatus("info", `播放器连接失败：${error.message}。可先查看已保存结果；请刷新视频页或重新加载扩展。`); }
   state.durationMs = info?.durationMs || 0;
+  setPlaybackTime(info?.currentTimeMs || 0);
   $("video-title").textContent = info?.title || tab.title || "YouTube 视频";
   $("video-meta").textContent = `${state.videoId || "未知视频"} · ${state.durationMs ? format(state.durationMs) : "时长待获取"}`;
   await refreshHistory();
@@ -610,10 +716,12 @@ async function init() {
     const response = await fetch(`${API}/health`); state.helper = await response.json();
     if (state.helper.capabilities.manualProbes) {
       $("probe-hint").textContent = "Gemini 已暂停。先输入探针，再手动校准标准、正反例和 Jev 读数类型。";
-      $("probe-submit").textContent = "编辑定义";
+      $("probe-submit-label").textContent = "编辑定义";
+      $("probe-submit").setAttribute("aria-label", "编辑并添加语义探针");
     } else {
       $("probe-hint").textContent = "先用 Gemini 检查含义；有歧义时请选择具体判断对象。";
-      $("probe-submit").textContent = "检查含义";
+      $("probe-submit-label").textContent = "检查含义";
+      $("probe-submit").setAttribute("aria-label", "检查并添加语义探针");
     }
     status(`本机辅助进程已连接 · Gemini ${state.helper.capabilities.manualProbes ? "已暂停" : state.helper.capabilities.gemini ? "已配置" : "未配置"} · Jev ${state.helper.capabilities.jev ? "已配置" : "未配置"} · 视频解析 ${state.helper.capabilities.supadata ? "已配置" : "未配置"}（使用时验证）`);
   }
@@ -626,5 +734,67 @@ async function init() {
       else status("检测到未完成分析；请启动已配置 Jev 的 npm start 后重新打开此侧栏，以自动续跑。", true);
     } else { state.resumeOnOpen = false; void safeSave(); }
   }
+  startPlaybackSync();
 }
-init();
+
+function initPreview() {
+  const previewParams = new URLSearchParams(location.search);
+  applyTheme(previewParams.get("theme"));
+  setHeaderClock(new Date(2026, 8, 28, 9, 41));
+  state.videoId = "CueWaveDemo";
+  state.durationMs = 18 * 60 * 1000 + 42 * 1000;
+  state.currentTimeMs = 8 * 60 * 1000 + 3 * 1000;
+  state.source = "产品预览数据";
+  state.helper = { capabilities: { manualProbes: true, jev: true, supadata: true } };
+  state.probes = [
+    { id: "preview-knowledge", input: "知识科普", name: "知识科普", description: "能够帮助观众理解知识或增长见闻的内容。", criterion: "包含清晰、可理解、具有信息增量的事实或解释。", positive: "提供完整知识点", negative: "没有知识增量", primitive: "noul", color: "#178d78", enabled: true },
+    { id: "preview-humor", input: "幽默程度", name: "幽默程度", description: "能够引起观众发笑的表达。", criterion: "根据语言中的反差、包袱和喜剧节奏判断。", positive: "明显幽默", middle: "略带趣味", negative: "没有幽默表达", criteria: ["没有幽默表达", "略带趣味", "明显幽默"], primitive: "score", color: "#ff7658", enabled: true },
+    { id: "preview-promotion", input: "推广信息", name: "推广信息", description: "与当前视频主线无关的插入口播广告。", criterion: "区分视频原本主题与突然插入的商品或服务推销。", positive: "明确插入推广", negative: "属于视频原本内容", primitive: "noul", color: "#9d8aec", enabled: true }
+  ];
+  state.selectedId = state.probes[0].id;
+  const windowMs = state.durationMs / 18;
+  state.windows = Array.from({ length: 18 }, (_, index) => ({
+    id: `preview-window-${index + 1}`,
+    startMs: Math.round(index * windowMs),
+    endMs: Math.round((index + 1) * windowMs),
+    text: [
+      "从一个熟悉的现象出发，我们可以看见模型如何把连续信号拆成可以比较的语义片段。",
+      "这一段用一个反直觉的小例子解释了为什么速度快，不代表判断会更粗糙。",
+      "如果只看关键词，很容易错过说话者真正想表达的关系；语义探针关注的是完整命题。",
+      "这里临时插入了一段与视频主题无关的服务推荐，随后又回到原来的讲解。"
+    ][index % 4],
+    context: "前文正在讨论如何从长视频中快速定位值得深入的内容。",
+    status: "ready"
+  }));
+  state.segments = state.windows.map((window, index) => ({ id: `preview-segment-${index + 1}`, startMs: window.startMs, endMs: window.endMs, text: window.text }));
+  const values = {
+    "preview-knowledge": [.16, .28, .42, .18, .82, .97, .61, .24, .38, .48, .21, .93, .55, .32, .46, .86, .52, .27],
+    "preview-humor": [.12, .36, .91, .53, .18, .26, .41, .87, .62, .29, .15, .31, .94, .57, .22, .38, .76, .19],
+    "preview-promotion": [.08, .11, .16, .84, .42, .13, .09, .18, .24, .15, .12, .21, .17, .91, .54, .14, .10, .08]
+  };
+  state.readings = state.probes.flatMap((probe) => state.windows.map((window, index) => ({
+    id: `${window.id}:${probe.id}`,
+    windowId: window.id,
+    probeId: probe.id,
+    startMs: window.startMs,
+    endMs: window.endMs,
+    text: window.text,
+    status: "ok",
+    model: "preview",
+    raw: probe.primitive === "score" ? values[probe.id][index] * 2 : values[probe.id][index],
+    value: values[probe.id][index],
+    label: probe.primitive === "score" ? `${Math.round(values[probe.id][index] * 100)}/100 强度` : `${Math.round(values[probe.id][index] * 100)}% 命题概率`,
+    confidence: probe.primitive === "score" ? .91 : null
+  })));
+  $("video-title").textContent = "Why AI Agents Will Change How We Work";
+  $("video-meta").textContent = "CueWaveDemo · 18:42";
+  $("probe-hint").textContent = "输入探针后校准判断标准、正反例和 Jev 读数类型。";
+  status("设计预览：使用固定演示数据展示实际扩展组件。 ");
+  render();
+  setPlaybackTime(state.currentTimeMs);
+  const topReading = rankHotspots(state.readings, state.probes[0])[0]?.peak;
+  if (topReading) void showEvidence(topReading);
+}
+
+if (new URLSearchParams(location.search).has("preview")) initPreview();
+else init();

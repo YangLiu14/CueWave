@@ -187,9 +187,13 @@ test("a saved hotspot restores the YouTube receiver before drawing and seeking",
   assert.equal(graphDelivered > 0, true, "saved readings should reach the player after recovering its receiver");
   assert.equal(injections, 1, "a missing receiver should only be injected once");
   assert.equal(seekDelivered, 1, "clicking the saved hotspot should seek the player");
-  const firstCell = nodes.get("tracks").children[0].children[1].children[0];
-  assert.equal(nodes.get("tracks").children[0].children[1].tagName, "BUTTON", "the full timeline lane is the accessible hit target");
-  assert.ok(nodes.get("tracks").children[0].children[1].children.some((item) => item.className === "station"), "transit stations must come from ranked hotspots");
+  const timelineLane = nodes.get("tracks").children[0].children[1];
+  const firstCell = timelineLane.children[0];
+  assert.equal(timelineLane.tagName, "BUTTON", "the full timeline lane is the accessible hit target");
+  assert.ok(timelineLane.children.some((item) => item.className.includes("peak-marker")), "rank labels must stay attached to real histogram peaks");
+  assert.equal(timelineLane.children.some((item) => item.className === "station"), false, "dark mode must not replace the histogram with station dots");
+  const cursorZone = nodes.get("tracks").children.find((item) => item.className === "timeline-cursor-zone");
+  assert.ok(cursorZone?.children.some((item) => item.className === "cue-cursor"), "the histograms should share the current playback position");
   assert.equal(firstCell.tagName, "SPAN", "narrow histogram bars must not pretend to be standalone tap targets");
   assert.ok(parseFloat(firstCell.style.minWidth) >= 8, "an analyzed long-video window stays visible without distorting time alignment");
   assert.ok(Number(firstCell.style.zIndex) > 0, "pending windows must not cover the completed one");

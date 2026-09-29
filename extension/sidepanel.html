@@ -10,58 +10,52 @@
 <body>
   <header class="masthead">
     <a class="brand" href="#probe-input" aria-label="CueWave，前往新增语义探针">
-      <span class="brand-mark" aria-hidden="true">CW</span>
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 13h4l2-7 4 13 3-9 2 3h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>CueWave</span>
     </a>
-    <div class="theme-switch" role="group" aria-label="界面主题">
-      <button id="theme-gate" type="button" aria-pressed="true" title="时间登机牌（浅色）">登机牌</button>
-      <button id="theme-transit" type="button" aria-pressed="false" title="语义换乘图（深色）">换乘图</button>
+    <div class="masthead-status mono" aria-live="polite">
+      <span id="masthead-clock" class="gate-only">--  --:--</span>
+      <span id="masthead-analysis" class="transit-only">READY TO SCAN</span>
     </div>
   </header>
 
   <main>
     <section class="video-ticket ticket-section" aria-labelledby="video-title">
       <div class="video-copy">
-        <span class="section-label">当前视频</span>
+        <span class="section-label"><span class="gate-only">NOW WATCHING · CUEWAVE</span><span class="transit-only">YT · CURRENT VIDEO</span></span>
         <h1 id="video-title">正在连接 YouTube…</h1>
         <div id="video-meta" class="mono muted"></div>
       </div>
-      <span class="source-stamp">YOUTUBE</span>
+      <div class="video-aside">
+        <span class="source-stamp">YOUTUBE</span>
+        <time id="playback-time" class="playback-time mono" datetime="PT0S">--:--</time>
+        <span class="playback-label">当前播放</span>
+      </div>
+      <div class="video-facts" aria-label="视频分析概况">
+        <span>总时长<b id="duration-fact" class="mono">--:--</b></span>
+        <span>分析范围<b id="coverage-fact" class="mono">0%</b></span>
+        <span>语义线路<b id="route-count-fact" class="mono">00</b></span>
+      </div>
       <div id="player-status" class="notice error" role="alert" hidden></div>
     </section>
 
     <div id="status" role="status" class="notice">启动本机辅助进程后开始。</div>
 
-    <section class="probe-workflow ticket-section" aria-labelledby="probe-heading">
+    <section id="probe-workflow" class="probe-workflow ticket-section" aria-labelledby="probe-heading">
       <div class="section-head">
-        <h2 id="probe-heading">新增语义探针</h2>
+        <h2 id="probe-heading"><span class="gate-only">下一条语义线路想寻找什么？</span><span class="transit-only">新增一条语义线路</span></h2>
         <span id="probe-count" class="counter mono">0 / 5</span>
       </div>
 
       <form id="probe-form" class="probe-form">
         <input id="probe-input" maxlength="400" placeholder="输入你想在视频里寻找的内容…" aria-label="探针描述" autocomplete="off">
-        <button id="probe-submit" class="add-probe" type="submit"><span aria-hidden="true">＋</span> 添加</button>
+        <button id="probe-submit" class="add-probe" type="submit" aria-label="添加语义探针"><span aria-hidden="true">＋</span><span id="probe-submit-label" class="button-label">添加</span></button>
       </form>
-      <p id="probe-hint" class="hint">输入探针后校准判断标准、正反例和 Jev 读数类型。</p>
-
-      <div class="seed-strip" aria-label="推荐语义探针">
-        <span>例如</span>
-        <button class="seed" data-value="知识科普">知识科普</button>
-        <button class="seed" data-value="具体程度">具体程度</button>
-        <button class="seed" data-value="实操步骤">实操步骤</button>
-        <button class="seed" data-value="推广信息">推广信息</button>
-        <button class="seed" data-value="幽默程度">幽默程度</button>
-        <button class="seed" data-value="buzzword含量">buzzword</button>
-        <button class="seed" data-value="无聊程度">无聊程度</button>
-      </div>
+      <p id="probe-hint" class="hint probe-hint">输入探针后校准判断标准、正反例和 Jev 读数类型。</p>
 
       <div id="options" class="probe-options"></div>
 
-      <div class="active-probes-head">
-        <h3>当前探针</h3>
-        <span class="muted">显示开关只影响可视化</span>
-      </div>
-      <div id="probes" class="probe-grid"></div>
+      <nav id="probe-lines" class="probe-lines" aria-label="选择语义探针"></nav>
 
       <div class="analysis-command">
         <button id="analyze-button" class="primary" disabled><span aria-hidden="true">▶</span> 分析视频</button>
@@ -73,21 +67,12 @@
       <div class="progress" aria-hidden="true"><div id="progress-fill"></div></div>
       <p id="progress-text" class="hint">确认探针并等待视频解析完成。</p>
 
-      <details class="analysis-tools">
-        <summary>分析工具与用量</summary>
-        <div class="actions">
-          <button id="cancel-button" hidden>停止后续请求</button>
-          <button id="refine-button" disabled>细化广告边界</button>
-          <button id="save-button" disabled>保存结果 JSON</button>
-        </div>
-        <p id="estimate-text" class="hint">视频解析完成并确认探针后显示预计请求量。</p>
-      </details>
     </section>
 
     <section class="timeline ticket-section" aria-labelledby="timeline-heading">
       <div class="section-head">
-        <h2 id="timeline-heading">语义时间轴</h2>
-        <span class="mono muted">与视频时间对齐</span>
+        <h2 id="timeline-heading"><span class="gate-only">语义时刻板</span><span class="transit-only">语义线路</span></h2>
+        <span class="mono muted"><span class="gate-only">点击高峰跳转</span><span class="transit-only">CUE CURSOR</span></span>
       </div>
       <div class="legend" aria-label="时间轴图例">
         <span><i class="pending"></i>未分析</span>
@@ -95,28 +80,59 @@
         <span><i class="failed"></i>失败</span>
         <span><i class="low"></i>低值</span>
       </div>
+      <div id="timeline-ruler" class="timeline-ruler mono" aria-hidden="true"></div>
       <div id="tracks" class="timeline-tracks">
         <p class="empty-copy">分析完成后，每个探针会在这里生成独立的时间直方图。</p>
       </div>
     </section>
 
-    <section class="rankings ticket-section" aria-labelledby="rankings-heading">
-      <div class="section-head">
-        <h2 id="rankings-heading">最高热点</h2>
-        <span class="muted">按探针独立排名</span>
-      </div>
-      <div id="rankings" class="muted">分析后显示各探针的最高热点。</div>
-    </section>
-
     <section class="evidence ticket-section" aria-labelledby="evidence-heading">
       <div class="section-head">
         <h2 id="evidence-heading">原句核对</h2>
-        <span class="muted">证据窗口</span>
+        <span class="muted">EVIDENCE</span>
       </div>
       <div id="evidence">点击直方图或热点，可查看对应时间窗口与原句。</div>
     </section>
 
+    <details class="rankings ticket-section secondary-drawer">
+      <summary><span id="rankings-heading">全部热点排名</span><span>展开</span></summary>
+      <div id="rankings" class="muted">分析后显示各探针的最高热点。</div>
+    </details>
+
     <section class="utility-zone" aria-label="更多工具">
+      <div class="theme-utility">
+        <div><strong>界面外观</strong><span>浅色登机牌 / 深色换乘图</span></div>
+        <div class="theme-switch" role="group" aria-label="界面主题">
+          <button id="theme-gate" type="button" aria-pressed="true" title="时间登机牌（浅色）">登机牌</button>
+          <button id="theme-transit" type="button" aria-pressed="false" title="语义换乘图（深色）">换乘图</button>
+        </div>
+      </div>
+
+      <details class="probe-management utility-drawer">
+        <summary><span>探针管理</span><span class="summary-action">显示与定义</span></summary>
+        <p class="hint">显示开关只影响时间轴和播放器可视化，不会删除已有读数。</p>
+        <div class="seed-strip" aria-label="推荐语义探针">
+          <button class="seed" data-value="知识科普">知识科普</button>
+          <button class="seed" data-value="具体程度">具体程度</button>
+          <button class="seed" data-value="实操步骤">实操步骤</button>
+          <button class="seed" data-value="推广信息">推广信息</button>
+          <button class="seed" data-value="幽默程度">幽默程度</button>
+          <button class="seed" data-value="buzzword含量">buzzword</button>
+          <button class="seed" data-value="无聊程度">无聊程度</button>
+        </div>
+        <div id="probes" class="probe-grid"></div>
+      </details>
+
+      <details class="analysis-tools utility-drawer">
+        <summary><span>分析工具与用量</span><span class="summary-action">查看</span></summary>
+        <div class="actions">
+          <button id="cancel-button" hidden>停止后续请求</button>
+          <button id="refine-button" disabled>细化广告边界</button>
+          <button id="save-button" disabled>保存结果 JSON</button>
+        </div>
+        <p id="estimate-text" class="hint">视频解析完成并确认探针后显示预计请求量。</p>
+      </details>
+
       <details class="utility-drawer">
         <summary><span>视频解析与播放器</span><span class="summary-action">设置</span></summary>
         <p class="hint">CueWave 会自动解析视频内容；自动解析失败时，也可以导入兼容的时间轴文件。</p>

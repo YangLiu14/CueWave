@@ -22,6 +22,14 @@ test("both skins keep one shared semantic workflow", () => {
   assert.doesNotMatch(html, /data-theme="transit"[^>]*>[\s\S]*id="probe-form"/);
 });
 
+test("the transit theme keeps histogram bars instead of reducing results to stations", () => {
+  assert.match(js, /className = `peak-marker/);
+  assert.match(js, /className = "cue-cursor"/);
+  assert.doesNotMatch(js, /className = "station"/);
+  assert.doesNotMatch(css, /\.station\s*\{/);
+  assert.match(css, /:root\[data-theme="transit"\] \.peak-marker/);
+});
+
 test("user-facing video preparation copy does not expose the subtitle implementation", () => {
   assert.doesNotMatch(html, /字幕|SRT|VTT/);
   assert.match(html, /等待解析视频/);
