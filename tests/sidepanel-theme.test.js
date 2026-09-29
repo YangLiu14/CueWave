@@ -5,6 +5,8 @@ import { readFileSync } from "node:fs";
 const html = readFileSync(new URL("../extension/sidepanel.html", import.meta.url), "utf8");
 const css = readFileSync(new URL("../extension/sidepanel.css", import.meta.url), "utf8");
 const js = readFileSync(new URL("../extension/sidepanel.js", import.meta.url), "utf8");
+const contentCss = readFileSync(new URL("../extension/content.css", import.meta.url), "utf8");
+const contentJs = readFileSync(new URL("../extension/content.js", import.meta.url), "utf8");
 
 test("side panel defaults to the boarding-pass theme and exposes the transit dark theme", () => {
   assert.match(html, /<html[^>]+data-theme="gate"/);
@@ -35,6 +37,16 @@ test("probe definition mode exposes one destructive cancel action", () => {
   assert.match(js, /取消修改/);
   assert.match(readFileSync(new URL("../extension/manual.css", import.meta.url), "utf8"), /\.cancel-definition[^}]*var\(--danger\)/);
   assert.doesNotMatch(js, /重新输入探针|这些定义不合适/);
+});
+
+test("probe labels and histograms expose positive and negative direction", () => {
+  assert.match(html, /data-value="推广信息" data-polarity="negative"/);
+  assert.match(html, /推广信息[\s\S]*seed-direction[^>]*>↓</);
+  assert.match(js, /反向 ↓/);
+  assert.match(js, /classList\.toggle\("negative-track"/);
+  assert.match(css, /\.negative-track \.cell\s*\{[^}]*top:\s*50%[^}]*bottom:\s*auto/);
+  assert.match(contentJs, /cw-bar\$\{negative \? " negative" : " positive"\}/);
+  assert.match(contentCss, /\.cw-bar\.negative\s*\{[^}]*top:\s*50%[^}]*bottom:\s*auto/);
 });
 
 test("the transit theme keeps histogram bars instead of reducing results to stations", () => {

@@ -34,8 +34,10 @@
       overlay.addEventListener("mouseleave", () => overlay.classList.remove("visible"));
     }
     overlay.replaceChildren();
+    const selectedProbe = graph.probes.find((probe) => probe.id === graph.selectedId);
     const label = document.createElement("span"); label.className = "cw-label";
-    label.textContent = "CueWave · 每柱代表实际分析窗口，空白尚未分析"; overlay.append(label);
+    label.textContent = selectedProbe ? `CueWave · ${selectedProbe.name} · ${selectedProbe.polarity === "negative" ? "反向 ↓" : "正向 ↑"}` : "CueWave · 每柱代表实际分析窗口";
+    overlay.append(label);
     const duration = Math.max(graph.durationMs || 1, 1);
     for (const boundary of graph.adBoundaries || []) {
       if (boundary.probeId !== graph.selectedId) continue;
@@ -49,15 +51,16 @@
       if (reading.status !== "ok") continue;
       const probe = graph.probes.find((p) => p.id === reading.probeId);
       if (!probe || probe.enabled === false) continue;
-      const bar = document.createElement("div"); bar.className = "cw-bar";
+      const negative = probe.polarity === "negative";
+      const bar = document.createElement("div"); bar.className = `cw-bar${negative ? " negative" : " positive"}`;
       const fraction = Math.max(.015, (reading.endMs - reading.startMs) / duration);
       bar.style.left = `${100 * reading.startMs / duration}%`;
       bar.style.width = `${Math.min(100 * fraction, 100 - 100 * reading.startMs / duration)}%`;
-      bar.style.height = `${Math.max(3, reading.value * 43)}px`;
+      bar.style.height = `${Math.max(3, reading.value * 31)}px`;
       bar.style.background = probe.color;
       bar.style.opacity = graph.selectedId === probe.id ? ".92" : ".24";
       bar.style.zIndex = graph.selectedId === probe.id ? "3" : "1";
-      bar.title = `${probe.name} · ${(reading.startMs / 1000).toFixed(1)}–${(reading.endMs / 1000).toFixed(1)} 秒 · ${reading.label} · 点击查看原句`;
+      bar.title = `${probe.name} · ${negative ? "反向 ↓" : "正向 ↑"} · ${(reading.startMs / 1000).toFixed(1)}–${(reading.endMs / 1000).toFixed(1)} 秒 · ${reading.label} · 点击查看原句`;
       bar.addEventListener("click", (event) => {
         event.preventDefault(); event.stopPropagation();
         const player = video(); if (player) player.currentTime = Math.max(0, reading.startMs / 1000 - 2);

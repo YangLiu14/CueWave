@@ -56,13 +56,13 @@
       <div class="preset-probes" aria-labelledby="preset-probes-label">
         <span id="preset-probes-label" class="preset-label">预设探针</span>
         <div class="seed-strip">
-          <button class="seed" type="button" data-value="知识科普">知识科普</button>
-          <button class="seed" type="button" data-value="具体程度">具体程度</button>
-          <button class="seed" type="button" data-value="实操步骤">实操步骤</button>
-          <button class="seed" type="button" data-value="推广信息">推广信息</button>
-          <button class="seed" type="button" data-value="幽默程度">幽默程度</button>
-          <button class="seed" type="button" data-value="buzzword含量">buzzword</button>
-          <button class="seed" type="button" data-value="无聊程度">无聊程度</button>
+          <button class="seed" type="button" data-value="知识科普" data-polarity="positive">知识科普 <span class="seed-direction" aria-hidden="true">↑</span></button>
+          <button class="seed" type="button" data-value="具体程度" data-polarity="positive">具体程度 <span class="seed-direction" aria-hidden="true">↑</span></button>
+          <button class="seed" type="button" data-value="实操步骤" data-polarity="positive">实操步骤 <span class="seed-direction" aria-hidden="true">↑</span></button>
+          <button class="seed" type="button" data-value="推广信息" data-polarity="negative">推广信息 <span class="seed-direction" aria-hidden="true">↓</span></button>
+          <button class="seed" type="button" data-value="幽默程度" data-polarity="positive">幽默程度 <span class="seed-direction" aria-hidden="true">↑</span></button>
+          <button class="seed" type="button" data-value="buzzword含量" data-polarity="negative">buzzword <span class="seed-direction" aria-hidden="true">↓</span></button>
+          <button class="seed" type="button" data-value="无聊程度" data-polarity="negative">无聊程度 <span class="seed-direction" aria-hidden="true">↓</span></button>
         </div>
       </div>
 
@@ -88,6 +88,8 @@
         <span class="mono muted"><span class="gate-only">点击高峰跳转</span><span class="transit-only">CUE CURSOR</span></span>
       </div>
       <div class="legend" aria-label="时间轴图例">
+        <span><i class="positive-direction"></i>正向 ↑</span>
+        <span><i class="negative-direction"></i>反向 ↓</span>
         <span><i class="pending"></i>未分析</span>
         <span><i class="no-text"></i>无内容</span>
         <span><i class="failed"></i>失败</span>

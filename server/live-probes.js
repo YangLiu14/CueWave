@@ -5,6 +5,7 @@ export function pitchProbes() {
     const option = draftManualProbe(name).options[0];
     return { id: `pitch-${index}`, input: name, name: option.name, description: option.description,
       criterion: option.criterion, positive: option.positive, middle: option.middle, negative: option.negative,
+      polarity: option.polarity,
       primitive: "score", criteria: [option.negative, option.middle, option.positive],
       color: index ? "#ffad78" : "#72d8d2", revision: 1, enabled: true };
   });

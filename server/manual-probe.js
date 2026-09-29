@@ -106,11 +106,15 @@ const PRESETS = {
   }
 };
 
+const NEGATIVE_PRESETS = new Set(["推广信息", "buzzword含量", "无聊程度", "空洞概念"]);
+
 export function draftManualProbe(input) {
   const phrase = String(input || "").trim();
   if (!phrase || phrase.length > 400) throw new Error("请输入不超过 400 字的探针描述");
-  const preset = PRESETS[phrase === "推广信号" ? "推广信息" : phrase];
-  if (preset) return { ambiguous: false, manual: true, reason: preset.reason, options: [{ ...preset.option }] };
+  const presetName = phrase === "推广信号" ? "推广信息" : phrase;
+  const preset = PRESETS[presetName];
+  if (preset) return { ambiguous: false, manual: true, reason: preset.reason,
+    options: [{ ...preset.option, polarity: NEGATIVE_PRESETS.has(presetName) ? "negative" : "positive" }] };
   return {
     ambiguous: false,
     manual: true,
@@ -121,6 +125,7 @@ export function draftManualProbe(input) {
       criterion: `只根据目标字幕判断是否明确表达「${phrase}」，不核验事实真伪。`,
       positive: `目标字幕有明确支持「${phrase}」的语言线索。`,
       negative: `目标字幕没有明确支持「${phrase}」的语言线索。`,
+      polarity: "positive",
       primitive: "noul"
     }]
   };

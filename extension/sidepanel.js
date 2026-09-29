@@ -1,4 +1,4 @@
-import { parseCaptions, parseVideoExport, normalizeSegments, buildWindows, buildVideoExport, adCandidateSegments, buildAdBoundaries, estimateAnalysisWork, hasReusableReading, hasPendingAnalysis, isProbeVisible, selectedVisibleProbeId, JEV_INPUT_USD_PER_MILLION, rankHotspots, progress, fingerprint, MODEL, WINDOW_MS } from "./core.js";
+import { parseCaptions, parseVideoExport, normalizeSegments, buildWindows, buildVideoExport, adCandidateSegments, buildAdBoundaries, estimateAnalysisWork, hasReusableReading, hasPendingAnalysis, isProbeVisible, selectedVisibleProbeId, probePolarity, JEV_INPUT_USD_PER_MILLION, rankHotspots, progress, fingerprint, MODEL, WINDOW_MS } from "./core.js";
 
 const $ = (id) => document.getElementById(id);
 const COLORS = ["#178d78", "#ec6445", "#8470cf", "#e879a2", "#8eb7f3"];
@@ -6,7 +6,10 @@ const LEGACY_COLORS = new Map([["#5ddbc8", COLORS[0]], ["#f4b860", COLORS[1]], [
 const API = "http://127.0.0.1:4318";
 const THEME_KEY = "cuewave:theme";
 const state = { tabId: null, videoId: null, durationMs: 0, currentTimeMs: 0, segments: [], source: "", probes: [], options: null, revisingId: null, windows: [], readings: [], adCueReadings: [], adBoundaries: [], usage: { inputTokens: 0, requests: 0, reportedRequests: 0 }, history: [], selectedId: null, subtitleEnabled: false, cacheWarning: false, resumeOnOpen: false, running: false, cancelled: false, helper: null };
-const normalizeProbeColors = (probes) => probes.map((probe) => ({ ...probe, color: LEGACY_COLORS.get(String(probe.color).toLowerCase()) || probe.color }));
+const normalizeProbeColors = (probes) => probes.map((probe) => ({ ...probe,
+  color: LEGACY_COLORS.get(String(probe.color).toLowerCase()) || probe.color,
+  polarity: probePolarity(probe) }));
+const polarityLabel = (probe) => probePolarity(probe) === "negative" ? "反向 ↓" : "正向 ↑";
 let transcriptEpoch = 0;
 let checkSequence = 0;
 const format = (ms) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms % 60000 / 1000)).padStart(2, "0")}`;
@@ -136,7 +139,7 @@ function probeFromOption(input, option) {
   const id = crypto.randomUUID();
   const previous = state.probes.find((probe) => probe.id === state.revisingId);
   return { id, input, name: option.name.slice(0, 40), description: option.description, criterion: option.criterion, positive: option.positive, negative: option.negative,
-    primitive: option.primitive, middle: option.primitive === "score" ? option.middle : null,
+    polarity: option.polarity === "negative" ? "negative" : "positive", primitive: option.primitive, middle: option.primitive === "score" ? option.middle : null,
     criteria: option.primitive === "score" ? [option.negative, option.middle, option.positive] : null,
     color: previous?.color || COLORS[state.probes.length], enabled: previous?.enabled !== false, revision: (previous?.revision || 0) + 1, previousId: previous?.id || null };
 }
@@ -164,7 +167,8 @@ async function checkInput(input) {
       && previous.criterion === `只根据目标字幕判断是否明确表达「${previous.input}」，不核验事实真伪。`;
     if (result.manual && previous?.input === input && !legacyPromotion && !legacyGeneric) {
       result.options = [{ name: previous.name, description: previous.description, criterion: previous.criterion,
-        positive: previous.positive, middle: previous.middle || previous.criteria?.[1] || "", negative: previous.negative, primitive: previous.primitive }];
+        positive: previous.positive, middle: previous.middle || previous.criteria?.[1] || "", negative: previous.negative,
+        polarity: probePolarity(previous), primitive: previous.primitive }];
     }
     state.options = { input, result, cached: false }; renderOptions();
     status(result.manual ? "请手动校准判断标准和读数类型，然后确认。" : result.ambiguous ? "发现歧义：请选择最符合意图的定义。" : "请核对标准与例子，然后确认。");
@@ -175,9 +179,10 @@ async function checkInput(input) {
 function renderPresetButtons() {
   document.querySelectorAll(".seed").forEach((button) => {
     const added = state.probes.some((probe) => probe.input === button.dataset.value || probe.name === button.dataset.value);
+    const direction = button.dataset.polarity === "negative" ? "反向" : "正向";
     button.disabled = added || Boolean(state.options) || state.running || state.probes.length >= 5;
     button.classList.toggle("seed-added", added);
-    button.setAttribute("aria-label", added ? `${button.dataset.value}已添加` : state.options ? `请先完成或取消当前探针定义` : `使用预设探针${button.dataset.value}`);
+    button.setAttribute("aria-label", added ? `${button.dataset.value}${direction}探针已添加` : state.options ? `请先完成或取消当前探针定义` : `使用${direction}预设探针${button.dataset.value}`);
   });
 }
 function renderOptions() {
@@ -207,10 +212,19 @@ function renderOptions() {
     middleField.hidden = draft.primitive !== "score";
     primitive.addEventListener("change", () => { draft.primitive = primitive.value; middleField.hidden = primitive.value !== "score"; });
     typeField.append(primitive); card.append(typeField);
+    const polarityField = document.createElement("label"); polarityField.className = "option-field"; polarityField.textContent = "探针方向";
+    const polarity = document.createElement("select");
+    for (const [value, label] of [["positive", "正向 ↑ · 高值表示更值得关注"], ["negative", "反向 ↓ · 高值表示更需要警惕"]]) {
+      const choice = document.createElement("option"); choice.value = value; choice.textContent = label; polarity.append(choice);
+    }
+    draft.polarity = draft.polarity === "negative" ? "negative" : "positive";
+    polarity.value = draft.polarity;
+    polarity.addEventListener("change", () => { draft.polarity = polarity.value; });
+    polarityField.append(polarity); card.append(polarityField);
     const button = document.createElement("button"); button.textContent = "确认此定义";
     button.addEventListener("click", async () => {
       if (state.running || !state.options || state.options.input !== input || (state.probes.length >= 5 && !state.revisingId)) return;
-      const option = Object.fromEntries(["name", "description", "criterion", "positive", "middle", "negative", "primitive"].map((key) => [key, String(draft[key] || "").trim()]));
+      const option = Object.fromEntries(["name", "description", "criterion", "positive", "middle", "negative", "primitive", "polarity"].map((key) => [key, String(draft[key] || "").trim()]));
       if (["name", "description", "criterion", "positive", "negative"].some((key) => !option[key])) return status("请填写完整的名称、观察内容、标准和高低值定义。", true);
       if (option.primitive === "score" && !option.middle) return status("Score 探针还需要填写中值标准。", true);
       state.options = null; renderOptions();
@@ -257,12 +271,13 @@ function renderProbes() {
     route.classList.toggle("selected", state.selectedId === probe.id);
     route.classList.toggle("hidden-line", !isProbeVisible(probe));
     route.setAttribute("aria-pressed", String(state.selectedId === probe.id));
-    route.setAttribute("aria-label", `选择语义探针「${probe.name}」，${hotspotCount} 个热点`);
+    route.setAttribute("aria-label", `选择${polarityLabel(probe)}语义探针「${probe.name}」，${hotspotCount} 个热点`);
     const routeCode = document.createElement("span"); routeCode.className = "route-code"; routeCode.textContent = `P${String(index + 1).padStart(2, "0")}`;
     const routeSwatch = document.createElement("i"); routeSwatch.className = "route-swatch";
     const routeName = document.createElement("span"); routeName.className = "route-name"; routeName.textContent = probe.name;
+    const routePolarity = document.createElement("span"); routePolarity.className = `probe-polarity ${probePolarity(probe)}`; routePolarity.textContent = polarityLabel(probe);
     const routeStat = document.createElement("span"); routeStat.className = "route-stat"; routeStat.textContent = `${hotspotCount} HOT`;
-    route.append(routeCode, routeSwatch, routeName, routeStat);
+    route.append(routeCode, routeSwatch, routeName, routePolarity, routeStat);
     route.addEventListener("click", () => { state.selectedId = probe.id; render(); void pushGraph(); });
     lines.append(route);
 
@@ -272,11 +287,11 @@ function renderProbes() {
     row.classList.toggle("selected-probe", state.selectedId === probe.id);
     const left = document.createElement("button"); left.type = "button"; left.className = "probe-left";
     left.setAttribute("aria-pressed", String(state.selectedId === probe.id));
-    left.setAttribute("aria-label", `选择语义探针「${probe.name}」`);
+    left.setAttribute("aria-label", `选择${polarityLabel(probe)}语义探针「${probe.name}」`);
     const code = document.createElement("span"); code.className = "probe-code"; code.textContent = `P${String(index + 1).padStart(2, "0")}`;
     const dot = document.createElement("span"); dot.className = "dot"; dot.style.background = probe.color;
     const label = document.createElement("div"); label.textContent = probe.name;
-    const type = document.createElement("small"); type.textContent = `${hotspotCount} 个热点 · ${probe.primitive === "score" ? "SCORE" : "NOUL"}`; label.append(type);
+    const type = document.createElement("small"); type.textContent = `${hotspotCount} 个热点 · ${polarityLabel(probe)} · ${probe.primitive === "score" ? "SCORE" : "NOUL"}`; label.append(type);
     left.addEventListener("click", () => { state.selectedId = probe.id; render(); void pushGraph(); });
     const buttons = document.createElement("div");
     buttons.className = "probe-actions";
@@ -315,7 +330,7 @@ async function showEvidence(reading) {
   const meta = document.createElement("div"); meta.className = "evidence-time";
   const time = document.createElement("time"); time.textContent = format(window.startMs);
   const probeIndex = state.probes.indexOf(probe);
-  const probeLabel = document.createElement("small"); probeLabel.textContent = `P${String(probeIndex + 1).padStart(2, "0")} / ${probe.name}`;
+  const probeLabel = document.createElement("small"); probeLabel.textContent = `P${String(probeIndex + 1).padStart(2, "0")} / ${probe.name} / ${polarityLabel(probe)}`;
   meta.append(time, probeLabel);
   const copy = document.createElement("div"); copy.className = "evidence-copy";
   const quote = document.createElement("blockquote"); quote.className = "quote"; quote.textContent = window.text;
@@ -356,11 +371,12 @@ function renderTracks() {
     const section = document.createElement("div"); section.className = "track";
     setCssVariable(section, "--probe-color", probe.color);
     section.classList.toggle("selected-track", state.selectedId === probe.id);
+    section.classList.toggle("negative-track", probePolarity(probe) === "negative");
     const selectProbe = () => { state.selectedId = probe.id; renderTracks(); renderProbes(); void pushGraph(); };
     const label = document.createElement("div"); label.className = "track-label";
     const code = document.createElement("button"); code.type = "button"; code.className = "track-code";
     code.textContent = `P${String(index + 1).padStart(2, "0")}`;
-    code.setAttribute("aria-label", `选择语义探针「${probe.name}」`);
+    code.setAttribute("aria-label", `选择${polarityLabel(probe)}语义探针「${probe.name}」`);
     code.setAttribute("aria-pressed", String(state.selectedId === probe.id));
     code.addEventListener("click", selectProbe);
     const select = document.createElement("button"); select.type = "button"; select.className = "track-select"; select.textContent = probe.name; select.classList.toggle("selected", state.selectedId === probe.id);
@@ -369,10 +385,11 @@ function renderTracks() {
     const hotspots = rankHotspots(state.readings, probe).slice(0, 5);
     const unit = document.createElement("small"); unit.className = "track-unit";
     const hotspotStat = document.createElement("span"); hotspotStat.className = "track-hot-count"; hotspotStat.textContent = `${hotspots.length} 个热点 · `;
-    const primitive = document.createElement("span"); primitive.textContent = probe.primitive === "score" ? "SCORE" : "NOUL";
-    unit.append(hotspotStat, primitive); label.append(code, select, unit);
+    const direction = document.createElement("span"); direction.className = `track-polarity ${probePolarity(probe)}`; direction.textContent = polarityLabel(probe);
+    const primitive = document.createElement("span"); primitive.textContent = ` · ${probe.primitive === "score" ? "SCORE" : "NOUL"}`;
+    unit.append(hotspotStat, direction, primitive); label.append(code, select, unit);
     const cells = document.createElement("button"); cells.type = "button"; cells.className = "cells";
-    cells.setAttribute("aria-label", `${probe.name}语义时间轴。点击对应时间跳转，按回车跳到最高热点。`);
+    cells.setAttribute("aria-label", `${probe.name}${polarityLabel(probe)}语义时间轴。${probePolarity(probe) === "negative" ? "柱形向下表示反向信号" : "柱形向上表示正向信号"}。点击对应时间跳转，按回车跳到最高热点。`);
     cells.addEventListener("click", (event) => {
       if (event.target !== cells) return;
       if (event.detail === 0 && hotspots[0]?.peak) {
@@ -392,8 +409,8 @@ function renderTracks() {
       const reading = state.readings.find((r) => r.windowId === window.id && r.probeId === probe.id);
       const cell = document.createElement("span"); cell.className = `cell ${window.status === "no_text" ? "no-text" : reading?.status === "failed" ? "failed" : reading?.status === "ok" ? "ok" : "pending"}`;
       cell.style.left = `${window.startMs / duration * 100}%`; cell.style.width = `${(window.endMs - window.startMs) / duration * 100}%`;
-      if (reading?.status === "ok") { cell.style.background = probe.color; cell.style.height = `${Math.max(12, reading.value * 100)}%`; cell.style.opacity = String(Math.max(.38, reading.value)); cell.style.minWidth = "8px"; cell.style.zIndex = "2"; }
-      cell.title = `${format(window.startMs)}–${format(window.endMs)} · ${window.status === "no_text" ? "无文本" : reading?.status === "ok" ? reading.label : reading?.status === "failed" ? "分析失败" : "未分析"}`;
+      if (reading?.status === "ok") { cell.style.background = probe.color; cell.style.height = `${Math.max(6, reading.value * 46)}%`; cell.style.opacity = String(Math.max(.38, reading.value)); cell.style.minWidth = "8px"; cell.style.zIndex = "2"; }
+      cell.title = `${format(window.startMs)}–${format(window.endMs)} · ${polarityLabel(probe)} · ${window.status === "no_text" ? "无文本" : reading?.status === "ok" ? reading.label : reading?.status === "failed" ? "分析失败" : "未分析"}`;
       cell.setAttribute("aria-label", cell.title);
       cell.addEventListener("click", (event) => { event?.stopPropagation?.(); if (reading?.status === "ok") { showEvidence(reading); jump(window.startMs); } else $("evidence").textContent = cell.title; });
       cells.append(cell);
@@ -401,7 +418,7 @@ function renderTracks() {
     hotspots.forEach((hotspot, hotspotIndex) => {
       const marker = document.createElement("span"); marker.className = `peak-marker${hotspotIndex === 0 ? " is-first" : ""}`;
       marker.textContent = String(hotspotIndex + 1).padStart(2, "0");
-      marker.title = `第 ${hotspotIndex + 1} 热点 · ${format(hotspot.peak.startMs)} · ${hotspot.peak.label}`;
+      marker.title = `第 ${hotspotIndex + 1} 热点 · ${polarityLabel(probe)} · ${format(hotspot.peak.startMs)} · ${hotspot.peak.label}`;
       setCssVariable(marker, "--peak-position", `${hotspot.peak.startMs / duration * 100}%`);
       setCssVariable(marker, "--peak-height", `${Math.min(78, Math.max(12, hotspot.peak.value * 100))}%`);
       cells.append(marker);
@@ -420,7 +437,7 @@ function renderRankings() {
   for (const probe of state.probes.filter(isProbeVisible)) {
     const section = document.createElement("div"); section.className = "rank-section";
     section.style.setProperty?.("--probe-color", probe.color);
-    const title = document.createElement("h4"); title.textContent = `${probe.name} · ${probe.primitive === "score" ? "强度最高" : "命题概率最高"}`; section.append(title);
+    const title = document.createElement("h4"); title.textContent = `${probe.name} · ${polarityLabel(probe)} · ${probe.primitive === "score" ? "强度最高" : "命题概率最高"}`; section.append(title);
     const ranked = rankHotspots(state.readings, probe);
     if (!ranked.length) { const empty = document.createElement("div"); empty.className = "muted"; empty.textContent = "暂无达到阈值的热点"; section.append(empty); }
     ranked.slice(0, 5).forEach((hotspot, index) => {
@@ -578,7 +595,7 @@ async function analyze(resumeOnly = false) {
   await assertBoundTab();
   const keys = {};
   for (const probe of state.probes) {
-    const { id, name, color, enabled, ...semantic } = probe;
+    const { id, name, color, enabled, polarity, ...semantic } = probe;
     keys[id] = await fingerprint({ segments: state.segments, semantic, videoTitle, model: MODEL, widthMs: WINDOW_MS });
   }
   await safeSave();
@@ -762,9 +779,9 @@ function initPreview() {
   state.source = "产品预览数据";
   state.helper = { capabilities: { manualProbes: true, jev: true, supadata: true } };
   state.probes = [
-    { id: "preview-knowledge", input: "知识科普", name: "知识科普", description: "能够帮助观众理解知识或增长见闻的内容。", criterion: "包含清晰、可理解、具有信息增量的事实或解释。", positive: "提供完整知识点", negative: "没有知识增量", primitive: "noul", color: "#178d78", enabled: true },
-    { id: "preview-humor", input: "幽默程度", name: "幽默程度", description: "能够引起观众发笑的表达。", criterion: "根据语言中的反差、包袱和喜剧节奏判断。", positive: "明显幽默", middle: "略带趣味", negative: "没有幽默表达", criteria: ["没有幽默表达", "略带趣味", "明显幽默"], primitive: "score", color: "#ff7658", enabled: true },
-    { id: "preview-promotion", input: "推广信息", name: "推广信息", description: "与当前视频主线无关的插入口播广告。", criterion: "区分视频原本主题与突然插入的商品或服务推销。", positive: "明确插入推广", negative: "属于视频原本内容", primitive: "noul", color: "#9d8aec", enabled: true }
+    { id: "preview-knowledge", input: "知识科普", name: "知识科普", description: "能够帮助观众理解知识或增长见闻的内容。", criterion: "包含清晰、可理解、具有信息增量的事实或解释。", positive: "提供完整知识点", negative: "没有知识增量", polarity: "positive", primitive: "noul", color: "#178d78", enabled: true },
+    { id: "preview-humor", input: "幽默程度", name: "幽默程度", description: "能够引起观众发笑的表达。", criterion: "根据语言中的反差、包袱和喜剧节奏判断。", positive: "明显幽默", middle: "略带趣味", negative: "没有幽默表达", criteria: ["没有幽默表达", "略带趣味", "明显幽默"], polarity: "positive", primitive: "score", color: "#ff7658", enabled: true },
+    { id: "preview-promotion", input: "推广信息", name: "推广信息", description: "与当前视频主线无关的插入口播广告。", criterion: "区分视频原本主题与突然插入的商品或服务推销。", positive: "明确插入推广", negative: "属于视频原本内容", polarity: "negative", primitive: "noul", color: "#9d8aec", enabled: true }
   ];
   state.selectedId = state.probes[0].id;
   const windowMs = state.durationMs / 18;

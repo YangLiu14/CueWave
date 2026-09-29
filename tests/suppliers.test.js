@@ -75,7 +75,7 @@ test("Gemini returns reviewable options", async () => {
   globalThis.fetch = async (url, options) => {
     assert.match(url, /gemini-3\.8-flash:generateContent$/);
     assert.equal(JSON.parse(options.body).generationConfig.responseMimeType, "application/json");
-    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ ambiguous: true, reason: "两种含义", options: [{ name: "A", description: "A", criterion: "B", positive: "C", negative: "D", primitive: "noul" }] }) }] } }] }), { status: 200 });
+    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ ambiguous: true, reason: "两种含义", options: [{ name: "A", description: "A", criterion: "B", positive: "C", negative: "D", polarity: "positive", primitive: "noul" }] }) }] } }] }), { status: 200 });
   };
   try { assert.equal((await checkProbe("测试", "test-key")).options[0].name, "A"); }
   finally { globalThis.fetch = original; }

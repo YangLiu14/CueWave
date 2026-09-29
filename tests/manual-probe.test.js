@@ -9,6 +9,7 @@ test("manual draft needs no Gemini result and stays editable for Jev", () => {
   assert.equal(result.options.length, 1);
   assert.equal(result.options[0].name, "实操步骤");
   assert.equal(result.options[0].primitive, "noul");
+  assert.equal(result.options[0].polarity, "positive");
   assert.match(result.options[0].criterion, /单步也算/);
   assert.match(result.options[0].negative, /没有可执行的动作/);
   for (const field of ["description", "criterion", "positive", "negative"]) assert.ok(result.options[0][field]);
@@ -49,6 +50,7 @@ test("promotion probe finds spoken ad inserts across video genres", () => {
     const probe = result.options[0];
     assert.equal(probe.name, "推广信息");
     assert.equal(probe.primitive, "noul");
+    assert.equal(probe.polarity, "negative");
     assert.match(probe.criterion, /videoTitle/);
     assert.match(probe.criterion, /广告可以与原主题相关/);
     assert.match(probe.criterion, /context 已明确开启广告/);
@@ -59,6 +61,15 @@ test("promotion probe finds spoken ad inserts across video genres", () => {
     assert.match(probe.positive, /自己的付费课程/);
     assert.match(probe.negative, /本来就在评测的产品/);
     assert.match(probe.negative, /点赞订阅/);
+  }
+});
+
+test("preset polarity separates desirable signals from signals to avoid", () => {
+  for (const name of ["知识科普", "具体程度", "实操步骤", "幽默程度", "信息量程度"]) {
+    assert.equal(draftManualProbe(name).options[0].polarity, "positive", name);
+  }
+  for (const name of ["推广信息", "buzzword含量", "无聊程度", "空洞概念"]) {
+    assert.equal(draftManualProbe(name).options[0].polarity, "negative", name);
   }
 });
 

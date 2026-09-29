@@ -1,14 +1,16 @@
 #cuewave-histogram {
-  position: absolute; left: 0; right: 0; bottom: 100%; height: 56px;
-  display: none; align-items: end; z-index: 70; pointer-events: auto;
+  position: absolute; left: 0; right: 0; bottom: 100%; height: 72px;
+  display: none; z-index: 70; pointer-events: auto;
   background: linear-gradient(180deg, rgba(9, 16, 26, .92), rgba(9, 16, 26, .66));
   border: 1px solid rgba(184, 214, 239, .38); border-radius: 7px 7px 0 0;
   box-shadow: 0 -6px 24px rgba(0,0,0,.24);
 }
 #cuewave-histogram.visible { display: flex; }
-#cuewave-histogram .cw-bar { position: absolute; bottom: 2px; min-width: 2px; cursor: pointer; border-radius: 2px 2px 0 0; }
+#cuewave-histogram::after { position: absolute; top: 50%; right: 0; left: 0; z-index: 2; border-top: 1px solid rgba(226, 239, 249, .62); content: ""; pointer-events: none; }
+#cuewave-histogram .cw-bar { position: absolute; bottom: 50%; min-width: 2px; cursor: pointer; border-radius: 2px 2px 0 0; }
+#cuewave-histogram .cw-bar.negative { top: 50%; bottom: auto; border-radius: 0 0 2px 2px; }
 #cuewave-histogram .cw-bar:hover { filter: brightness(1.55); outline: 1px solid white; }
-#cuewave-histogram .cw-label { position: absolute; top: 3px; left: 7px; font: 10px sans-serif; color: #fff; pointer-events: none; }
+#cuewave-histogram .cw-label { position: absolute; top: 50%; left: 7px; z-index: 4; padding: 2px 5px; color: #fff; background: rgba(9, 16, 26, .8); font: 10px sans-serif; transform: translateY(-50%); pointer-events: none; }
 #cuewave-histogram .cw-ad-region { position: absolute; top: 0; bottom: 0; background: rgba(255, 213, 123, .16); border-left: 2px solid rgba(255, 213, 123, .9); border-right: 2px solid rgba(255, 213, 123, .9); pointer-events: none; z-index: 0; }
 #cuewave-caption-overlay { position: absolute; left: 8%; right: 8%; bottom: 11%; z-index: 80; pointer-events: none; white-space: pre-wrap; text-align: center; color: #fff; font: 600 clamp(17px, 2.2vw, 30px)/1.35 sans-serif; text-shadow: 0 2px 5px #000, 0 0 18px #000; background: rgba(0, 0, 0, .55); border-radius: 8px; padding: 5px 12px; max-height: 30%; overflow: hidden; }
 #cuewave-caption-overlay[hidden] { display: none; }

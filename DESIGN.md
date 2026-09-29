@@ -12,6 +12,7 @@ colors:
   gate-rule-strong: "#7b858a"
   gate-accent: "#178d78"
   gate-accent-soft: "#dcebe5"
+  gate-negative-signal: "#9d4f34"
   gate-danger: "#b74e43"
   gate-danger-soft: "#f3ded9"
   gate-focus: "#ff603f"
@@ -25,6 +26,7 @@ colors:
   transit-rule-strong: "#44535b"
   transit-accent: "#5bd3bd"
   transit-accent-soft: "#173832"
+  transit-negative-signal: "#ff9a76"
   transit-danger: "#ff7b70"
   transit-danger-soft: "#3a2020"
   transit-focus: "#ffd45f"
@@ -141,6 +143,7 @@ CueWave 是一个克制、快速、可核对的观看工具。默认主题“时
 
 - **Probe Route Set** (`probe-teal`, `probe-coral`, `probe-violet`, `probe-pink`, `probe-blue`): 最多五个探针的稳定身份色；同一探针在卡片、时间轴、热点和播放器叠层中保持一致。
 - **Gate Signal Green** (`gate-accent`): 默认主题的正向状态和强调，不承担大面积背景。
+- **Negative Signal Coral** (`gate-negative-signal`, `transit-negative-signal`): 反向探针的文字与箭头标记；必须同时出现“反向 ↓”，不能只靠颜色传达方向，也不能与失败状态共用语义 token。
 
 ### Tertiary
 
@@ -216,11 +219,11 @@ CueWave 是一个克制、快速、可核对的观看工具。默认主题“时
 - **Shape:** 45px 高的组合输入；左侧文本框与右侧动作按钮共享外轮廓。
 - **Primary:** 深色导视底与浅色文字；hover 切换到主题强调色，并使用 `action-hover-ink` 保持浅青／浅绿背景上的对比度。
 - **Presets:** 输入框下方始终展示可换行的预设探针；已加入的预设显示勾选并禁用，不能通过横向裁切隐藏选项。
-- **Progressive Detail:** 用户先输入或选择预设探针，再按需校准标准、正反例和 Noul／Score 类型；定义层底部始终提供红色“取消添加／取消修改”，退出时不保存草稿。
+- **Progressive Detail:** 用户先输入或选择预设探针，再按需校准标准、正反例、正向／反向方向和 Noul／Score 类型；定义层底部始终提供红色“取消添加／取消修改”，退出时不保存草稿。
 
 ### Probe Cards
 
-- **Structure:** 探针名称、读数类型、显示开关、修改和移除；顶部 3px 线路色绑定探针身份。
+- **Structure:** 探针名称、正向 ↑／反向 ↓、读数类型、显示开关、修改和移除；顶部 3px 线路色绑定探针身份。
 - **Layout:** 侧栏使用单列线路表以保证名称和操作可读；宽屏仍保持同一顺序，不复制另一套组件。
 - **State:** 隐藏仅影响可视化，卡片降为 58% 不透明度，但读数和分析任务保留。
 
@@ -231,7 +234,8 @@ CueWave 是一个克制、快速、可核对的观看工具。默认主题“时
 
 ### Semantic Timeline
 
-- **Geometry:** 每个探针拥有一条 100% 宽的按钮轨道；浅色 histogram 高 45px，暗色 histogram 高 57px。分析窗口的 `left` 与 `width` 始终由开始、结束时间占视频总时长的比例计算。
+- **Geometry:** 每个探针拥有一条 100% 宽的按钮轨道；浅色 histogram 高 60px，暗色 histogram 高 70px，中线是零基准。分析窗口的 `left` 与 `width` 始终由开始、结束时间占视频总时长的比例计算。
+- **Polarity:** Jev 高值始终表示“探针命中”，不因方向改变；正向探针从中线向上增长，反向探针从中线向下增长。标签必须同步展示文字与箭头，旧缓存中的推广、buzzword、无聊和空洞概念自动迁移为反向。
 - **Hit Model:** 指针点击在整条轨道上按横向比例映射到视频时间，键盘激活跳至最高热点。长视频中的有效柱可有 8px 最小可见宽度，但它只保证视觉可见性，不改变比例映射或成为独立键盘命中目标。
 - **States:** 未分析、无内容、失败、低值必须使用不同图形与颜色；有效值以高度和不透明度共同编码。
 - **Transit Peak Labels:** 暗色主题仍完整显示每个分析窗口的柱形分布；`rankHotspots(...).slice(0, 5)` 只生成附着在真实高柱上的矩形排名标签，不能把分布简化成站点。

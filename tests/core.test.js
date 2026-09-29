@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseCaptions, buildWindows, buildVideoExport, parseVideoExport, adCandidateSegments, buildAdBoundaries, estimateAnalysisWork, hasReusableReading, hasPendingAnalysis, isProbeVisible, selectedVisibleProbeId, JEV_INPUT_USD_PER_MILLION, subtitleCoverageMs, readingValue, rankHotspots, progress } from "../extension/core.js";
+import { parseCaptions, buildWindows, buildVideoExport, parseVideoExport, adCandidateSegments, buildAdBoundaries, estimateAnalysisWork, hasReusableReading, hasPendingAnalysis, isProbeVisible, selectedVisibleProbeId, probePolarity, JEV_INPUT_USD_PER_MILLION, subtitleCoverageMs, readingValue, rankHotspots, progress } from "../extension/core.js";
 
 test("SRT/VTT retain milliseconds and expose gaps as no_text", () => {
   const srt = `1\n00:00:00,250 --> 00:00:02,750\n具体方法是先测量\n\n2\n00:00:26,100 --> 00:00:29,900\n然后再复测\n`;
@@ -21,6 +21,13 @@ test("Score and Noul retain different meaning; missing values fail", () => {
   assert.deepEqual(readingValue({ type: "noul", noul: .8 }, noul), { raw: .8, value: .8, label: "80% 命题概率", confidence: null });
   assert.throws(() => readingValue({ type: "noul" }, noul));
   assert.throws(() => readingValue({ type: "score", score: 3 }, score));
+});
+
+test("probe polarity keeps high values as hits while assigning a visual direction", () => {
+  assert.equal(probePolarity({ name: "知识科普" }), "positive");
+  assert.equal(probePolarity({ name: "推广信息" }), "negative");
+  assert.equal(probePolarity({ input: "无聊程度" }), "negative");
+  assert.equal(probePolarity({ name: "推广信息", polarity: "positive" }), "positive");
 });
 
 test("each probe ranks independently and merges adjacent hit windows", () => {
@@ -66,6 +73,8 @@ test("saved video export aligns full subtitles and per-probe readings on one mil
   const restored = parseVideoExport(saved);
   assert.equal(restored.videoId, "dQw4w9WgXcQ");
   assert.equal(restored.probes[1].enabled, false);
+  assert.equal(saved.analysis.probes[0].polarity, "positive");
+  assert.equal(restored.probes[0].polarity, "positive");
   assert.deepEqual(restored.windows.map((window) => window.startMs), [0, 12000, 24000]);
   assert.deepEqual(restored.readings.map((reading) => [reading.probeId, reading.windowId, reading.status]),
     [["steps", "w0", "ok"], ["detail", "w0", "ok"], ["detail", "w24000", "failed"]]);

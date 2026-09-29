@@ -3,6 +3,14 @@ export const MODEL = "jev-1.13.0";
 // TypeSafe AI model reference, checked 2026-09-27: https://docs.typesafe.ai/models
 export const JEV_INPUT_USD_PER_MILLION = 0.042;
 
+const LEGACY_NEGATIVE_PROBES = new Set(["推广信息", "推广信号", "buzzword含量", "无聊程度", "空洞概念"]);
+
+export function probePolarity(probe) {
+  if (probe?.polarity === "negative") return "negative";
+  if (probe?.polarity === "positive") return "positive";
+  return LEGACY_NEGATIVE_PROBES.has(probe?.input) || LEGACY_NEGATIVE_PROBES.has(probe?.name) ? "negative" : "positive";
+}
+
 export function isProbeVisible(probe) { return probe.enabled !== false; }
 
 export function selectedVisibleProbeId(probes, requestedId) {
@@ -189,7 +197,7 @@ export function buildVideoExport({ videoId, title, durationMs, source, segments,
     format: "cuewave-video-analysis", version: 2, savedAt,
     video: { id: videoId, title, url: `https://www.youtube.com/watch?v=${videoId}`, durationMs: videoDurationMs },
     transcript: { source, segments: segments.map(({ id, startMs, endMs, text }) => ({ id, startMs, endMs, text })) },
-    analysis: { model: MODEL, windowWidthMs: WINDOW_MS, probes: probes.map((probe) => ({ ...probe })),
+    analysis: { model: MODEL, windowWidthMs: WINDOW_MS, probes: probes.map((probe) => ({ ...probe, polarity: probePolarity(probe) })),
       progress: progress(windows, readings, probes), timeline,
       adCueReadings: adCueReadings.map((reading) => ({ ...reading })),
       adBoundaries: adBoundaries.map((boundary) => ({ ...boundary, segmentIds: [...boundary.segmentIds] })),
@@ -208,8 +216,10 @@ export function parseVideoExport(data) {
   if (!Array.isArray(probes) || !probes.length || probes.length > 5 ||
     new Set(probes.map((probe) => probe.id)).size !== probes.length ||
     probes.some((probe) => !probe.id || !/^#[0-9a-fA-F]{6}$/.test(probe.color) || ["name", "description", "criterion", "positive", "negative"].some((key) => typeof probe[key] !== "string") ||
+      (probe.polarity != null && !["positive", "negative"].includes(probe.polarity)) ||
       !["noul", "score"].includes(probe.primitive) ||
       (probe.primitive === "score" && (!Array.isArray(probe.criteria) || probe.criteria.length < 2 || probe.criteria.some((item) => typeof item !== "string"))))) throw new Error("保存文件中的探针定义无效");
+  const normalizedProbes = probes.map((probe) => ({ ...probe, polarity: probePolarity(probe) }));
   const widthMs = data.analysis.windowWidthMs;
   if (widthMs !== WINDOW_MS) throw new Error("保存文件的分析窗口与当前版本不兼容");
   const windows = buildWindows(segments, data.video.durationMs, widthMs);
@@ -217,7 +227,7 @@ export function parseVideoExport(data) {
   if (!Array.isArray(timeline) || timeline.length !== windows.length || timeline.some((row, index) =>
     row.windowId !== windows[index].id || row.startMs !== windows[index].startMs || row.endMs !== windows[index].endMs ||
     row.text !== windows[index].text || !Array.isArray(row.readings))) throw new Error("保存文件的分析结果与字幕时间轴不匹配");
-  const probeIds = new Set(probes.map((probe) => probe.id));
+  const probeIds = new Set(normalizedProbes.map((probe) => probe.id));
   const readings = [];
   for (const row of timeline) for (const reading of row.readings) {
     if (!probeIds.has(reading.probeId) || !["ok", "failed", "pending", "no_text"].includes(reading.status)) throw new Error("保存文件中的读数无效");
@@ -242,7 +252,7 @@ export function parseVideoExport(data) {
     requests: Number.isFinite(savedUsage?.requests) && savedUsage.requests >= 0 ? savedUsage.requests : 0,
     reportedRequests: Number.isFinite(savedUsage?.reportedRequests) && savedUsage.reportedRequests >= 0 ? savedUsage.reportedRequests : 0 };
   return { videoId, title: String(data.video.title || ""), durationMs: data.video.durationMs,
-    source: String(data.transcript.source || "导入 CueWave 分析"), segments, windows, probes, readings,
+    source: String(data.transcript.source || "导入 CueWave 分析"), segments, windows, probes: normalizedProbes, readings,
     adCueReadings, adBoundaries, usage, savedAt: String(data.savedAt || "") };
 }
 

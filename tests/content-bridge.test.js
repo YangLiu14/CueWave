@@ -36,7 +36,9 @@ test("the injected YouTube receiver draws a saved graph and acknowledges seeks",
   progressReady = true;
   onMutation();
   assert.equal(progress.children[0].id, "cuewave-histogram");
-  assert.equal(progress.children[0].children.filter((child) => child.className === "cw-bar").length, 1);
+  const bars = progress.children[0].children.filter((child) => child.className?.startsWith("cw-bar"));
+  assert.equal(bars.length, 1);
+  assert.equal(bars[0].className, "cw-bar positive");
   onMessage({ action: "cuewave:seek", videoId: graph.videoId, ms: 70000 }, {}, (value) => { response = value; });
   assert.equal(response.ok, true);
   assert.equal(video.currentTime, 70);
