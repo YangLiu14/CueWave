@@ -23,6 +23,8 @@
   font: inherit;
 }
 .option-field textarea { resize: vertical; line-height: 1.4; }
+.cancel-definition { width: 100%; min-height: 38px; margin-top: 6px; color: var(--danger); border-color: var(--danger); background: var(--danger-soft); font-weight: 700; }
+.cancel-definition:hover { color: var(--paper); border-color: var(--danger); background: var(--danger); }
 
 .probe-grid { display: grid; gap: 6px; margin-top: 8px; }
 .probe-row { display: grid; min-width: 0; min-height: 52px; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 8px 4px 8px 9px; border: 0; border-bottom: 1px solid var(--rule); border-left: 3px solid var(--probe-color, var(--accent)); border-radius: 0; background: transparent; }

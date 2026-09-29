@@ -22,6 +22,21 @@ test("both skins keep one shared semantic workflow", () => {
   assert.doesNotMatch(html, /data-theme="transit"[^>]*>[\s\S]*id="probe-form"/);
 });
 
+test("preset probes stay visible in the primary workflow and wrap instead of clipping", () => {
+  assert.equal(html.match(/class="seed"/g)?.length, 7);
+  assert.ok(html.indexOf('class="preset-probes"') < html.indexOf('id="probe-lines"'));
+  assert.match(css, /\.seed-strip\s*\{[^}]*flex-wrap:\s*wrap/);
+  assert.doesNotMatch(css, /\.seed-strip\s*\{[^}]*overflow-x:\s*auto/);
+});
+
+test("probe definition mode exposes one destructive cancel action", () => {
+  assert.match(js, /className = "cancel-definition"/);
+  assert.match(js, /取消添加探针/);
+  assert.match(js, /取消修改/);
+  assert.match(readFileSync(new URL("../extension/manual.css", import.meta.url), "utf8"), /\.cancel-definition[^}]*var\(--danger\)/);
+  assert.doesNotMatch(js, /重新输入探针|这些定义不合适/);
+});
+
 test("the transit theme keeps histogram bars instead of reducing results to stations", () => {
   assert.match(js, /className = `peak-marker/);
   assert.match(js, /className = "cue-cursor"/);

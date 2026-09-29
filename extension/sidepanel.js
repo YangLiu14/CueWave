@@ -172,9 +172,17 @@ async function checkInput(input) {
     if (sequence === checkSequence) status(error.code === "GEMINI_PAYMENT_REQUIRED" ? `${error.message}。额度恢复后再检查；已确认探针仍可使用。` : `${error.message}。请稍后重试。`, true);
   }
 }
+function renderPresetButtons() {
+  document.querySelectorAll(".seed").forEach((button) => {
+    const added = state.probes.some((probe) => probe.input === button.dataset.value || probe.name === button.dataset.value);
+    button.disabled = added || Boolean(state.options) || state.running || state.probes.length >= 5;
+    button.classList.toggle("seed-added", added);
+    button.setAttribute("aria-label", added ? `${button.dataset.value}已添加` : state.options ? `请先完成或取消当前探针定义` : `使用预设探针${button.dataset.value}`);
+  });
+}
 function renderOptions() {
   const box = $("options"); box.replaceChildren();
-  if (!state.options) return;
+  if (!state.options) { renderPresetButtons(); return; }
   const { input, result, cached } = state.options;
   state.options.drafts ||= result.options.map((option) => ({ ...option }));
   const intro = document.createElement("p"); intro.className = "hint"; intro.textContent = `${result.manual ? "手动定义 · 未检查歧义" : result.ambiguous ? "有歧义" : "含义较明确"} · ${result.reason}${cached ? " · 已缓存检查" : ""}`; box.append(intro);
@@ -223,15 +231,22 @@ function renderOptions() {
     });
     card.append(button); box.append(card);
   }
-  const retry = document.createElement("button"); retry.textContent = result.manual ? "重新输入探针" : "这些定义不合适 · 改写";
-  retry.addEventListener("click", () => { $("probe-input").value = input; $("probe-input").focus(); state.options = null; renderOptions(); }); box.append(retry);
-  if (state.revisingId) { const cancel = document.createElement("button"); cancel.textContent = "取消修改"; cancel.addEventListener("click", () => { state.revisingId = null; state.options = null; render(); }); box.append(cancel); }
+  const cancel = document.createElement("button"); cancel.type = "button"; cancel.className = "cancel-definition";
+  cancel.textContent = state.revisingId ? "取消修改" : "取消添加探针";
+  cancel.addEventListener("click", () => {
+    const wasRevising = Boolean(state.revisingId);
+    state.revisingId = null; state.options = null; $("probe-input").value = ""; render();
+    $("probe-input").focus(); status(wasRevising ? "已取消修改，原探针保持不变。" : "已取消添加探针。");
+  });
+  box.append(cancel);
+  renderPresetButtons();
 }
 function renderProbes() {
   $("probe-count").textContent = `${state.probes.length} / 5`;
   $("route-count-fact").textContent = String(state.probes.length).padStart(2, "0");
   const lines = $("probe-lines"); lines.replaceChildren();
   const box = $("probes"); box.replaceChildren();
+  renderPresetButtons();
   if (!state.probes.length) {
     const empty = document.createElement("p"); empty.className = "probe-lines-empty"; empty.textContent = "添加探针后，它会成为一条可选择的语义线路。"; lines.append(empty);
   }

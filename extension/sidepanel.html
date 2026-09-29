@@ -53,6 +53,19 @@
       </form>
       <p id="probe-hint" class="hint probe-hint">输入探针后校准判断标准、正反例和 Jev 读数类型。</p>
 
+      <div class="preset-probes" aria-labelledby="preset-probes-label">
+        <span id="preset-probes-label" class="preset-label">预设探针</span>
+        <div class="seed-strip">
+          <button class="seed" type="button" data-value="知识科普">知识科普</button>
+          <button class="seed" type="button" data-value="具体程度">具体程度</button>
+          <button class="seed" type="button" data-value="实操步骤">实操步骤</button>
+          <button class="seed" type="button" data-value="推广信息">推广信息</button>
+          <button class="seed" type="button" data-value="幽默程度">幽默程度</button>
+          <button class="seed" type="button" data-value="buzzword含量">buzzword</button>
+          <button class="seed" type="button" data-value="无聊程度">无聊程度</button>
+        </div>
+      </div>
+
       <div id="options" class="probe-options"></div>
 
       <nav id="probe-lines" class="probe-lines" aria-label="选择语义探针"></nav>
@@ -111,15 +124,6 @@
       <details class="probe-management utility-drawer">
         <summary><span>探针管理</span><span class="summary-action">显示与定义</span></summary>
         <p class="hint">显示开关只影响时间轴和播放器可视化，不会删除已有读数。</p>
-        <div class="seed-strip" aria-label="推荐语义探针">
-          <button class="seed" data-value="知识科普">知识科普</button>
-          <button class="seed" data-value="具体程度">具体程度</button>
-          <button class="seed" data-value="实操步骤">实操步骤</button>
-          <button class="seed" data-value="推广信息">推广信息</button>
-          <button class="seed" data-value="幽默程度">幽默程度</button>
-          <button class="seed" data-value="buzzword含量">buzzword</button>
-          <button class="seed" data-value="无聊程度">无聊程度</button>
-        </div>
         <div id="probes" class="probe-grid"></div>
       </details>
 

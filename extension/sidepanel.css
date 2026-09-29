@@ -137,9 +137,13 @@ main > .notice.error { margin: 10px 18px; }
 .progress { height: 3px; margin-top: 10px; overflow: hidden; background: var(--rule); }
 .progress > div { width: 0; height: 100%; background: var(--accent); }
 .hint { margin: 7px 0 10px; font-size: 11px; line-height: 1.45; }
-.seed-strip { display: flex; gap: 5px; overflow-x: auto; padding: 7px 0; scrollbar-width: thin; }
-.seed { min-height: 28px; flex: 0 0 auto; padding: 3px 7px; border-color: var(--rule); font-size: 10px; }
+.preset-probes { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 8px; margin-top: 10px; }
+.preset-label { padding-top: 6px; color: var(--muted); font: 700 10px/1.35 "Arial Narrow", ui-monospace, sans-serif; letter-spacing: .08em; white-space: nowrap; }
+.seed-strip { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; padding: 0; }
+.seed { min-height: 28px; flex: 0 0 auto; padding: 3px 7px; border-color: var(--rule); font-size: 10px; white-space: nowrap; }
 .seed::after { color: var(--accent); content: " +"; }
+.seed.seed-added::after { content: " ✓"; }
+.seed.seed-added { color: var(--muted); background: var(--paper-2); }
 .actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
 .probe-workflow.analysis-complete .analysis-command,
 .probe-workflow.analysis-complete .progress,
@@ -238,6 +242,9 @@ main > .notice.error { margin: 10px 18px; }
 :root[data-theme="transit"] .probe-form { display: flex; min-height: 50px; align-items: center; gap: 9px; margin: 12px 16px 4px; padding: 7px 8px 7px 12px; border: 1px solid #44535b; border-radius: 7px; background: #111a1f; }
 :root[data-theme="transit"] #probe-input { min-width: 0; height: 34px; flex: 1; padding: 0; }
 :root[data-theme="transit"] .add-probe { width: 36px; min-width: 36px; height: 36px; min-height: 36px; border-radius: 5px; color: #06110e; background: var(--accent); }
+:root[data-theme="transit"] .preset-probes { margin: 8px 16px 4px; }
+:root[data-theme="transit"] .seed { border-color: #3b4950; border-radius: 99px; }
+:root[data-theme="transit"] .seed:hover { border-color: var(--accent); background: var(--paper-2); }
 :root[data-theme="transit"] .probe-options { margin: 8px 16px; }
 :root[data-theme="transit"] .probe-lines { display: flex; gap: 7px; overflow-x: auto; margin: 0; padding: 9px 16px 12px; border: 0; scrollbar-width: none; }
 :root[data-theme="transit"] .probe-lines-empty { flex: 1; padding: 8px 0; }
