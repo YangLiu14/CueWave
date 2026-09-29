@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="zh-CN" data-variant="A">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CueWave · 侧栏 UI 方向样板（非产品页面）</title>
+  <script>
+    const initialVariant = new URLSearchParams(location.search).get("variant")?.toUpperCase();
+    document.documentElement.dataset.variant = ["A", "B", "C"].includes(initialVariant) ? initialVariant : "A";
+  </script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap");
+
+    :root {
+      font-family: Barlow, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #17222c;
+      background: #cfd2ce;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; min-height: 100vh; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #ff633f; outline-offset: 2px; }
+    svg { display: block; }
+
+    .prototype-context {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      z-index: 50;
+      display: flex;
+      max-width: calc(100vw - 28px);
+      align-items: center;
+      gap: 10px;
+      padding: 7px 11px;
+      border: 1px solid rgba(12, 20, 25, .18);
+      border-radius: 99px;
+      color: #303b40;
+      background: rgba(246, 247, 243, .94);
+      box-shadow: 0 10px 28px rgba(16, 25, 30, .12);
+      font-size: 12px;
+      transform: translateX(-50%);
+      backdrop-filter: blur(12px);
+      white-space: nowrap;
+    }
+
+    .prototype-context strong { color: #111b20; letter-spacing: .08em; }
+
+    .stage {
+      display: grid;
+      min-height: 100vh;
+      place-items: start center;
+      padding: 64px 12px 112px;
+    }
+
+    .variant {
+      display: none;
+      width: min(420px, 100%);
+      min-height: 880px;
+      overflow: hidden;
+      box-shadow: 0 28px 70px rgba(16, 25, 30, .24);
+    }
+
+    html[data-variant="A"] .variant-a,
+    html[data-variant="B"] .variant-b,
+    html[data-variant="C"] .variant-c { display: block; }
+
+    .icon { width: 18px; height: 18px; }
+    .mono { font-family: "Barlow Condensed", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+    /* A — continuous departure board */
+    .variant-a { color: #17232e; background: #f5f3e9; border: 1px solid #818b8e; }
+    .a-masthead { display: flex; height: 58px; align-items: center; justify-content: space-between; padding: 0 18px; color: #f7f5ea; background: #192936; }
+    .wordmark { display: flex; align-items: center; gap: 9px; font-size: 20px; font-weight: 700; letter-spacing: -.04em; }
+    .wave-mark { width: 26px; height: 26px; border: 1px solid currentColor; border-radius: 50%; padding: 5px; }
+    .a-clock { font-size: 13px; letter-spacing: .12em; }
+    .a-ticket { position: relative; padding: 17px 18px 15px; border-bottom: 1px dashed #7b858a; }
+    .a-ticket::before, .a-ticket::after { position: absolute; bottom: -7px; width: 13px; height: 13px; border-radius: 50%; background: #cfd2ce; content: ""; }
+    .a-ticket::before { left: -7px; }
+    .a-ticket::after { right: -7px; }
+    .a-ticket-top { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+    .eyebrow { margin: 0 0 5px; color: #5f696c; font: 600 11px/1 "Barlow Condensed", sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+    .a-ticket h1 { margin: 0; font-size: 22px; line-height: 1.18; letter-spacing: -.04em; }
+    .a-video-code { padding: 5px 7px; border: 1px solid #90999b; font: 600 11px/1 "Barlow Condensed", sans-serif; letter-spacing: .13em; }
+    .a-meta { display: flex; gap: 16px; margin-top: 12px; color: #505c61; font-size: 12px; }
+    .a-meta b { display: block; color: #182730; font: 600 18px/1 "Barlow Condensed", sans-serif; }
+    .a-search { padding: 15px 18px 13px; border-bottom: 1px solid #aeb3b1; }
+    .a-search label { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 700; }
+    .a-search-box { display: grid; grid-template-columns: 1fr 46px; border: 1px solid #263843; }
+    .a-search-box input { min-width: 0; height: 44px; padding: 0 12px; border: 0; color: inherit; background: transparent; }
+    .a-search-box button { display: grid; border: 0; place-items: center; color: #fff; background: #1c2d39; }
+    .a-routes { border-bottom: 1px solid #90999b; }
+    .a-route-tab { display: grid; width: 100%; min-height: 48px; grid-template-columns: 42px 12px 1fr auto; align-items: center; gap: 9px; padding: 0 18px; border: 0; border-bottom: 1px solid #c3c4bd; color: inherit; background: transparent; text-align: left; }
+    .a-route-tab[aria-pressed="true"] { background: #e6e3d4; }
+    .a-route-tab:last-child { border-bottom: 0; }
+    .route-code { color: #58656b; font: 700 13px/1 "Barlow Condensed", sans-serif; letter-spacing: .09em; }
+    .route-swatch { width: 10px; height: 10px; background: var(--route); }
+    .route-name { font-size: 14px; font-weight: 700; }
+    .route-stat { color: #606a6d; font: 600 12px/1 "Barlow Condensed", sans-serif; }
+    .a-board { position: relative; padding: 14px 18px 8px; background: #eeece1; }
+    .a-board-head { display: flex; align-items: end; justify-content: space-between; margin-bottom: 12px; }
+    .a-board h2 { margin: 0; font-size: 17px; }
+    .a-board-head span { color: #526067; font-size: 11px; }
+    .time-ruler { display: grid; grid-template-columns: repeat(4, 1fr); margin-left: 94px; color: #657075; font: 600 10px/1 "Barlow Condensed", sans-serif; }
+    .time-ruler span:last-child { text-align: right; }
+    .a-chart { position: relative; padding: 9px 0 6px; }
+    .a-cursor { position: absolute; top: 0; bottom: 0; left: 43%; z-index: 4; width: 2px; background: #ff603f; pointer-events: none; }
+    .a-cursor::before { position: absolute; top: -4px; left: 50%; padding: 3px 5px; color: #fff; background: #ff603f; font: 700 10px/1 "Barlow Condensed", sans-serif; content: "08:03"; transform: translate(-50%, -100%); }
+    .a-track { display: grid; min-height: 74px; grid-template-columns: 86px 1fr; align-items: center; gap: 8px; border-bottom: 1px solid #c7c8c1; }
+    .a-track:last-child { border-bottom: 0; }
+    .a-track-label b { display: block; font-size: 13px; }
+    .a-track-label span { color: #667176; font: 600 11px/1.3 "Barlow Condensed", sans-serif; }
+    .histogram { position: relative; display: flex; height: 45px; align-items: end; gap: 2px; background: repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), #d4d3ca calc(25% - 1px) 25%); }
+    .histogram i { flex: 1; height: var(--h); min-height: 4px; background: var(--route); opacity: .82; }
+    .a-stop { position: absolute; bottom: -4px; left: var(--x); z-index: 5; display: grid; width: 21px; height: 21px; padding: 0; border: 2px solid var(--route); border-radius: 50%; place-items: center; color: #17232e; background: #f5f3e9; font: 700 9px/1 "Barlow Condensed", sans-serif; transform: translateX(-50%); }
+    .a-stop.selected { color: #fff; background: #17232e; border-color: #17232e; }
+    .a-evidence { display: grid; grid-template-columns: 78px 1fr; gap: 12px; margin: 8px 18px 18px; padding: 13px 0 0; border-top: 3px solid #17232e; }
+    .a-evidence-time { font: 700 27px/1 "Barlow Condensed", sans-serif; }
+    .a-evidence-time small { display: block; margin-top: 5px; color: #687277; font-size: 11px; letter-spacing: .08em; }
+    .a-evidence p { margin: 0; font-size: 13px; line-height: 1.5; }
+    .a-action { display: inline-flex; min-height: 36px; align-items: center; gap: 6px; margin-top: 10px; padding: 0; border: 0; border-bottom: 1px solid currentColor; color: #0b6f60; background: transparent; font-size: 12px; font-weight: 700; }
+
+    /* B — route control board */
+    .variant-b { color: #eef5f2; background: #090f12; border: 1px solid #36454e; }
+    .b-masthead { display: flex; min-height: 62px; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #35434b; }
+    .b-masthead .wordmark { color: #f3f6f4; }
+    .b-live { display: inline-flex; align-items: center; gap: 6px; color: #80e6cf; font: 600 11px/1 "Barlow Condensed", sans-serif; letter-spacing: .1em; }
+    .b-live::before { width: 7px; height: 7px; border-radius: 50%; background: #5ad7bc; box-shadow: 0 0 12px rgba(90, 215, 188, .7); content: ""; }
+    .b-video { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 15px 16px; border-bottom: 1px solid #2f3b42; }
+    .b-video h1 { margin: 2px 0 8px; font-size: 20px; line-height: 1.15; }
+    .b-video p { margin: 0; color: #8e9da4; font-size: 11px; }
+    .b-time { align-self: center; color: #5bd3bd; font: 700 24px/1 "Barlow Condensed", sans-serif; }
+    .b-command { display: flex; align-items: center; gap: 9px; margin: 12px 16px 4px; padding: 7px 8px 7px 12px; border: 1px solid #44535b; border-radius: 7px; background: #111a1f; }
+    .b-command input { min-width: 0; height: 34px; flex: 1; border: 0; color: #eef5f2; background: transparent; outline: 0; }
+    .b-command button { display: grid; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 5px; place-items: center; color: #06110e; background: #5bd3bd; }
+    .b-lines { display: flex; gap: 7px; overflow-x: auto; padding: 9px 16px 12px; scrollbar-width: none; }
+    .b-line-button { display: inline-flex; min-height: 38px; flex: 0 0 auto; align-items: center; gap: 7px; padding: 0 10px; border: 1px solid #3b4950; border-radius: 99px; color: #b8c4c8; background: transparent; }
+    .b-line-button::before { width: 10px; height: 4px; border-radius: 9px; background: var(--route); content: ""; }
+    .b-line-button[aria-pressed="true"] { color: #07100e; background: var(--route); border-color: var(--route); }
+    .b-line-button[aria-pressed="true"]::before { background: #07100e; }
+    .b-map { position: relative; margin: 0 10px; padding: 18px 12px 14px; border: 1px solid #334149; border-radius: 12px; background: #11191e; }
+    .b-map-head { display: flex; justify-content: space-between; margin: 0 3px 16px; }
+    .b-map-head h2 { margin: 0; font-size: 17px; }
+    .b-map-head span { color: #84949b; font: 600 11px/1 "Barlow Condensed", sans-serif; }
+    .b-cursor { position: absolute; top: 47px; bottom: 13px; left: 46%; z-index: 8; width: 1px; pointer-events: none; background: #f3d46d; box-shadow: 0 0 12px rgba(243, 212, 109, .45); }
+    .b-cursor::before { position: absolute; top: -9px; left: 50%; width: 7px; height: 7px; border-radius: 50%; background: #f3d46d; content: ""; transform: translate(-50%, -50%); }
+    .b-route { display: grid; min-height: 104px; grid-template-columns: 42px 1fr; align-items: center; gap: 5px; }
+    .b-route-id { display: grid; width: 34px; height: 26px; border: 2px solid var(--route); border-radius: 4px; place-items: center; color: var(--route); font: 700 12px/1 "Barlow Condensed", sans-serif; }
+    .b-route-body { position: relative; height: 80px; }
+    .b-route-name { position: absolute; top: 0; left: 0; color: #dfe8e5; font-size: 12px; font-weight: 700; }
+    .b-histogram { position: absolute; right: 0; bottom: 0; left: 0; display: flex; height: 57px; align-items: end; gap: 2px; border-bottom: 1px solid #3b484e; background: repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), rgba(114, 133, 141, .13) calc(25% - 1px) 25%); }
+    .b-histogram > i { min-width: 2px; height: var(--h); min-height: 3px; flex: 1; background: var(--route); opacity: .42; }
+    .b-peak { position: absolute; bottom: 0; left: var(--x); z-index: 4; width: 32px; height: 57px; padding: 0; border: 0; color: #091310; background: transparent; transform: translateX(-50%); }
+    .b-peak::before { position: absolute; bottom: 0; left: 50%; width: 13px; height: var(--peak); min-height: 18px; background: var(--route); box-shadow: 0 0 11px color-mix(in srgb, var(--route) 32%, transparent); content: ""; transform: translateX(-50%); }
+    .b-peak::after { position: absolute; bottom: calc(var(--peak) + 3px); left: 50%; min-width: 16px; padding: 2px 3px; border: 1px solid var(--route); border-radius: 2px; color: var(--route); background: #11191e; font: 700 8px/1 "Barlow Condensed", sans-serif; content: attr(data-rank); transform: translateX(-50%); }
+    .b-peak:hover::before,
+    .b-peak:focus-visible::before { filter: brightness(1.2); }
+    .b-peak.selected::before { outline: 2px solid #f3d46d; outline-offset: 2px; }
+    .b-peak.selected::after { border-color: #f3d46d; color: #11191e; background: #f3d46d; }
+    .b-evidence { margin: 10px; padding: 15px 16px 17px; border: 1px solid #3d4b52; border-radius: 12px; background: #141e23; }
+    .b-evidence-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .b-evidence-head b { color: #5bd3bd; font: 700 12px/1 "Barlow Condensed", sans-serif; letter-spacing: .12em; }
+    .b-evidence-head time { color: #f3d46d; font: 700 20px/1 "Barlow Condensed", sans-serif; }
+    .b-evidence blockquote { margin: 0; color: #f0f4f2; font-size: 14px; line-height: 1.55; }
+    .b-jump { display: flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; border: 0; border-radius: 7px; color: #08120f; background: #5bd3bd; font-weight: 700; }
+    .b-foot { display: flex; justify-content: space-between; padding: 10px 16px 15px; color: #77878e; font: 600 10px/1 "Barlow Condensed", sans-serif; letter-spacing: .08em; }
+
+    /* C — focused sweep */
+    .variant-c { color: #10151a; background: #fcfbf6; border: 1px solid #111820; }
+    .c-masthead { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 15px 16px 13px; border-bottom: 4px solid #111820; }
+    .c-masthead .wordmark { font-size: 22px; }
+    .c-mode { padding: 5px 8px; border: 1px solid #111820; font: 700 10px/1 "Barlow Condensed", sans-serif; letter-spacing: .14em; }
+    .c-video { padding: 17px 16px 12px; }
+    .c-video p { margin: 0 0 5px; color: #5f666a; font: 600 11px/1 "Barlow Condensed", sans-serif; letter-spacing: .08em; }
+    .c-video h1 { max-width: 340px; margin: 0; font-size: 26px; line-height: 1.08; letter-spacing: -.05em; }
+    .c-probe-tabs { display: flex; margin: 0 16px; border-top: 1px solid #111820; border-bottom: 1px solid #111820; }
+    .c-tab { min-height: 47px; flex: 1; padding: 0 5px; border: 0; border-right: 1px solid #111820; color: #5c6266; background: transparent; font-size: 11px; font-weight: 700; }
+    .c-tab:last-child { border-right: 0; }
+    .c-tab[aria-pressed="true"] { color: #fff; background: #111820; }
+    .c-focus { position: relative; padding: 20px 16px 14px; overflow: hidden; }
+    .c-focus-grid { display: grid; grid-template-columns: 103px 1fr; gap: 16px; align-items: start; }
+    .c-now { font: 700 47px/.85 "Barlow Condensed", sans-serif; letter-spacing: -.04em; }
+    .c-now span { display: block; margin-top: 10px; color: #e44e35; font-size: 12px; letter-spacing: .08em; }
+    .c-quote { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.35; letter-spacing: -.02em; }
+    .c-scale { display: flex; justify-content: space-between; margin: 23px 0 5px; color: #5f676a; font: 600 10px/1 "Barlow Condensed", sans-serif; }
+    .c-sweep { position: relative; display: flex; height: 164px; align-items: end; gap: 3px; border-top: 1px solid #c4c4bd; border-bottom: 1px solid #111820; background: repeating-linear-gradient(90deg, transparent 0 calc(20% - 1px), #deddd5 calc(20% - 1px) 20%); }
+    .c-sweep i { flex: 1; height: var(--h); min-height: 4px; background: #178d78; }
+    .c-sweep i:nth-child(3n) { background: #111820; }
+    .c-cursor { position: absolute; top: -10px; bottom: -1px; left: 43%; width: 3px; background: #e44e35; }
+    .c-cursor::before { position: absolute; top: 0; left: 50%; width: 13px; height: 13px; border: 3px solid #e44e35; border-radius: 50%; background: #fcfbf6; content: ""; transform: translate(-50%, -50%); }
+    .c-mark { position: absolute; bottom: 10px; left: var(--x); width: 28px; height: 28px; padding: 0; border: 2px solid #111820; border-radius: 0; color: #111820; background: #f6ce58; font: 700 11px/1 "Barlow Condensed", sans-serif; transform: translateX(-50%); }
+    .c-mark.selected { color: #fff; background: #111820; }
+    .c-result-list { margin: 0 16px; border-top: 4px solid #111820; }
+    .c-result { display: grid; width: 100%; min-height: 58px; grid-template-columns: 43px 1fr auto; align-items: center; gap: 9px; padding: 0; border: 0; border-bottom: 1px solid #a9aaa5; color: inherit; background: transparent; text-align: left; }
+    .c-rank { font: 700 25px/1 "Barlow Condensed", sans-serif; }
+    .c-result strong { display: block; font-size: 12px; }
+    .c-result small { display: block; margin-top: 3px; color: #666d70; }
+    .c-score { padding: 4px 6px; color: #fff; background: #178d78; font: 700 12px/1 "Barlow Condensed", sans-serif; }
+    .c-composer { margin: 15px 16px 18px; }
+    .c-composer label { display: block; margin-bottom: 6px; font-size: 11px; font-weight: 700; }
+    .c-composer-row { display: flex; min-height: 46px; border: 2px solid #111820; }
+    .c-composer input { min-width: 0; flex: 1; padding: 0 10px; border: 0; background: transparent; }
+    .c-composer button { width: 44px; border: 0; color: #fff; background: #111820; }
+
+    .prototype-switcher {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      z-index: 100;
+      display: grid;
+      min-width: min(440px, calc(100vw - 24px));
+      grid-template-columns: 48px 1fr 48px;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, .18);
+      border-radius: 14px;
+      color: #f5f7f5;
+      background: #10171b;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, .3);
+      transform: translateX(-50%);
+    }
+    .prototype-switcher > button { display: grid; width: 48px; height: 54px; border: 0; place-items: center; color: #fff; background: transparent; }
+    .prototype-switcher > button:hover { background: #243139; }
+    .switch-copy { min-width: 0; padding: 7px 10px; text-align: center; }
+    .switch-copy strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .switch-copy small { display: block; margin-top: 3px; overflow: hidden; color: #93a1a7; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+
+    @media (max-width: 430px) {
+      .prototype-context span { display: none; }
+      .stage { padding-right: 0; padding-left: 0; }
+      .variant { width: 100%; border-right: 0; border-left: 0; box-shadow: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- PROTOTYPE ONLY: Three side-panel directions, switchable with ?variant=A|B|C. -->
+  <div class="prototype-context"><strong>PROTOTYPE</strong><span>同一数据 · 三种信息结构 · 不连接真实分析</span></div>
+
+  <main class="stage">
+    <section class="variant variant-a" aria-label="方向 A：时刻中枢">
+      <header class="a-masthead">
+        <div class="wordmark">
+          <svg class="wave-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 13h4l2-7 4 13 3-9 2 3h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          CueWave
+        </div>
+        <div class="a-clock mono">MON 09:41</div>
+      </header>
+
+      <section class="a-ticket">
+        <div class="a-ticket-top">
+          <div><p class="eyebrow">Now watching · CW 1842</p><h1>为什么我们会被算法影响？</h1></div>
+          <span class="a-video-code">YOUTUBE</span>
+        </div>
+        <div class="a-meta"><span>总时长<b>18:42</b></span><span>分析范围<b>100%</b></span><span>语义线路<b>03</b></span></div>
+      </section>
+
+      <section class="a-search">
+        <label for="a-input">下一条语义线路想寻找什么？</label>
+        <div class="a-search-box"><input id="a-input" placeholder="例如：出现反直觉知识的片段"><button aria-label="添加语义探针"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+      </section>
+
+      <nav class="a-routes" aria-label="语义探针">
+        <button class="a-route-tab" style="--route:#178d78" aria-pressed="true"><span class="route-code">P01</span><i class="route-swatch"></i><span class="route-name">知识科普</span><span class="route-stat">3 HOT</span></button>
+        <button class="a-route-tab" style="--route:#ec6445" aria-pressed="false"><span class="route-code">P02</span><i class="route-swatch"></i><span class="route-name">幽默程度</span><span class="route-stat">2 HOT</span></button>
+        <button class="a-route-tab" style="--route:#8470cf" aria-pressed="false"><span class="route-code">P03</span><i class="route-swatch"></i><span class="route-name">推广信息</span><span class="route-stat">1 HOT</span></button>
+      </nav>
+
+      <section class="a-board">
+        <div class="a-board-head"><h2>语义时刻板</h2><span>已就绪 · 点击站点跳转</span></div>
+        <div class="time-ruler"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:42</span></div>
+        <div class="a-chart">
+          <div class="a-cursor"></div>
+          <div class="a-track" style="--route:#178d78">
+            <div class="a-track-label"><b>知识科普</b><span>P01 · NOUL</span></div>
+            <div class="histogram"><i style="--h:12%"></i><i style="--h:30%"></i><i style="--h:78%"></i><i style="--h:96%"></i><i style="--h:42%"></i><i style="--h:18%"></i><i style="--h:66%"></i><i style="--h:34%"></i><i style="--h:88%"></i><i style="--h:46%"></i><i style="--h:72%"></i><i style="--h:31%"></i><button class="a-stop selected hotspot-control" style="--x:22%;--route:#178d78" data-time="04:18" data-probe="知识科普" data-quote="算法并不是理解你，它只是在预测下一秒你最可能继续看的内容。">1</button><button class="a-stop hotspot-control" style="--x:62%;--route:#178d78" data-time="11:32" data-probe="知识科普" data-quote="不断重复的相似内容，会逐渐改变你对正常分布的判断。">2</button></div>
+          </div>
+          <div class="a-track" style="--route:#ec6445">
+            <div class="a-track-label"><b>幽默程度</b><span>P02 · SCORE</span></div>
+            <div class="histogram"><i style="--h:8%"></i><i style="--h:18%"></i><i style="--h:28%"></i><i style="--h:20%"></i><i style="--h:82%"></i><i style="--h:64%"></i><i style="--h:19%"></i><i style="--h:22%"></i><i style="--h:30%"></i><i style="--h:61%"></i><i style="--h:18%"></i><i style="--h:25%"></i><button class="a-stop hotspot-control" style="--x:39%;--route:#ec6445" data-time="07:16" data-probe="幽默程度" data-quote="所以推荐系统最了解你的时刻，可能正是你凌晨两点不想承认的那一刻。">1</button></div>
+          </div>
+          <div class="a-track" style="--route:#8470cf">
+            <div class="a-track-label"><b>推广信息</b><span>P03 · NOUL</span></div>
+            <div class="histogram"><i style="--h:6%"></i><i style="--h:7%"></i><i style="--h:9%"></i><i style="--h:8%"></i><i style="--h:10%"></i><i style="--h:8%"></i><i style="--h:12%"></i><i style="--h:11%"></i><i style="--h:86%"></i><i style="--h:73%"></i><i style="--h:9%"></i><i style="--h:7%"></i><button class="a-stop hotspot-control" style="--x:76%;--route:#8470cf" data-time="14:13" data-probe="推广信息" data-quote="在继续之前，感谢本期合作伙伴对频道的支持。">1</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="a-evidence">
+        <div class="a-evidence-time"><span data-evidence-time>04:18</span><small data-evidence-probe>P01 / 知识科普</small></div>
+        <div><p data-evidence-quote>算法并不是理解你，它只是在预测下一秒你最可能继续看的内容。</p><button class="a-action">跳转并核对<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2"/></svg></button></div>
+      </section>
+    </section>
+
+    <section class="variant variant-b" aria-label="方向 B：线路中控">
+      <header class="b-masthead">
+        <div class="wordmark"><svg class="wave-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 13h4l2-7 4 13 3-9 2 3h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>CueWave</div>
+        <span class="b-live">ANALYSIS READY</span>
+      </header>
+      <section class="b-video"><div><p>YT · b3Z9Kq2LmN8 · 18:42</p><h1>为什么我们会被算法影响？</h1><p>当前游标跨越所有语义线路</p></div><time class="b-time">08:03</time></section>
+      <div class="b-command"><input aria-label="新增语义线路" placeholder="新增一条语义线路…"><button aria-label="添加语义线路"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2"/></svg></button></div>
+      <nav class="b-lines" aria-label="线路选择"><button class="b-line-button" style="--route:#5bd3bd" aria-pressed="true">P01 知识科普</button><button class="b-line-button" style="--route:#ff7658" aria-pressed="false">P02 幽默</button><button class="b-line-button" style="--route:#9d8aec" aria-pressed="false">P03 推广</button></nav>
+
+      <section class="b-map">
+        <div class="b-map-head"><h2>语义线路</h2><span>00:00 — 18:42</span></div>
+        <div class="b-cursor"></div>
+        <div class="b-route" style="--route:#5bd3bd"><span class="b-route-id">P01</span><div class="b-route-body"><span class="b-route-name">知识科普 · 3 个热点</span><div class="b-histogram"><i style="--h:14%"></i><i style="--h:21%"></i><i style="--h:34%"></i><i style="--h:86%"></i><i style="--h:67%"></i><i style="--h:28%"></i><i style="--h:18%"></i><i style="--h:39%"></i><i style="--h:48%"></i><i style="--h:24%"></i><i style="--h:33%"></i><i style="--h:91%"></i><i style="--h:55%"></i><i style="--h:31%"></i><i style="--h:43%"></i><i style="--h:84%"></i><i style="--h:51%"></i><i style="--h:22%"></i><button class="b-peak hotspot-control selected" style="--x:23%;--peak:86%" data-rank="01" aria-label="知识科普热点 1，04:18" data-time="04:18" data-probe="P01 / 知识科普" data-quote="算法并不是理解你，它只是在预测下一秒你最可能继续看的内容。"></button><button class="b-peak hotspot-control" style="--x:62%;--peak:91%" data-rank="02" aria-label="知识科普热点 2，11:32" data-time="11:32" data-probe="P01 / 知识科普" data-quote="不断重复的相似内容，会逐渐改变你对正常分布的判断。"></button><button class="b-peak hotspot-control" style="--x:86%;--peak:84%" data-rank="03" aria-label="知识科普热点 3，16:05" data-time="16:05" data-probe="P01 / 知识科普" data-quote="平台通过注意力获得广告收入，因此停留时间本身就是目标。"></button></div></div></div>
+        <div class="b-route" style="--route:#ff7658"><span class="b-route-id">P02</span><div class="b-route-body"><span class="b-route-name">幽默程度 · 2 个热点</span><div class="b-histogram"><i style="--h:10%"></i><i style="--h:19%"></i><i style="--h:15%"></i><i style="--h:24%"></i><i style="--h:31%"></i><i style="--h:42%"></i><i style="--h:88%"></i><i style="--h:47%"></i><i style="--h:21%"></i><i style="--h:17%"></i><i style="--h:37%"></i><i style="--h:26%"></i><i style="--h:81%"></i><i style="--h:52%"></i><i style="--h:33%"></i><i style="--h:20%"></i><i style="--h:16%"></i><i style="--h:12%"></i><button class="b-peak hotspot-control" style="--x:39%;--peak:88%" data-rank="01" aria-label="幽默程度热点 1，07:16" data-time="07:16" data-probe="P02 / 幽默程度" data-quote="所以推荐系统最了解你的时刻，可能正是你凌晨两点不想承认的那一刻。"></button><button class="b-peak hotspot-control" style="--x:69%;--peak:81%" data-rank="02" aria-label="幽默程度热点 2，12:55" data-time="12:55" data-probe="P02 / 幽默程度" data-quote="你以为自己逃出了信息茧房，其实只是换了一个颜色。"></button></div></div></div>
+        <div class="b-route" style="--route:#9d8aec"><span class="b-route-id">P03</span><div class="b-route-body"><span class="b-route-name">推广信息 · 1 个热点</span><div class="b-histogram"><i style="--h:9%"></i><i style="--h:14%"></i><i style="--h:12%"></i><i style="--h:17%"></i><i style="--h:20%"></i><i style="--h:16%"></i><i style="--h:19%"></i><i style="--h:13%"></i><i style="--h:21%"></i><i style="--h:18%"></i><i style="--h:24%"></i><i style="--h:15%"></i><i style="--h:31%"></i><i style="--h:89%"></i><i style="--h:38%"></i><i style="--h:22%"></i><i style="--h:18%"></i><i style="--h:12%"></i><button class="b-peak hotspot-control" style="--x:76%;--peak:89%" data-rank="01" aria-label="推广信息热点 1，14:13" data-time="14:13" data-probe="P03 / 推广信息" data-quote="在继续之前，感谢本期合作伙伴对频道的支持。"></button></div></div></div>
+      </section>
+
+      <section class="b-evidence"><div class="b-evidence-head"><b data-evidence-probe>P01 / 知识科普</b><time data-evidence-time>04:18</time></div><blockquote data-evidence-quote>算法并不是理解你，它只是在预测下一秒你最可能继续看的内容。</blockquote><button class="b-jump"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>跳转并核对</button></section>
+      <footer class="b-foot"><span>3 HISTOGRAMS · 6 HOTSPOTS</span><span>CUE CURSOR 43%</span></footer>
+    </section>
+
+    <section class="variant variant-c" aria-label="方向 C：聚焦扫描">
+      <header class="c-masthead"><div class="wordmark">CueWave</div><span class="c-mode">FOCUS MODE</span></header>
+      <section class="c-video"><p>VIDEO / 18:42 / ANALYZED</p><h1>为什么我们会被算法影响？</h1></section>
+      <nav class="c-probe-tabs" aria-label="选择聚焦探针"><button class="c-tab" aria-pressed="true">知识科普</button><button class="c-tab" aria-pressed="false">幽默程度</button><button class="c-tab" aria-pressed="false">推广信息</button></nav>
+      <section class="c-focus">
+        <div class="c-focus-grid"><div class="c-now"><span data-evidence-time>04:18</span><span data-evidence-probe>知识科普 · 96%</span></div><blockquote class="c-quote" data-evidence-quote>算法并不是理解你，它只是在预测下一秒你最可能继续看的内容。</blockquote></div>
+        <div class="c-scale"><span>00:00</span><span>当前游标 08:03</span><span>18:42</span></div>
+        <div class="c-sweep"><i style="--h:11%"></i><i style="--h:23%"></i><i style="--h:42%"></i><i style="--h:91%"></i><i style="--h:66%"></i><i style="--h:29%"></i><i style="--h:19%"></i><i style="--h:48%"></i><i style="--h:30%"></i><i style="--h:18%"></i><i style="--h:69%"></i><i style="--h:96%"></i><i style="--h:41%"></i><i style="--h:57%"></i><i style="--h:28%"></i><i style="--h:84%"></i><i style="--h:61%"></i><i style="--h:33%"></i><span class="c-cursor"></span><button class="c-mark hotspot-control selected" style="--x:22%" data-time="04:18" data-probe="知识科普 · 96%" data-quote="算法并不是理解你，它只是在预测下一秒你最可能继续看的内容。">01</button><button class="c-mark hotspot-control" style="--x:62%" data-time="11:32" data-probe="知识科普 · 93%" data-quote="不断重复的相似内容，会逐渐改变你对正常分布的判断。">02</button><button class="c-mark hotspot-control" style="--x:86%" data-time="16:05" data-probe="知识科普 · 88%" data-quote="平台通过注意力获得广告收入，因此停留时间本身就是目标。">03</button></div>
+      </section>
+      <section class="c-result-list" aria-label="热点列表"><button class="c-result hotspot-control" data-time="04:18" data-probe="知识科普 · 96%" data-quote="算法并不是理解你，它只是在预测下一秒你最可能继续看的内容。"><span class="c-rank">01</span><span><strong>预测不是理解</strong><small>04:18 — 04:30</small></span><span class="c-score">96</span></button><button class="c-result hotspot-control" data-time="11:32" data-probe="知识科普 · 93%" data-quote="不断重复的相似内容，会逐渐改变你对正常分布的判断。"><span class="c-rank">02</span><span><strong>重复如何改变判断</strong><small>11:32 — 11:44</small></span><span class="c-score">93</span></button><button class="c-result hotspot-control" data-time="16:05" data-probe="知识科普 · 88%" data-quote="平台通过注意力获得广告收入，因此停留时间本身就是目标。"><span class="c-rank">03</span><span><strong>注意力就是商业目标</strong><small>16:05 — 16:17</small></span><span class="c-score">88</span></button></section>
+      <div class="c-composer"><label for="c-input">切换问题，而不是离开时间轴</label><div class="c-composer-row"><input id="c-input" placeholder="输入新的语义探针…"><button aria-label="添加语义探针"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2"/></svg></button></div></div>
+    </section>
+  </main>
+
+  <div class="prototype-switcher" aria-label="样板切换器">
+    <button id="previous" aria-label="上一个样板"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="switch-copy" aria-live="polite"><strong id="variant-name"></strong><small id="variant-state"></small></div>
+    <button id="next" aria-label="下一个样板"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+
+  <script>
+    const variants = [
+      { key: "A", name: "A — 时刻中枢", state: "连续票据 · 三条线路 · 游标 08:03" },
+      { key: "B", name: "B — 线路中控", state: "暗色 histogram · 六个热点 · 游标 43%" },
+      { key: "C", name: "C — 聚焦扫描", state: "单探针聚焦 · 三个热点 · 知识科普" }
+    ];
+    const name = document.querySelector("#variant-name");
+    const state = document.querySelector("#variant-state");
+
+    function setVariant(key) {
+      const nextVariant = variants.find((item) => item.key === key) || variants[0];
+      document.documentElement.dataset.variant = nextVariant.key;
+      const url = new URL(location.href);
+      url.searchParams.set("variant", nextVariant.key);
+      history.replaceState(null, "", url);
+      name.textContent = nextVariant.name;
+      state.textContent = nextVariant.state;
+      document.title = `CueWave UI 样板 · ${nextVariant.name}`;
+      window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    }
+
+    function cycle(step) {
+      const index = variants.findIndex((item) => item.key === document.documentElement.dataset.variant);
+      setVariant(variants[(index + step + variants.length) % variants.length].key);
+    }
+
+    document.querySelector("#previous").addEventListener("click", () => cycle(-1));
+    document.querySelector("#next").addEventListener("click", () => cycle(1));
+    document.addEventListener("keydown", (event) => {
+      if (["INPUT", "TEXTAREA"].includes(event.target.tagName) || event.target.isContentEditable) return;
+      if (event.key === "ArrowLeft") cycle(-1);
+      if (event.key === "ArrowRight") cycle(1);
+    });
+
+    document.querySelectorAll(".hotspot-control").forEach((control) => control.addEventListener("click", () => {
+      const variant = control.closest(".variant");
+      variant.querySelectorAll(".hotspot-control.selected").forEach((item) => item.classList.remove("selected"));
+      control.classList.add("selected");
+      variant.querySelectorAll("[data-evidence-time]").forEach((item) => { item.textContent = control.dataset.time; });
+      variant.querySelectorAll("[data-evidence-probe]").forEach((item) => { item.textContent = control.dataset.probe; });
+      variant.querySelectorAll("[data-evidence-quote]").forEach((item) => { item.textContent = control.dataset.quote; });
+    }));
+
+    document.querySelectorAll(".a-route-tab, .b-line-button, .c-tab").forEach((control) => control.addEventListener("click", () => {
+      const group = control.parentElement;
+      group.querySelectorAll("[aria-pressed]").forEach((item) => item.setAttribute("aria-pressed", String(item === control)));
+    }));
+
+    setVariant(document.documentElement.dataset.variant);
+  </script>
+</body>
+</html>

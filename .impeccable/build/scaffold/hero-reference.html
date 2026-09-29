@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Scaffold reference: time-boarding-pass.webp</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double:wght@400&family=Rajdhani:wght@300&display=swap">
+  <link rel="stylesheet" href="layout.css">
+  <style>html,body{margin:0}body{background:#f7f7f0}.region{box-sizing:border-box}.region.text p{white-space:pre-wrap}</style>
+</head>
+<body>
+<!-- Reference only. Every region sits at its measured box inside a comp-aspect frame. Take the boxes (layout.css), keep your own semantic structure. -->
+<main class="comp-frame" style="max-width:848px">
+  <div class="r-masthead region chrome" data-region="masthead"><!-- navy masthead --></div>
+  <div class="r-probe-zone region chrome" data-region="probe-zone"><!-- ticket body behind probe workflow --></div>
+  <div class="r-timeline-zone region chrome" data-region="timeline-zone"><!-- timeline section with rule guides --></div>
+  <div class="r-hotspot-zone region chrome" data-region="hotspot-zone"><!-- ranked hotspot table section --></div>
+  <div class="r-brand region text" data-region="brand"><!-- CueWave wordmark --><p style="font-size:var(--r-brand-font);line-height:1.05;margin:0">brand</p></div>
+  <div class="r-masthead-meta region text" data-region="masthead-meta"><!-- tool title and version --><p style="font-size:var(--r-masthead-meta-font);line-height:1.05;margin:0">masthead-meta</p></div>
+  <div class="r-video-ticket region chrome" data-region="video-ticket"><!-- current video ticket row --></div>
+  <div class="r-video-title region text" data-region="video-title"><!-- current video heading and title --><p style="font-size:var(--r-video-title-font);line-height:1.05;margin:0">video-title</p></div>
+  <div class="r-video-facts region text" data-region="video-facts"><!-- duration source and demo badge --><p style="font-size:var(--r-video-facts-font);line-height:1.05;margin:0">video-facts</p></div>
+  <div class="r-video-id region text" data-region="video-id"><!-- video id and loaded time --><p style="font-size:var(--r-video-id-font);line-height:1.05;margin:0">video-id</p></div>
+  <div class="r-probe-entry-label region text" data-region="probe-entry-label"><!-- add semantic probe heading --><p style="font-size:var(--r-probe-entry-label-font);font-family:var(--r-probe-entry-label-family),sans-serif;font-weight:var(--r-probe-entry-label-weight);line-height:1.05;margin:0">probe-entry-label</p></div>
+  <div class="r-probe-entry region control" data-region="probe-entry"><!-- dominant probe input and add button: match the control's lettering and visible shape to the crop (comp-spec.mjs --crop probe-entry); a control need not have button chrome --></div>
+  <div class="r-probe-examples region text" data-region="probe-examples"><!-- example probes --><p style="font-size:var(--r-probe-examples-font);line-height:1.05;margin:0">probe-examples</p></div>
+  <div class="r-active-probes-heading region text" data-region="active-probes-heading"><!-- current probes heading --><p style="font-size:var(--r-active-probes-heading-font);line-height:1.05;margin:0">active-probes-heading</p></div>
+  <div class="r-probe-tickets region control" data-region="probe-tickets"><!-- three active probe cards: match the control's lettering and visible shape to the crop (comp-spec.mjs --crop probe-tickets); a control need not have button chrome --></div>
+  <div class="r-analyze-action region control" data-region="analyze-action"><!-- primary analyze button: match the control's lettering and visible shape to the crop (comp-spec.mjs --crop analyze-action); a control need not have button chrome --></div>
+  <div class="r-ready-state region text" data-region="ready-state"><!-- caption readiness --><p style="font-size:var(--r-ready-state-font);line-height:1.05;margin:0">ready-state</p></div>
+  <div class="r-timeline-heading region text" data-region="timeline-heading"><!-- timeline heading and duration --><p style="font-size:var(--r-timeline-heading-font);line-height:1.05;margin:0">timeline-heading</p></div>
+  <div class="r-timeline-axis region text" data-region="timeline-axis"><!-- time ticks and peak labels --><p style="font-size:var(--r-timeline-axis-font);line-height:1.05;margin:0">timeline-axis</p></div>
+  <div class="r-timeline-histograms region control" data-region="timeline-histograms"><!-- three aligned semantic histograms: match the control's lettering and visible shape to the crop (comp-spec.mjs --crop timeline-histograms); a control need not have button chrome --></div>
+  <div class="r-hotspot-heading region text" data-region="hotspot-heading"><!-- top hotspots heading and count --><p style="line-height:1.05;margin:0">hotspot-heading</p></div>
+  <div class="r-hotspot-table-head region text" data-region="hotspot-table-head"><!-- hotspot column labels --><p style="line-height:1.05;margin:0">hotspot-table-head</p></div>
+  <div class="r-hotspot-rows region control" data-region="hotspot-rows"><!-- ranked hotspot rows and jump buttons: match the control's lettering and visible shape to the crop (comp-spec.mjs --crop hotspot-rows); a control need not have button chrome --></div>
+  <div class="r-utility-strip region chrome" data-region="utility-strip"><!-- perforated secondary tools footer --></div>
+  <div class="r-utility-text region text" data-region="utility-text"><!-- caption, probe definition, history, usage --><p style="font-size:var(--r-utility-text-font);font-family:var(--r-utility-text-family),sans-serif;font-weight:var(--r-utility-text-weight);line-height:1.05;margin:0">utility-text</p></div>
+</main>
+</body>
+</html>

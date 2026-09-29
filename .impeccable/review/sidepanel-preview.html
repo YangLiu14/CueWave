@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="gate">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CueWave theme review</title>
+  <link rel="stylesheet" href="../../extension/sidepanel.css">
+  <link rel="stylesheet" href="../../extension/manual.css">
+  <style>
+    body { width: 100%; }
+    .demo-bars { display: grid; grid-template-columns: repeat(18, 1fr); align-items: end; height: 100%; gap: 1px; }
+    .demo-bars i { display: block; min-height: 5px; background: currentColor; opacity: .88; }
+    .preview-badge { color: var(--accent); font: 700 10px/1 ui-monospace, monospace; }
+    html.comp-capture { width: 424px; }
+    html.comp-capture body { width: 424px; transform: scale(2); transform-origin: 0 0; }
+    html.comp-capture .masthead, html.comp-capture main { width: 424px; max-width: none; }
+    html.preview-narrow body { width: 320px; margin: 0 auto; }
+    html.preview-narrow .masthead, html.preview-narrow main { width: 320px; max-width: none; }
+    html.preview-narrow .brand-mark { display: none; }
+    html.preview-narrow main { padding-right: 7px; padding-left: 7px; }
+    html.preview-narrow main > .notice, html.preview-narrow .probe-workflow > .hint { display: none; }
+    html.preview-narrow .ticket-section { padding-right: 11px; padding-left: 11px; }
+    html.preview-narrow .probe-grid { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; }
+    html.preview-narrow .probe-row { flex: 0 0 170px; }
+    html.preview-narrow .analysis-command { grid-template-columns: 1fr; }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="#"><span class="brand-mark">CW</span><span>CueWave</span></a>
+    <div class="theme-switch" role="group" aria-label="界面主题">
+      <button id="theme-gate" aria-pressed="true">登机牌</button><button id="theme-transit" aria-pressed="false">换乘图</button>
+    </div>
+  </header>
+  <main>
+    <section class="video-ticket ticket-section">
+      <div class="video-copy"><span class="section-label">当前视频</span><h1>为什么我们会被算法影响？</h1><div class="mono muted">VIDEO ID · b3Z9Kq2LmN8 · 18:42</div></div><span class="source-stamp">YOUTUBE</span>
+    </section>
+    <div class="notice">已就绪，可以开始分析。</div>
+    <section class="probe-workflow ticket-section">
+      <div class="section-head"><h2>新增语义探针</h2><span class="counter mono">3 / 5</span></div>
+      <form class="probe-form"><input id="probe-input" placeholder="输入你想在视频里寻找的内容…"><button class="add-probe" type="button">＋ 添加</button></form>
+      <p class="hint">快速添加一个判断维度，CueWave 会沿同一条时间轴并行分析。</p>
+      <div class="seed-strip"><span>例如</span><button class="seed">知识科普</button><button class="seed">幽默程度</button><button class="seed">推广信息</button></div>
+      <div class="active-probes-head"><h3>当前探针</h3><span class="muted">显示开关只影响可视化</span></div>
+      <div class="probe-grid">
+        <div class="probe-row" style="border-top-color:#218f7d"><div class="probe-left"><span class="dot" style="background:#218f7d"></span><div>知识科普<small>3 个热点 · 已显示</small></div></div><div class="probe-actions"><label class="probe-visibility"><input type="checkbox" checked> 显示</label><button>修改</button></div></div>
+        <div class="probe-row" style="border-top-color:#e05f3d"><div class="probe-left"><span class="dot" style="background:#e05f3d"></span><div>幽默程度<small>2 个热点 · 已显示</small></div></div><div class="probe-actions"><label class="probe-visibility"><input type="checkbox" checked> 显示</label><button>修改</button></div></div>
+        <div class="probe-row" style="border-top-color:#8771d1"><div class="probe-left"><span class="dot" style="background:#8771d1"></span><div>推广信息<small>1 个热点 · 已显示</small></div></div><div class="probe-actions"><label class="probe-visibility"><input type="checkbox" checked> 显示</label><button>修改</button></div></div>
+      </div>
+      <div class="analysis-command"><button class="primary">▶ 分析视频</button><div class="analysis-ready"><span class="state-dot">已就绪，可以开始分析</span><span class="muted">视频内容已解析</span></div></div>
+      <div class="progress"><div style="width:100%"></div></div><p class="hint">54 / 54 个探针窗口完成。</p>
+    </section>
+    <section class="timeline ticket-section">
+      <div class="section-head"><h2>语义时间轴</h2><span class="mono muted">00:00 — 18:42</span></div>
+      <div class="legend"><span><i class="pending"></i>未分析</span><span><i class="no-text"></i>无内容</span><span><i class="failed"></i>失败</span><span><i class="low"></i>低值</span></div>
+      <div class="track selected-track" style="--probe-color:#218f7d"><div class="track-head"><button class="selected">● 知识科普</button><small>命题概率 / %</small></div><button class="cells" type="button" aria-label="知识科普时间轴；点击柱状条跳转"><div class="demo-bars" style="color:#218f7d"><i style="height:16%"></i><i style="height:28%"></i><i style="height:45%"></i><i style="height:93%"></i><i style="height:58%"></i><i style="height:31%"></i><i style="height:22%"></i><i style="height:51%"></i><i style="height:37%"></i><i style="height:19%"></i><i style="height:73%"></i><i style="height:96%"></i><i style="height:42%"></i><i style="height:60%"></i><i style="height:29%"></i><i style="height:88%"></i><i style="height:64%"></i><i style="height:33%"></i></div><span class="station" style="left:20%"></span><span class="station" style="left:64%"></span><span class="station" style="left:87%"></span></button></div>
+      <div class="track" style="--probe-color:#e05f3d"><div class="track-head"><button>● 幽默程度</button><small>强度 / 100</small></div><button class="cells" type="button" aria-label="幽默程度时间轴；点击柱状条跳转"><div class="demo-bars" style="color:#e05f3d"><i style="height:12%"></i><i style="height:20%"></i><i style="height:35%"></i><i style="height:18%"></i><i style="height:63%"></i><i style="height:81%"></i><i style="height:26%"></i><i style="height:19%"></i><i style="height:34%"></i><i style="height:20%"></i><i style="height:29%"></i><i style="height:61%"></i><i style="height:24%"></i><i style="height:15%"></i><i style="height:52%"></i><i style="height:25%"></i><i style="height:17%"></i><i style="height:31%"></i></div><span class="station" style="left:31%"></span><span class="station" style="left:65%"></span></button></div>
+      <div class="track" style="--probe-color:#8771d1"><div class="track-head"><button>● 推广信息</button><small>命题概率 / %</small></div><button class="cells" type="button" aria-label="推广信息时间轴；点击柱状条跳转"><div class="demo-bars" style="color:#8771d1"><i style="height:8%"></i><i style="height:10%"></i><i style="height:12%"></i><i style="height:11%"></i><i style="height:9%"></i><i style="height:8%"></i><i style="height:14%"></i><i style="height:11%"></i><i style="height:9%"></i><i style="height:13%"></i><i style="height:8%"></i><i style="height:10%"></i><i style="height:12%"></i><i style="height:79%"></i><i style="height:92%"></i><i style="height:28%"></i><i style="height:11%"></i><i style="height:9%"></i></div><span class="station" style="left:80%"></span></button></div>
+    </section>
+    <section class="rankings ticket-section">
+      <div class="section-head"><h2>最高热点</h2><span class="muted">知识科普 · 按时间排序</span></div>
+      <div class="rank-section" style="--probe-color:#218f7d"><h4>知识科普 · 命题概率最高</h4>
+        <button class="hotspot"><span>#1 · 04:18–04:30 · 算法通过多层模型预测你的兴趣…</span><span>96%</span></button>
+        <button class="hotspot"><span>#2 · 11:32–11:44 · 当相似内容不断出现时…</span><span>93%</span></button>
+        <button class="hotspot"><span>#3 · 16:05–16:17 · 平台通过注意力获得广告收入…</span><span>88%</span></button>
+      </div>
+    </section>
+    <section class="evidence ticket-section"><div class="section-head"><h2>原句核对</h2><span class="preview-badge">04:18</span></div><div id="evidence"><div class="quote">算法通过多层模型预测你的兴趣，本质上是在估算下一秒你最可能继续看的内容。</div></div></section>
+    <section class="utility-zone"><details class="utility-drawer"><summary><span>视频解析与播放器</span><span class="summary-action">设置</span></summary></details><details class="utility-drawer"><summary><span>历史记录</span><span class="summary-action">查看</span></summary></details><div class="live-utility"><div><strong>实时判断</strong><span>在独立标签页使用麦克风</span></div><button>打开 ↗</button></div></section>
+  </main>
+  <script>
+    const gate = document.querySelector('#theme-gate'); const transit = document.querySelector('#theme-transit');
+    function useTheme(theme) { document.documentElement.dataset.theme = theme; gate.setAttribute('aria-pressed', theme === 'gate'); transit.setAttribute('aria-pressed', theme === 'transit'); }
+    gate.addEventListener('click', () => useTheme('gate')); transit.addEventListener('click', () => useTheme('transit'));
+    if (location.search.includes('theme=transit')) useTheme('transit');
+    if (location.search.includes('density=2')) document.documentElement.classList.add('comp-capture');
+    if (location.search.includes('narrow=1')) document.documentElement.classList.add('preview-narrow');
+  </script>
+</body>
+</html>

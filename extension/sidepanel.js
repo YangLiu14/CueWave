@@ -1,12 +1,24 @@
-import { parseCaptions, parseVideoExport, normalizeSegments, buildWindows, buildVideoExport, adCandidateSegments, buildAdBoundaries, estimateAnalysisWork, hasReusableReading, hasPendingAnalysis, isProbeVisible, selectedVisibleProbeId, JEV_INPUT_USD_PER_MILLION, subtitleCoverageMs, rankHotspots, progress, fingerprint, MODEL, WINDOW_MS } from "./core.js";
+import { parseCaptions, parseVideoExport, normalizeSegments, buildWindows, buildVideoExport, adCandidateSegments, buildAdBoundaries, estimateAnalysisWork, hasReusableReading, hasPendingAnalysis, isProbeVisible, selectedVisibleProbeId, JEV_INPUT_USD_PER_MILLION, rankHotspots, progress, fingerprint, MODEL, WINDOW_MS } from "./core.js";
 
 const $ = (id) => document.getElementById(id);
 const COLORS = ["#5ddbc8", "#f4b860", "#a895f2", "#e879a2", "#8eb7f3"];
 const API = "http://127.0.0.1:4318";
+const THEME_KEY = "cuewave:theme";
 const state = { tabId: null, videoId: null, durationMs: 0, segments: [], source: "", probes: [], options: null, revisingId: null, windows: [], readings: [], adCueReadings: [], adBoundaries: [], usage: { inputTokens: 0, requests: 0, reportedRequests: 0 }, history: [], selectedId: null, subtitleEnabled: false, cacheWarning: false, resumeOnOpen: false, running: false, cancelled: false, helper: null };
 let transcriptEpoch = 0;
 let checkSequence = 0;
 const format = (ms) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms % 60000 / 1000)).padStart(2, "0")}`;
+function applyTheme(value) {
+  const theme = value === "transit" ? "transit" : "gate";
+  if (document.documentElement?.dataset) document.documentElement.dataset.theme = theme;
+  $("theme-gate").setAttribute("aria-pressed", String(theme === "gate"));
+  $("theme-transit").setAttribute("aria-pressed", String(theme === "transit"));
+  return theme;
+}
+async function chooseTheme(theme) {
+  const value = applyTheme(theme);
+  await chrome.storage.local.set({ [THEME_KEY]: value });
+}
 function status(message, error = false) { $("status").textContent = message; $("status").classList.toggle("error", error); }
 const playerIssues = new Map();
 function playerStatus(area, message = "") {
@@ -200,6 +212,7 @@ function renderProbes() {
   const box = $("probes"); box.replaceChildren();
   for (const probe of state.probes) {
     const row = document.createElement("div"); row.className = "probe-row";
+    row.style.borderTopColor = probe.color;
     row.classList.toggle("hidden-probe", !isProbeVisible(probe));
     const left = document.createElement("div"); left.className = "probe-left";
     const dot = document.createElement("span"); dot.className = "dot"; dot.style.background = probe.color;
@@ -227,8 +240,7 @@ function renderProbes() {
   }
 }
 function renderTranscript() {
-  const coverage = subtitleCoverageMs(state.segments, Math.max(state.durationMs, state.segments.at(-1)?.endMs || 0));
-  $("transcript-info").textContent = state.segments.length ? `${state.source} · ${state.segments.length} 段 · 字幕时间覆盖约 ${coverage.percent}% · 末段 ${format(state.segments.at(-1).endMs)}` : "尚无字幕";
+  $("transcript-info").textContent = fetchingTranscript ? "解析视频中" : state.segments.length ? "已就绪，可以开始分析" : "等待解析视频";
   $("analyze-button").disabled = state.running || !state.segments.length || !state.probes.length;
   $("cancel-button").hidden = !state.running;
   $("caption-toggle").checked = state.subtitleEnabled;
@@ -266,20 +278,45 @@ function renderTracks() {
   const duration = Math.max(state.durationMs, state.windows.at(-1).endMs);
   for (const probe of state.probes.filter(isProbeVisible)) {
     const section = document.createElement("div"); section.className = "track";
+    section.style.setProperty?.("--probe-color", probe.color);
+    section.classList.toggle("selected-track", state.selectedId === probe.id);
     const head = document.createElement("div"); head.className = "track-head";
-    const select = document.createElement("button"); select.textContent = `● ${probe.name}`; select.style.color = probe.color; select.classList.toggle("selected", state.selectedId === probe.id);
+    const select = document.createElement("button"); select.textContent = `● ${probe.name}`; select.classList.toggle("selected", state.selectedId === probe.id);
     select.addEventListener("click", () => { state.selectedId = probe.id; renderTracks(); pushGraph(); });
     const unit = document.createElement("small"); unit.textContent = probe.primitive === "score" ? "强度 / 100" : "命题概率 / %";
     head.append(select, unit);
-    const cells = document.createElement("div"); cells.className = "cells";
+    const cells = document.createElement("button"); cells.type = "button"; cells.className = "cells";
+    cells.setAttribute("aria-label", `${probe.name}语义时间轴。点击对应时间跳转，按回车跳到最高热点。`);
+    const hotspots = rankHotspots(state.readings, probe).slice(0, 5);
+    cells.addEventListener("click", (event) => {
+      if (event.target !== cells) return;
+      if (event.detail === 0 && hotspots[0]?.peak) {
+        showEvidence(hotspots[0].peak);
+        jump(hotspots[0].peak.startMs);
+        return;
+      }
+      const bounds = cells.getBoundingClientRect();
+      const ratio = bounds.width ? Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width)) : 0;
+      const targetMs = duration * ratio;
+      const window = state.windows.find((item) => item.startMs <= targetMs && item.endMs >= targetMs) || state.windows.at(-1);
+      const reading = state.readings.find((item) => item.windowId === window?.id && item.probeId === probe.id);
+      if (reading?.status === "ok") showEvidence(reading);
+      jump(window?.startMs ?? targetMs);
+    });
     for (const window of state.windows) {
       const reading = state.readings.find((r) => r.windowId === window.id && r.probeId === probe.id);
-      const cell = document.createElement("div"); cell.className = `cell ${window.status === "no_text" ? "no-text" : reading?.status === "failed" ? "failed" : reading?.status === "ok" ? "ok" : "pending"}`;
+      const cell = document.createElement("span"); cell.className = `cell ${window.status === "no_text" ? "no-text" : reading?.status === "failed" ? "failed" : reading?.status === "ok" ? "ok" : "pending"}`;
       cell.style.left = `${window.startMs / duration * 100}%`; cell.style.width = `${(window.endMs - window.startMs) / duration * 100}%`;
-      if (reading?.status === "ok") { cell.style.background = probe.color; cell.style.opacity = String(Math.max(.18, reading.value)); cell.style.minWidth = "8px"; cell.style.zIndex = "2"; }
+      if (reading?.status === "ok") { cell.style.background = probe.color; cell.style.height = `${Math.max(12, reading.value * 100)}%`; cell.style.opacity = String(Math.max(.38, reading.value)); cell.style.minWidth = "8px"; cell.style.zIndex = "2"; }
       cell.title = `${format(window.startMs)}–${format(window.endMs)} · ${window.status === "no_text" ? "无文本" : reading?.status === "ok" ? reading.label : reading?.status === "failed" ? "分析失败" : "未分析"}`;
-      cell.addEventListener("click", () => { if (reading?.status === "ok") { showEvidence(reading); jump(window.startMs); } else $("evidence").textContent = cell.title; });
+      cell.setAttribute("aria-label", cell.title);
+      cell.addEventListener("click", (event) => { event?.stopPropagation?.(); if (reading?.status === "ok") { showEvidence(reading); jump(window.startMs); } else $("evidence").textContent = cell.title; });
       cells.append(cell);
+    }
+    for (const hotspot of hotspots) {
+      const station = document.createElement("span"); station.className = "station";
+      station.style.left = `${hotspot.peak.startMs / duration * 100}%`;
+      cells.append(station);
     }
     section.append(head, cells); box.append(section);
   }
@@ -289,7 +326,8 @@ function renderRankings() {
   if (state.probes.length && !state.probes.some(isProbeVisible)) { box.textContent = "所有探针已设为不显示；重新打开开关即可查看原有排名。"; return; }
   for (const probe of state.probes.filter(isProbeVisible)) {
     const section = document.createElement("div"); section.className = "rank-section";
-    const title = document.createElement("h4"); title.textContent = `${probe.name} · ${probe.primitive === "score" ? "强度最高" : "命题概率最高"}`; title.style.color = probe.color; section.append(title);
+    section.style.setProperty?.("--probe-color", probe.color);
+    const title = document.createElement("h4"); title.textContent = `${probe.name} · ${probe.primitive === "score" ? "强度最高" : "命题概率最高"}`; section.append(title);
     const ranked = rankHotspots(state.readings, probe);
     if (!ranked.length) { const empty = document.createElement("div"); empty.className = "muted"; empty.textContent = "暂无达到阈值的热点"; section.append(empty); }
     ranked.slice(0, 5).forEach((hotspot, index) => {
@@ -300,7 +338,7 @@ function renderRankings() {
     }); box.append(section);
     for (const boundary of state.adBoundaries.filter((item) => item.probeId === probe.id).slice(0, 10)) {
       const button = document.createElement("button"); button.className = "hotspot refined";
-      button.textContent = `字幕级近似 ${format(boundary.startMs)}–${format(boundary.endMs)} · 峰值 ${Math.round(boundary.peakValue * 100)}%`;
+      button.textContent = `片段级近似 ${format(boundary.startMs)}–${format(boundary.endMs)} · 峰值 ${Math.round(boundary.peakValue * 100)}%`;
       button.addEventListener("click", () => jump(boundary.startMs)); section.append(button);
     }
   }
@@ -316,7 +354,7 @@ function renderHistory() {
     open.addEventListener("click", async () => {
       if (state.running) return status("请先停止分析再恢复历史。", true);
       if (item.videoId !== state.videoId) { await chrome.tabs.create({ url: `https://www.youtube.com/watch?v=${item.videoId}` }); return status("已打开原视频，请在新标签页点击 CueWave 图标查看保存结果。"); }
-      await loadVideo(); await pushGraph(); await pushCaptions(); status("已恢复此视频的字幕、探针和历史读数。");
+      await loadVideo(); await pushGraph(); await pushCaptions(); status("已恢复此视频的探针和历史分析结果。");
     });
     const remove = document.createElement("button"); remove.textContent = "删除本机记录";
     remove.addEventListener("click", async () => {
@@ -339,7 +377,7 @@ function renderProgress() {
   const refineCount = refineJobs.length;
   $("refine-button").disabled = state.running || !refineCount;
   $("progress-fill").style.width = `${p.total ? p.done / p.total * 100 : 0}%`;
-  $("progress-text").textContent = state.windows.length ? `${p.done}/${p.total} 个探针窗口完成 · 有效 ${p.ok} · 失败 ${p.failed} · 无文本窗口 ${p.noText} · 字幕覆盖与分析覆盖分开计算` : "确认探针并取得字幕后手动开始。";
+  $("progress-text").textContent = state.windows.length ? `${p.done}/${p.total} 个探针窗口完成 · 有效 ${p.ok} · 失败 ${p.failed} · 无内容窗口 ${p.noText} · 视频解析范围与分析范围分开计算` : "确认探针并等待视频解析完成。";
   $("analysis-state").textContent = state.running ? "分析中" : p.total && p.done === p.total ? "已完成" : p.done ? "部分完成" : "未开始";
   const estimate = estimateAnalysisWork(state.windows, state.probes, state.readings);
   const refineTokens = refineJobs.reduce((total, { probe, segment }) => total + Math.ceil(new TextEncoder().encode(JSON.stringify({ target: segment.text,
@@ -347,8 +385,8 @@ function renderProgress() {
   const actualUsd = (state.usage.inputTokens || 0) / 1_000_000 * JEV_INPUT_USD_PER_MILLION;
   $("estimate-text").textContent = `待分析约 ${estimate.requests} 次 Jev 请求、${estimate.questions} 项判断；输入约 ${estimate.estimatedInputTokens.toLocaleString()} token（按文本字节粗估），参考费用约 $${estimate.estimatedUsd.toFixed(6)}。`
     + ` 成功响应累计 ${state.usage.requests || 0} 次；其中 ${state.usage.reportedRequests || 0} 次报告了 ${state.usage.inputTokens || 0} 输入 token，按当前参考价约 $${actualUsd.toFixed(6)}（未报告用量的请求不计入）。`
-    + (refineCount ? ` 广告字幕级复判另需最多 ${refineCount} 次请求、粗估 ${refineTokens.toLocaleString()} 输入 token / $${(refineTokens / 1_000_000 * JEV_INPUT_USD_PER_MILLION).toFixed(6)}；只有点击按钮才会执行。` : "")
-    + " 估算不含 Supadata、失败重试或价格变更。";
+    + (refineCount ? ` 广告片段级复判另需最多 ${refineCount} 次请求、粗估 ${refineTokens.toLocaleString()} 输入 token / $${(refineTokens / 1_000_000 * JEV_INPUT_USD_PER_MILLION).toFixed(6)}；只有点击按钮才会执行。` : "")
+    + " 估算不含视频解析、失败重试或价格变更。";
 }
 let lastStorageCheck = 0;
 let storageCheckTimer = null;
@@ -402,7 +440,7 @@ async function refineAds() {
   const jobs = adRefinementJobs();
   if (state.running || !jobs.length) return;
   state.running = true; state.cancelled = false; render();
-  status(`正在复判 ${jobs.length} 条热点字幕，以估计广告起止边界；可随时停止后续请求。`);
+  status(`正在复判 ${jobs.length} 个热点片段，以估计广告起止边界；可随时停止后续请求。`);
   try {
     await assertBoundTab();
     for (const { probe, segment } of jobs) {
@@ -416,10 +454,10 @@ async function refineAds() {
         state.adBoundaries = state.adBoundaries.filter((item) => item.probeId !== probe.id)
           .concat(buildAdBoundaries(state.segments, state.adCueReadings, probe.id));
         await safeSave(); render(); await pushGraph();
-      } catch (error) { status(`广告边界细化暂停：${error.message}。已完成的字幕复判已保存，可重试剩余部分。`, true); break; }
+      } catch (error) { status(`广告边界细化暂停：${error.message}。已完成的片段复判已保存，可重试剩余部分。`, true); break; }
     }
-    if (state.cancelled) status("已停止后续字幕复判；已完成的近似边界保留。");
-    else if (!adRefinementJobs().length) status("字幕级广告边界细化完成。边界仍受字幕时间戳精度限制。");
+    if (state.cancelled) status("已停止后续片段复判；已完成的近似边界保留。");
+    else if (!adRefinementJobs().length) status("片段级广告边界细化完成。边界仍受视频解析精度限制。");
   } catch (error) { status(`无法细化广告边界：${error.message}`, true); }
   finally { state.running = false; render(); }
 }
@@ -430,7 +468,7 @@ async function useSegments(segments, source) {
   state.segments = normalizeSegments(segments); state.source = source; state.windows = buildWindows(state.segments, state.durationMs);
   state.readings = []; state.adCueReadings = []; state.adBoundaries = []; state.resumeOnOpen = false;
   await safeSave(); render(); pushGraph(); pushCaptions();
-  if (!state.cacheWarning) status(`${source}已就绪。确认探针后点击「分析视频」。`);
+  if (!state.cacheWarning) status("已就绪，可以开始分析。");
 }
 async function analyze(resumeOnly = false) {
   if (state.running || !state.probes.length || !state.segments.length) return;
@@ -475,16 +513,18 @@ async function analyze(resumeOnly = false) {
 }
 
 $("probe-form").addEventListener("submit", (event) => { event.preventDefault(); const input = $("probe-input").value.trim(); if (input) checkInput(input); });
+$("theme-gate").addEventListener("click", () => void chooseTheme("gate"));
+$("theme-transit").addEventListener("click", () => void chooseTheme("transit"));
 $("live-button").addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("live.html") }));
 document.querySelectorAll(".seed").forEach((button) => button.addEventListener("click", () => checkInput(button.dataset.value)));
 let fetchingTranscript = false;
 async function fetchAuto() {
   if (!state.videoId || fetchingTranscript) return;
   const epoch = transcriptEpoch; const videoId = state.videoId;
-  fetchingTranscript = true; $("auto-button").disabled = true; status("正在获取原生时间戳字幕…");
-  try { await assertBoundTab(); const result = await api("/transcript", { videoId }); if (epoch === transcriptEpoch && videoId === state.videoId) await useSegments(result.segments, "Supadata 原生字幕"); }
-  catch (error) { if (epoch === transcriptEpoch && videoId === state.videoId) status(`${error.message}；请导入该视频的 SRT/VTT。`, true); }
-  finally { fetchingTranscript = false; $("auto-button").disabled = false; }
+  fetchingTranscript = true; $("auto-button").disabled = true; renderTranscript(); status("解析视频中…");
+  try { await assertBoundTab(); const result = await api("/transcript", { videoId }); if (epoch === transcriptEpoch && videoId === state.videoId) await useSegments(result.segments, "自动解析"); }
+  catch { if (epoch === transcriptEpoch && videoId === state.videoId) status("视频解析失败。可以稍后重试，或在「视频解析与播放器」中导入时间轴文件。", true); }
+  finally { fetchingTranscript = false; $("auto-button").disabled = false; renderTranscript(); }
 }
 $("auto-button").addEventListener("click", fetchAuto);
 $("import-file").addEventListener("change", async (event) => { const file = event.target.files?.[0]; if (!file) return; try { await useSegments(parseCaptions(await file.text()), `导入 ${file.name}`); } catch (error) { status(error.message, true); } event.target.value = ""; });
@@ -492,7 +532,7 @@ $("caption-toggle").addEventListener("change", async (event) => {
   state.subtitleEnabled = event.target.checked;
   await chrome.storage.local.set({ "cuewave:captionOverlay": state.subtitleEnabled });
   await pushCaptions();
-  status(state.subtitleEnabled ? "已开启 CueWave 同步字幕；如与 YouTube 字幕重叠，可关闭其中一处。" : "已关闭 CueWave 同步字幕。");
+  status(state.subtitleEnabled ? "已开启 CueWave 同步文字；如与 YouTube 自带文字重叠，可关闭其中一处。" : "已关闭 CueWave 同步文字。");
 });
 $("import-analysis-file").addEventListener("change", async (event) => {
   const file = event.target.files?.[0]; if (!file) return;
@@ -502,7 +542,7 @@ $("import-analysis-file").addEventListener("change", async (event) => {
     const record = parseVideoExport(JSON.parse(await file.text()));
     record.selectedId = selectedVisibleProbeId(record.probes, null);
     await saveRecord(record); await updateStorageUsage();
-    if (record.videoId === state.videoId) { await loadVideo(); await pushGraph(); await pushCaptions(); status("已导入并恢复当前视频的字幕、探针和时间轴。"); }
+    if (record.videoId === state.videoId) { await loadVideo(); await pushGraph(); await pushCaptions(); status("已导入并恢复当前视频的探针和时间轴。"); }
     else status(`已导入 ${record.title || record.videoId} 的历史分析。点击历史列表中的「打开视频」可查看。`);
   } catch (error) { status(`导入失败：${error.message}`, true); }
   event.target.value = "";
@@ -527,7 +567,7 @@ $("save-button").addEventListener("click", async () => {
     let cacheError = null;
     try { await save(); } catch (error) { cacheError = error; }
     const p = exported.analysis.progress;
-    status(`已发起下载：${link.download}。包含 ${exported.transcript.segments.length} 段字幕及 ${p.ok} 个有效读数${p.done < p.total ? "；未完成窗口标为 pending" : ""}${cacheError ? "；浏览器内缓存未能更新，但下载已发起" : ""}。`);
+    status(`已发起下载：${link.download}。包含 ${exported.transcript.segments.length} 个对齐片段及 ${p.ok} 个有效读数${p.done < p.total ? "；未完成窗口标为 pending" : ""}${cacheError ? "；浏览器内缓存未能更新，但下载已发起" : ""}。`);
   } catch (error) { status(`保存失败：${error.message}`, true); }
 });
 $("cancel-button").addEventListener("click", () => { state.cancelled = true; state.resumeOnOpen = false; void safeSave(); status("当前请求结束后停止派发，重新打开侧栏也不会自动续跑；可手动点击分析继续。"); });
@@ -541,6 +581,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 chrome.storage.onChanged?.addListener((changes, area) => {
   if (area !== "local") return;
   for (const [key, change] of Object.entries(changes)) {
+    if (key === THEME_KEY) { applyTheme(change.newValue); continue; }
     if (!key.startsWith("cuewave:video:")) continue;
     historyRevision++;
     if (change.newValue && typeof change.newValue === "object") updateHistoryItem({ ...change.newValue, videoId: key.slice("cuewave:video:".length) });
@@ -549,6 +590,9 @@ chrome.storage.onChanged?.addListener((changes, area) => {
 });
 
 async function init() {
+  const settings = await chrome.storage.local.get(["cuewave:captionOverlay", THEME_KEY]);
+  state.subtitleEnabled = settings["cuewave:captionOverlay"] === true;
+  applyTheme(settings[THEME_KEY]);
   const panelTabId = Number(new URLSearchParams(location.search).get("tabId"));
   if (!Number.isSafeInteger(panelTabId) || panelTabId <= 0) return status("侧栏缺少标签页身份；请在 chrome://extensions 重新加载扩展后，从 YouTube 视频标签页打开 CueWave。", true);
   const tab = await chrome.tabs.get(panelTabId).catch(() => null);
@@ -560,8 +604,6 @@ async function init() {
   state.durationMs = info?.durationMs || 0;
   $("video-title").textContent = info?.title || tab.title || "YouTube 视频";
   $("video-meta").textContent = `${state.videoId || "未知视频"} · ${state.durationMs ? format(state.durationMs) : "时长待获取"}`;
-  const settings = await chrome.storage.local.get(["cuewave:captionOverlay"]);
-  state.subtitleEnabled = settings["cuewave:captionOverlay"] === true;
   await refreshHistory();
   await loadDefinitions(); await loadVideo();
   try {
@@ -573,7 +615,7 @@ async function init() {
       $("probe-hint").textContent = "先用 Gemini 检查含义；有歧义时请选择具体判断对象。";
       $("probe-submit").textContent = "检查含义";
     }
-    status(`本机辅助进程已连接 · Gemini ${state.helper.capabilities.manualProbes ? "已暂停" : state.helper.capabilities.gemini ? "已配置" : "未配置"} · Jev ${state.helper.capabilities.jev ? "已配置" : "未配置"} · Supadata ${state.helper.capabilities.supadata ? "已配置" : "未配置"}（使用时验证）`);
+    status(`本机辅助进程已连接 · Gemini ${state.helper.capabilities.manualProbes ? "已暂停" : state.helper.capabilities.gemini ? "已配置" : "未配置"} · Jev ${state.helper.capabilities.jev ? "已配置" : "未配置"} · 视频解析 ${state.helper.capabilities.supadata ? "已配置" : "未配置"}（使用时验证）`);
   }
   catch { status("本机辅助进程未启动：在仓库运行 npm start。", true); }
   render(); pushGraph(); pushCaptions(); updateStorageUsage(true);

@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server/index.js",
     "test": "node --test tests/*.test.js",
-    "smoke": "node scripts/smoke.js"
+    "smoke": "node scripts/smoke.js",
+    "ui:prototype": "open extension/live-prototype.html",
+    "ui:sidepanel-prototype": "open extension/sidepanel-ui-prototype.html"
   },
   "engines": {
     "node": ">=20"

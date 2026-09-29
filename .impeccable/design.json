@@ -1,0 +1,677 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-28T14:54:41Z",
+  "title": "Design System: CueWave",
+  "extensions": {
+    "colorMeta": {
+      "gate-background": {
+        "role": "neutral",
+        "displayName": "Gate Apron",
+        "canonical": "#e9ebe5",
+        "tonalRamp": [
+          "color-mix(in srgb, #e9ebe5 25%, black)",
+          "color-mix(in srgb, #e9ebe5 45%, black)",
+          "color-mix(in srgb, #e9ebe5 70%, black)",
+          "#e9ebe5",
+          "color-mix(in srgb, #e9ebe5 80%, white)",
+          "color-mix(in srgb, #e9ebe5 60%, white)",
+          "color-mix(in srgb, #e9ebe5 35%, white)",
+          "color-mix(in srgb, #e9ebe5 15%, white)"
+        ]
+      },
+      "gate-paper": {
+        "role": "neutral",
+        "displayName": "Ticket Stock",
+        "canonical": "#f7f7f0",
+        "tonalRamp": [
+          "color-mix(in srgb, #f7f7f0 25%, black)",
+          "color-mix(in srgb, #f7f7f0 45%, black)",
+          "color-mix(in srgb, #f7f7f0 70%, black)",
+          "#f7f7f0",
+          "color-mix(in srgb, #f7f7f0 80%, white)",
+          "color-mix(in srgb, #f7f7f0 60%, white)",
+          "color-mix(in srgb, #f7f7f0 35%, white)",
+          "color-mix(in srgb, #f7f7f0 15%, white)"
+        ]
+      },
+      "gate-paper-secondary": {
+        "role": "neutral",
+        "displayName": "Ticket Stock Secondary",
+        "canonical": "#eff0e9",
+        "tonalRamp": [
+          "color-mix(in srgb, #eff0e9 25%, black)",
+          "color-mix(in srgb, #eff0e9 45%, black)",
+          "color-mix(in srgb, #eff0e9 70%, black)",
+          "#eff0e9",
+          "color-mix(in srgb, #eff0e9 80%, white)",
+          "color-mix(in srgb, #eff0e9 60%, white)",
+          "color-mix(in srgb, #eff0e9 35%, white)",
+          "color-mix(in srgb, #eff0e9 15%, white)"
+        ]
+      },
+      "gate-ink": {
+        "role": "primary",
+        "displayName": "Gate Wayfinding Navy",
+        "canonical": "#1c2834",
+        "tonalRamp": [
+          "color-mix(in srgb, #1c2834 25%, black)",
+          "color-mix(in srgb, #1c2834 45%, black)",
+          "color-mix(in srgb, #1c2834 70%, black)",
+          "#1c2834",
+          "color-mix(in srgb, #1c2834 80%, white)",
+          "color-mix(in srgb, #1c2834 60%, white)",
+          "color-mix(in srgb, #1c2834 35%, white)",
+          "color-mix(in srgb, #1c2834 15%, white)"
+        ]
+      },
+      "gate-muted": {
+        "role": "neutral",
+        "displayName": "Gate Muted Text",
+        "canonical": "#697279",
+        "tonalRamp": [
+          "color-mix(in srgb, #697279 25%, black)",
+          "color-mix(in srgb, #697279 45%, black)",
+          "color-mix(in srgb, #697279 70%, black)",
+          "#697279",
+          "color-mix(in srgb, #697279 80%, white)",
+          "color-mix(in srgb, #697279 60%, white)",
+          "color-mix(in srgb, #697279 35%, white)",
+          "color-mix(in srgb, #697279 15%, white)"
+        ]
+      },
+      "gate-faint": {
+        "role": "neutral",
+        "displayName": "Gate Faint Text",
+        "canonical": "#626b70",
+        "tonalRamp": [
+          "color-mix(in srgb, #626b70 25%, black)",
+          "color-mix(in srgb, #626b70 45%, black)",
+          "color-mix(in srgb, #626b70 70%, black)",
+          "#626b70",
+          "color-mix(in srgb, #626b70 80%, white)",
+          "color-mix(in srgb, #626b70 60%, white)",
+          "color-mix(in srgb, #626b70 35%, white)",
+          "color-mix(in srgb, #626b70 15%, white)"
+        ]
+      },
+      "gate-rule": {
+        "role": "neutral",
+        "displayName": "Gate Rule",
+        "canonical": "#b8bec0",
+        "tonalRamp": [
+          "color-mix(in srgb, #b8bec0 25%, black)",
+          "color-mix(in srgb, #b8bec0 45%, black)",
+          "color-mix(in srgb, #b8bec0 70%, black)",
+          "#b8bec0",
+          "color-mix(in srgb, #b8bec0 80%, white)",
+          "color-mix(in srgb, #b8bec0 60%, white)",
+          "color-mix(in srgb, #b8bec0 35%, white)",
+          "color-mix(in srgb, #b8bec0 15%, white)"
+        ]
+      },
+      "gate-rule-strong": {
+        "role": "neutral",
+        "displayName": "Gate Rule Strong",
+        "canonical": "#7c858a",
+        "tonalRamp": [
+          "color-mix(in srgb, #7c858a 25%, black)",
+          "color-mix(in srgb, #7c858a 45%, black)",
+          "color-mix(in srgb, #7c858a 70%, black)",
+          "#7c858a",
+          "color-mix(in srgb, #7c858a 80%, white)",
+          "color-mix(in srgb, #7c858a 60%, white)",
+          "color-mix(in srgb, #7c858a 35%, white)",
+          "color-mix(in srgb, #7c858a 15%, white)"
+        ]
+      },
+      "gate-accent": {
+        "role": "primary",
+        "displayName": "Gate Signal Green",
+        "canonical": "#0b715e",
+        "tonalRamp": [
+          "color-mix(in srgb, #0b715e 25%, black)",
+          "color-mix(in srgb, #0b715e 45%, black)",
+          "color-mix(in srgb, #0b715e 70%, black)",
+          "#0b715e",
+          "color-mix(in srgb, #0b715e 80%, white)",
+          "color-mix(in srgb, #0b715e 60%, white)",
+          "color-mix(in srgb, #0b715e 35%, white)",
+          "color-mix(in srgb, #0b715e 15%, white)"
+        ]
+      },
+      "gate-accent-soft": {
+        "role": "primary",
+        "displayName": "Gate Signal Wash",
+        "canonical": "#d9eee8",
+        "tonalRamp": [
+          "color-mix(in srgb, #d9eee8 25%, black)",
+          "color-mix(in srgb, #d9eee8 45%, black)",
+          "color-mix(in srgb, #d9eee8 70%, black)",
+          "#d9eee8",
+          "color-mix(in srgb, #d9eee8 80%, white)",
+          "color-mix(in srgb, #d9eee8 60%, white)",
+          "color-mix(in srgb, #d9eee8 35%, white)",
+          "color-mix(in srgb, #d9eee8 15%, white)"
+        ]
+      },
+      "gate-danger": {
+        "role": "tertiary",
+        "displayName": "Gate Failure Red",
+        "canonical": "#bb493f",
+        "tonalRamp": [
+          "color-mix(in srgb, #bb493f 25%, black)",
+          "color-mix(in srgb, #bb493f 45%, black)",
+          "color-mix(in srgb, #bb493f 70%, black)",
+          "#bb493f",
+          "color-mix(in srgb, #bb493f 80%, white)",
+          "color-mix(in srgb, #bb493f 60%, white)",
+          "color-mix(in srgb, #bb493f 35%, white)",
+          "color-mix(in srgb, #bb493f 15%, white)"
+        ]
+      },
+      "gate-danger-soft": {
+        "role": "tertiary",
+        "displayName": "Gate Failure Wash",
+        "canonical": "#f5dfdb",
+        "tonalRamp": [
+          "color-mix(in srgb, #f5dfdb 25%, black)",
+          "color-mix(in srgb, #f5dfdb 45%, black)",
+          "color-mix(in srgb, #f5dfdb 70%, black)",
+          "#f5dfdb",
+          "color-mix(in srgb, #f5dfdb 80%, white)",
+          "color-mix(in srgb, #f5dfdb 60%, white)",
+          "color-mix(in srgb, #f5dfdb 35%, white)",
+          "color-mix(in srgb, #f5dfdb 15%, white)"
+        ]
+      },
+      "gate-focus": {
+        "role": "tertiary",
+        "displayName": "Gate Focus Orange",
+        "canonical": "#e45e3a",
+        "tonalRamp": [
+          "color-mix(in srgb, #e45e3a 25%, black)",
+          "color-mix(in srgb, #e45e3a 45%, black)",
+          "color-mix(in srgb, #e45e3a 70%, black)",
+          "#e45e3a",
+          "color-mix(in srgb, #e45e3a 80%, white)",
+          "color-mix(in srgb, #e45e3a 60%, white)",
+          "color-mix(in srgb, #e45e3a 35%, white)",
+          "color-mix(in srgb, #e45e3a 15%, white)"
+        ]
+      },
+      "transit-background": {
+        "role": "neutral",
+        "displayName": "Transit Night",
+        "canonical": "#090d10",
+        "tonalRamp": [
+          "color-mix(in srgb, #090d10 25%, black)",
+          "color-mix(in srgb, #090d10 45%, black)",
+          "color-mix(in srgb, #090d10 70%, black)",
+          "#090d10",
+          "color-mix(in srgb, #090d10 80%, white)",
+          "color-mix(in srgb, #090d10 60%, white)",
+          "color-mix(in srgb, #090d10 35%, white)",
+          "color-mix(in srgb, #090d10 15%, white)"
+        ]
+      },
+      "transit-paper": {
+        "role": "neutral",
+        "displayName": "Station Board",
+        "canonical": "#12181d",
+        "tonalRamp": [
+          "color-mix(in srgb, #12181d 25%, black)",
+          "color-mix(in srgb, #12181d 45%, black)",
+          "color-mix(in srgb, #12181d 70%, black)",
+          "#12181d",
+          "color-mix(in srgb, #12181d 80%, white)",
+          "color-mix(in srgb, #12181d 60%, white)",
+          "color-mix(in srgb, #12181d 35%, white)",
+          "color-mix(in srgb, #12181d 15%, white)"
+        ]
+      },
+      "transit-paper-secondary": {
+        "role": "neutral",
+        "displayName": "Station Board Secondary",
+        "canonical": "#171f25",
+        "tonalRamp": [
+          "color-mix(in srgb, #171f25 25%, black)",
+          "color-mix(in srgb, #171f25 45%, black)",
+          "color-mix(in srgb, #171f25 70%, black)",
+          "#171f25",
+          "color-mix(in srgb, #171f25 80%, white)",
+          "color-mix(in srgb, #171f25 60%, white)",
+          "color-mix(in srgb, #171f25 35%, white)",
+          "color-mix(in srgb, #171f25 15%, white)"
+        ]
+      },
+      "transit-ink": {
+        "role": "neutral",
+        "displayName": "Transit Signal White",
+        "canonical": "#edf3f1",
+        "tonalRamp": [
+          "color-mix(in srgb, #edf3f1 25%, black)",
+          "color-mix(in srgb, #edf3f1 45%, black)",
+          "color-mix(in srgb, #edf3f1 70%, black)",
+          "#edf3f1",
+          "color-mix(in srgb, #edf3f1 80%, white)",
+          "color-mix(in srgb, #edf3f1 60%, white)",
+          "color-mix(in srgb, #edf3f1 35%, white)",
+          "color-mix(in srgb, #edf3f1 15%, white)"
+        ]
+      },
+      "transit-muted": {
+        "role": "neutral",
+        "displayName": "Transit Muted Text",
+        "canonical": "#94a0a6",
+        "tonalRamp": [
+          "color-mix(in srgb, #94a0a6 25%, black)",
+          "color-mix(in srgb, #94a0a6 45%, black)",
+          "color-mix(in srgb, #94a0a6 70%, black)",
+          "#94a0a6",
+          "color-mix(in srgb, #94a0a6 80%, white)",
+          "color-mix(in srgb, #94a0a6 60%, white)",
+          "color-mix(in srgb, #94a0a6 35%, white)",
+          "color-mix(in srgb, #94a0a6 15%, white)"
+        ]
+      },
+      "transit-faint": {
+        "role": "neutral",
+        "displayName": "Transit Faint Text",
+        "canonical": "#829198",
+        "tonalRamp": [
+          "color-mix(in srgb, #829198 25%, black)",
+          "color-mix(in srgb, #829198 45%, black)",
+          "color-mix(in srgb, #829198 70%, black)",
+          "#829198",
+          "color-mix(in srgb, #829198 80%, white)",
+          "color-mix(in srgb, #829198 60%, white)",
+          "color-mix(in srgb, #829198 35%, white)",
+          "color-mix(in srgb, #829198 15%, white)"
+        ]
+      },
+      "transit-rule": {
+        "role": "neutral",
+        "displayName": "Transit Rule",
+        "canonical": "#334049",
+        "tonalRamp": [
+          "color-mix(in srgb, #334049 25%, black)",
+          "color-mix(in srgb, #334049 45%, black)",
+          "color-mix(in srgb, #334049 70%, black)",
+          "#334049",
+          "color-mix(in srgb, #334049 80%, white)",
+          "color-mix(in srgb, #334049 60%, white)",
+          "color-mix(in srgb, #334049 35%, white)",
+          "color-mix(in srgb, #334049 15%, white)"
+        ]
+      },
+      "transit-rule-strong": {
+        "role": "neutral",
+        "displayName": "Transit Rule Strong",
+        "canonical": "#53636c",
+        "tonalRamp": [
+          "color-mix(in srgb, #53636c 25%, black)",
+          "color-mix(in srgb, #53636c 45%, black)",
+          "color-mix(in srgb, #53636c 70%, black)",
+          "#53636c",
+          "color-mix(in srgb, #53636c 80%, white)",
+          "color-mix(in srgb, #53636c 60%, white)",
+          "color-mix(in srgb, #53636c 35%, white)",
+          "color-mix(in srgb, #53636c 15%, white)"
+        ]
+      },
+      "transit-accent": {
+        "role": "primary",
+        "displayName": "Transit Signal Teal",
+        "canonical": "#5bd3bd",
+        "tonalRamp": [
+          "color-mix(in srgb, #5bd3bd 25%, black)",
+          "color-mix(in srgb, #5bd3bd 45%, black)",
+          "color-mix(in srgb, #5bd3bd 70%, black)",
+          "#5bd3bd",
+          "color-mix(in srgb, #5bd3bd 80%, white)",
+          "color-mix(in srgb, #5bd3bd 60%, white)",
+          "color-mix(in srgb, #5bd3bd 35%, white)",
+          "color-mix(in srgb, #5bd3bd 15%, white)"
+        ]
+      },
+      "transit-accent-soft": {
+        "role": "primary",
+        "displayName": "Transit Signal Wash",
+        "canonical": "#173832",
+        "tonalRamp": [
+          "color-mix(in srgb, #173832 25%, black)",
+          "color-mix(in srgb, #173832 45%, black)",
+          "color-mix(in srgb, #173832 70%, black)",
+          "#173832",
+          "color-mix(in srgb, #173832 80%, white)",
+          "color-mix(in srgb, #173832 60%, white)",
+          "color-mix(in srgb, #173832 35%, white)",
+          "color-mix(in srgb, #173832 15%, white)"
+        ]
+      },
+      "transit-danger": {
+        "role": "tertiary",
+        "displayName": "Transit Failure Red",
+        "canonical": "#ff7b70",
+        "tonalRamp": [
+          "color-mix(in srgb, #ff7b70 25%, black)",
+          "color-mix(in srgb, #ff7b70 45%, black)",
+          "color-mix(in srgb, #ff7b70 70%, black)",
+          "#ff7b70",
+          "color-mix(in srgb, #ff7b70 80%, white)",
+          "color-mix(in srgb, #ff7b70 60%, white)",
+          "color-mix(in srgb, #ff7b70 35%, white)",
+          "color-mix(in srgb, #ff7b70 15%, white)"
+        ]
+      },
+      "transit-danger-soft": {
+        "role": "tertiary",
+        "displayName": "Transit Failure Wash",
+        "canonical": "#3a2020",
+        "tonalRamp": [
+          "color-mix(in srgb, #3a2020 25%, black)",
+          "color-mix(in srgb, #3a2020 45%, black)",
+          "color-mix(in srgb, #3a2020 70%, black)",
+          "#3a2020",
+          "color-mix(in srgb, #3a2020 80%, white)",
+          "color-mix(in srgb, #3a2020 60%, white)",
+          "color-mix(in srgb, #3a2020 35%, white)",
+          "color-mix(in srgb, #3a2020 15%, white)"
+        ]
+      },
+      "transit-focus": {
+        "role": "tertiary",
+        "displayName": "Transit Focus Yellow",
+        "canonical": "#ffd45f",
+        "tonalRamp": [
+          "color-mix(in srgb, #ffd45f 25%, black)",
+          "color-mix(in srgb, #ffd45f 45%, black)",
+          "color-mix(in srgb, #ffd45f 70%, black)",
+          "#ffd45f",
+          "color-mix(in srgb, #ffd45f 80%, white)",
+          "color-mix(in srgb, #ffd45f 60%, white)",
+          "color-mix(in srgb, #ffd45f 35%, white)",
+          "color-mix(in srgb, #ffd45f 15%, white)"
+        ]
+      },
+      "action-hover-ink": {
+        "role": "neutral",
+        "displayName": "Action Hover Ink",
+        "canonical": "#07130f",
+        "tonalRamp": [
+          "color-mix(in srgb, #07130f 25%, black)",
+          "color-mix(in srgb, #07130f 45%, black)",
+          "color-mix(in srgb, #07130f 70%, black)",
+          "#07130f",
+          "color-mix(in srgb, #07130f 80%, white)",
+          "color-mix(in srgb, #07130f 60%, white)",
+          "color-mix(in srgb, #07130f 35%, white)",
+          "color-mix(in srgb, #07130f 15%, white)"
+        ]
+      },
+      "probe-teal": {
+        "role": "secondary",
+        "displayName": "Probe Route Teal",
+        "canonical": "#5ddbc8",
+        "tonalRamp": [
+          "color-mix(in srgb, #5ddbc8 25%, black)",
+          "color-mix(in srgb, #5ddbc8 45%, black)",
+          "color-mix(in srgb, #5ddbc8 70%, black)",
+          "#5ddbc8",
+          "color-mix(in srgb, #5ddbc8 80%, white)",
+          "color-mix(in srgb, #5ddbc8 60%, white)",
+          "color-mix(in srgb, #5ddbc8 35%, white)",
+          "color-mix(in srgb, #5ddbc8 15%, white)"
+        ]
+      },
+      "probe-amber": {
+        "role": "secondary",
+        "displayName": "Probe Route Amber",
+        "canonical": "#f4b860",
+        "tonalRamp": [
+          "color-mix(in srgb, #f4b860 25%, black)",
+          "color-mix(in srgb, #f4b860 45%, black)",
+          "color-mix(in srgb, #f4b860 70%, black)",
+          "#f4b860",
+          "color-mix(in srgb, #f4b860 80%, white)",
+          "color-mix(in srgb, #f4b860 60%, white)",
+          "color-mix(in srgb, #f4b860 35%, white)",
+          "color-mix(in srgb, #f4b860 15%, white)"
+        ]
+      },
+      "probe-violet": {
+        "role": "secondary",
+        "displayName": "Probe Route Violet",
+        "canonical": "#a895f2",
+        "tonalRamp": [
+          "color-mix(in srgb, #a895f2 25%, black)",
+          "color-mix(in srgb, #a895f2 45%, black)",
+          "color-mix(in srgb, #a895f2 70%, black)",
+          "#a895f2",
+          "color-mix(in srgb, #a895f2 80%, white)",
+          "color-mix(in srgb, #a895f2 60%, white)",
+          "color-mix(in srgb, #a895f2 35%, white)",
+          "color-mix(in srgb, #a895f2 15%, white)"
+        ]
+      },
+      "probe-pink": {
+        "role": "secondary",
+        "displayName": "Probe Route Pink",
+        "canonical": "#e879a2",
+        "tonalRamp": [
+          "color-mix(in srgb, #e879a2 25%, black)",
+          "color-mix(in srgb, #e879a2 45%, black)",
+          "color-mix(in srgb, #e879a2 70%, black)",
+          "#e879a2",
+          "color-mix(in srgb, #e879a2 80%, white)",
+          "color-mix(in srgb, #e879a2 60%, white)",
+          "color-mix(in srgb, #e879a2 35%, white)",
+          "color-mix(in srgb, #e879a2 15%, white)"
+        ]
+      },
+      "probe-blue": {
+        "role": "secondary",
+        "displayName": "Probe Route Blue",
+        "canonical": "#8eb7f3",
+        "tonalRamp": [
+          "color-mix(in srgb, #8eb7f3 25%, black)",
+          "color-mix(in srgb, #8eb7f3 45%, black)",
+          "color-mix(in srgb, #8eb7f3 70%, black)",
+          "#8eb7f3",
+          "color-mix(in srgb, #8eb7f3 80%, white)",
+          "color-mix(in srgb, #8eb7f3 60%, white)",
+          "color-mix(in srgb, #8eb7f3 35%, white)",
+          "color-mix(in srgb, #8eb7f3 15%, white)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Video Display",
+        "purpose": "Current-video title; grows to 29px on wide layouts."
+      },
+      "headline": {
+        "displayName": "Section Headline",
+        "purpose": "Primary workflow section headings."
+      },
+      "body": {
+        "displayName": "Operational Body",
+        "purpose": "Instructions, status, evidence, and controls."
+      },
+      "label": {
+        "displayName": "Wayfinding Label",
+        "purpose": "Buttons, metadata, legends, and compact helper text."
+      },
+      "mono": {
+        "displayName": "Evidence Mono",
+        "purpose": "Timecodes, counts, video IDs, and source stamps."
+      }
+    },
+    "shadows": [
+      {
+        "name": "transit-panel",
+        "value": "0 16px 40px rgba(0, 0, 0, .34)",
+        "purpose": "Structural lift for dark transit panels and the utility container only."
+      },
+      {
+        "name": "active-route-cell",
+        "value": "0 0 10px color-mix(in srgb, currentColor 38%, transparent)",
+        "purpose": "Low glow for analyzed route bars in transit mode."
+      },
+      {
+        "name": "active-route-label",
+        "value": "0 0 12px color-mix(in srgb, var(--probe-color) 35%, transparent)",
+        "purpose": "Low glow for route labels in transit mode."
+      },
+      {
+        "name": "evidence-rule",
+        "value": "inset 3px 0 var(--accent)",
+        "purpose": "Connects the evidence quote to the active semantic signal without making a floating card."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-standard",
+        "value": "160ms ease",
+        "purpose": "Buttons, borders, colors, opacity, and active press state."
+      },
+      {
+        "name": "track-selection",
+        "value": "180ms ease",
+        "purpose": "Selected-versus-context route opacity."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0.01ms",
+        "purpose": "Effective transition duration when prefers-reduced-motion is enabled."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "minimum-supported",
+        "value": "310px"
+      },
+      {
+        "name": "compact-max",
+        "value": "370px"
+      },
+      {
+        "name": "standard-content-max",
+        "value": "620px"
+      },
+      {
+        "name": "wide-min",
+        "value": "700px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Theme Switch",
+      "kind": "nav",
+      "description": "Persistent gate/transit appearance switch; aria-pressed carries selection while DOM and data stay unchanged.",
+      "html": "<div class=\"ds-theme-switch\" role=\"group\" aria-label=\"界面主题\"><button aria-pressed=\"true\">登机牌</button><button aria-pressed=\"false\">换乘图</button></div>",
+      "css": ".ds-theme-switch{display:inline-flex;padding:2px;border:1px solid color-mix(in srgb,var(--masthead-ink,#f3f5f1) 28%,transparent);border-radius:99px;background:var(--masthead,#1c2834)}.ds-theme-switch button{min-height:27px;padding:4px 8px;border:0;border-radius:99px;color:color-mix(in srgb,var(--masthead-ink,#f3f5f1) 68%,transparent);background:transparent;font:inherit;font-size:11px;cursor:pointer;transition:background-color .16s ease,color .16s ease}.ds-theme-switch button[aria-pressed=\"true\"]{color:var(--masthead,#1c2834);background:var(--masthead-ink,#f3f5f1)}.ds-theme-switch button:focus-visible{outline:2px solid var(--focus,#e45e3a);outline-offset:2px}"
+    },
+    {
+      "name": "Probe Entry",
+      "kind": "input",
+      "refersTo": "probe-input",
+      "description": "Dominant 45px compound control for adding the next semantic probe.",
+      "html": "<form class=\"ds-probe-entry\"><input aria-label=\"探针描述\" placeholder=\"输入你想在视频里寻找的内容…\"><button type=\"button\"><span aria-hidden=\"true\">＋</span> 添加</button></form>",
+      "css": ".ds-probe-entry{display:flex;margin:0}.ds-probe-entry input{min-width:0;min-height:45px;flex:1;padding:10px 12px;color:var(--ink,#1c2834);background:transparent;border:1px solid var(--rule-strong,#7c858a);border-right:0;border-radius:var(--radius,3px) 0 0 var(--radius,3px);font:inherit}.ds-probe-entry button{min-width:90px;min-height:45px;padding:7px 10px;color:var(--masthead-ink,#f3f5f1);background:var(--masthead,#1c2834);border:1px solid var(--masthead,#1c2834);border-radius:0 var(--radius,3px) var(--radius,3px) 0;font:inherit;font-weight:750;cursor:pointer;transition:background-color .16s ease,color .16s ease}.ds-probe-entry button:hover{color:#07130f;background:var(--accent,#0b715e);border-color:var(--accent,#0b715e)}.ds-probe-entry input:focus-visible,.ds-probe-entry button:focus-visible{outline:2px solid var(--focus,#e45e3a);outline-offset:2px}"
+    },
+    {
+      "name": "Probe Card",
+      "kind": "card",
+      "description": "Compact probe identity card; its route color persists across cards, tracks, hotspots, and player overlay.",
+      "html": "<article class=\"ds-probe-card\" style=\"--probe-color:#5ddbc8\"><div class=\"ds-probe-name\"><i aria-hidden=\"true\"></i><span>知识科普<small>Noul · 命题概率</small></span></div><div class=\"ds-probe-actions\"><label><input type=\"checkbox\" checked> 显示</label><button>修改</button></div></article>",
+      "css": ".ds-probe-card{display:flex;min-width:0;min-height:90px;flex-direction:column;justify-content:space-between;gap:8px;padding:10px;border:1px solid var(--rule,#b8bec0);border-top:3px solid var(--probe-color);border-radius:var(--radius,3px);background:var(--paper,#f7f7f0);color:var(--ink,#1c2834)}.ds-probe-name{display:flex;gap:7px;font-size:11px;font-weight:700}.ds-probe-name i{width:8px;height:8px;margin-top:3px;border-radius:50%;background:var(--probe-color)}.ds-probe-name small{display:block;margin-top:3px;color:var(--muted,#697279);font-size:10px;font-weight:500}.ds-probe-actions{display:flex;justify-content:flex-end;gap:4px}.ds-probe-actions label,.ds-probe-actions button{min-height:28px;padding:3px 6px;color:inherit;background:transparent;border:1px solid var(--rule,#b8bec0);border-radius:var(--radius,3px);font:inherit;font-size:11px}.ds-probe-actions button:hover{border-color:var(--ink,#1c2834);background:var(--paper-2,#eff0e9)}.ds-probe-actions input{accent-color:var(--accent,#0b715e)}.ds-probe-actions button:focus-visible,.ds-probe-actions input:focus-visible{outline:2px solid var(--focus,#e45e3a);outline-offset:2px}"
+    },
+    {
+      "name": "Analyze Button",
+      "kind": "button",
+      "refersTo": "button-primary-gate",
+      "description": "Primary command in the add-probe → analyze → inspect → verify loop.",
+      "html": "<button class=\"ds-analyze\"><span aria-hidden=\"true\">▶</span> 分析视频</button>",
+      "css": ".ds-analyze{min-height:44px;padding:7px 10px;color:var(--masthead-ink,#f3f5f1);background:var(--masthead,#1c2834);border:1px solid var(--masthead,#1c2834);border-radius:var(--radius,3px);font:inherit;font-size:14px;font-weight:760;cursor:pointer;transition:background-color .16s ease,color .16s ease,transform .16s ease}.ds-analyze:hover{color:#07130f;background:var(--accent,#0b715e);border-color:var(--accent,#0b715e)}.ds-analyze:active{transform:translateY(1px)}.ds-analyze:focus-visible{outline:2px solid var(--focus,#e45e3a);outline-offset:2px}"
+    },
+    {
+      "name": "Semantic Timeline Lane",
+      "kind": "custom",
+      "refersTo": "timeline-lane",
+      "description": "Full-lane hit target maps pointer ratio to video time; bars remain time-proportional and station nodes are generated only from ranked hotspot data.",
+      "html": "<button class=\"ds-timeline\" aria-label=\"知识科普语义时间轴。点击对应时间跳转，按回车跳到最高热点。\" style=\"--probe-color:#5ddbc8\"><span class=\"ds-cell\" style=\"left:16%;width:7%;height:72%\"></span><span class=\"ds-cell\" style=\"left:58%;width:9%;height:88%\"></span><span class=\"ds-station\" data-source=\"ranked-hotspot\" style=\"left:62%\"></span></button>",
+      "css": ".ds-timeline{position:relative;display:block;width:100%;height:54px;min-height:54px;overflow:hidden;padding:0;border:0;border-bottom:1px solid var(--rule-strong,#7c858a);border-radius:0;background:repeating-linear-gradient(90deg,transparent 0 calc(12.5% - 1px),color-mix(in srgb,var(--rule,#b8bec0) 50%,transparent) calc(12.5% - 1px) 12.5%);cursor:pointer}.ds-timeline::before{position:absolute;right:0;bottom:11px;left:0;z-index:3;height:2px;border-radius:99px;background:color-mix(in srgb,var(--probe-color) 78%,transparent);content:\"\";pointer-events:none}.ds-cell{position:absolute;bottom:0;z-index:2;min-width:8px;min-height:4px;border-right:1px solid color-mix(in srgb,var(--paper,#f7f7f0) 70%,transparent);border-radius:1px 1px 0 0;background:var(--probe-color);opacity:.78;pointer-events:none}.ds-station{position:absolute;bottom:5px;z-index:4;width:12px;height:12px;border:2px solid var(--probe-color);border-radius:50%;background:var(--paper,#12181d);transform:translateX(-50%);pointer-events:none}.ds-timeline:hover{border-color:var(--ink,#1c2834)}.ds-timeline:focus-visible{outline:2px solid var(--focus,#e45e3a);outline-offset:2px}"
+    },
+    {
+      "name": "Hotspot Row",
+      "kind": "button",
+      "description": "Ranked result that connects a probe reading to the evidence window and original video time.",
+      "html": "<button class=\"ds-hotspot\"><span>#1 03:12–03:32 · 这段原句解释了核心机制…</span><strong>82%</strong></button>",
+      "css": ".ds-hotspot{display:grid;grid-template-columns:minmax(0,1fr) auto;width:100%;min-height:42px;padding:7px 10px;gap:10px;align-items:center;color:var(--ink,#1c2834);background:transparent;border:1px solid var(--rule,#b8bec0);border-radius:0;font:inherit;text-align:left;cursor:pointer}.ds-hotspot span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ds-hotspot strong{color:var(--accent,#0b715e);font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace}.ds-hotspot:hover{position:relative;z-index:1;background:var(--paper-2,#eff0e9);border-color:var(--ink,#1c2834)}.ds-hotspot:focus-visible{outline:2px solid var(--focus,#e45e3a);outline-offset:2px}"
+    },
+    {
+      "name": "Utility Drawer",
+      "kind": "custom",
+      "description": "Progressive disclosure for video parsing, synced-text display, player settings, and history after the primary evidence loop.",
+      "html": "<details class=\"ds-utility\"><summary><span>视频解析与播放器</span><span class=\"ds-summary-action\">设置</span></summary><p>CueWave 会自动解析视频内容；自动解析失败时，也可以导入兼容的时间轴文件。</p></details>",
+      "css": ".ds-utility{color:var(--ink,#1c2834);background:var(--paper,#f7f7f0);border-bottom:1px dashed var(--rule-strong,#7c858a)}.ds-utility summary{display:flex;min-height:44px;align-items:center;justify-content:space-between;padding:10px 15px;list-style:none;font:inherit;font-weight:650;cursor:pointer}.ds-utility summary::-webkit-details-marker{display:none}.ds-summary-action{color:var(--muted,#697279);font-size:11px;font-weight:500}.ds-summary-action::after{content:\" ＋\"}.ds-utility[open] .ds-summary-action::after{content:\" －\"}.ds-utility p{margin:0 15px 15px;color:var(--muted,#697279);font-size:12px;line-height:1.5}.ds-utility summary:hover{background:var(--paper-2,#eff0e9)}.ds-utility summary:focus-visible{outline:2px solid var(--focus,#e45e3a);outline-offset:-2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "一条时间线，两套交通语义",
+    "overview": "CueWave 是一个克制、快速、可核对的观看工具。默认主题“时间登机牌”使用票纸、航站导视和虚线撕口的节奏；暗色主题“语义换乘图”使用石墨站牌、发光线路和由真实热点生成的站点。两者表达的是同一条视频时间线，不是两套产品。\n\n两个主题共享同一 DOM、内容顺序、数据、交互和可访问语义；主题只改变视觉材质，并通过浏览器本地键 `cuewave:theme` 持久化。未保存或无效值回退到默认的“时间登机牌”。探针色始终是功能性的线路标识，不能因换肤改变含义。\n\n主流程固定为“添加并确认探针 → 分析视频 → 扫描语义时间轴与最高热点 → 跳转并核对原句”。视频解析／同步文字、历史记录和实时判断属于渐进披露的辅助能力，不与主流程争夺首屏。用户界面只描述“解析视频”和“分析视频”，不暴露字幕供应商、文件格式或以字幕作为底层判断材料的实现细节。设计全部由 HTML、CSS 和字体栈构成；仓库的 shipping 扩展不使用任何 raster 主题资产，`.impeccable/` 下的图片仅是设计与审阅证据。",
+    "keyCharacteristics": [
+      "同一信息架构下的浅色登机牌与暗色换乘图双主题。",
+      "以时间比例、探针色和原句证据构成可核对的分析闭环。",
+      "紧凑侧栏优先，窄屏横向压缩，宽屏提高密度与字号而不改顺序。",
+      "状态诚实地区分未分析、无内容、失败和低值。",
+      "无 shipping raster assets；主题材质由 CSS 绘制。"
+    ],
+    "rules": [
+      {
+        "name": "The Route Identity Rule",
+        "body": "探针色标识数据系列，而不是装饰；换主题、切换视口或折叠工具时都不能重新分配。",
+        "section": "colors"
+      },
+      {
+        "name": "The Readable Teal Rule",
+        "body": "浅色主题中的探针标题不直接使用明亮探针青，而以 38% 路线色混入正文墨色；暗色主题才以 82% 路线色混入白色并允许微弱辉光。",
+        "section": "colors"
+      },
+      {
+        "name": "The Evidence Numerals Rule",
+        "body": "时间、计数和分析数值使用等宽数字，正文与原句保持人文无衬线，避免把证据阅读变成日志界面。",
+        "section": "typography"
+      },
+      {
+        "name": "The One Sequence Rule",
+        "body": "两个主题和所有宽度共享同一 DOM、操作顺序、数据和语义；响应式规则只能重排密度，不能创建分叉流程。",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Ticket Rule",
+        "body": "默认主题靠纸张、切口和规则线分层；阴影不是登机牌主题的常规容器语言。",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do 保持“加探针 → 分析 → 看时间轴／热点 → 跳转核对”的主流程在同一视觉序列中。",
+      "Do 让两个主题复用同一 DOM、数据、顺序与可访问语义，并持久化用户的主题选择。",
+      "Do 用真实分析窗口决定柱的位置，用真实热点决定暗色换乘站点的位置。",
+      "Do 在 310–620px 维持正常侧栏，在 ≤370px 使用紧凑规则，在 ≥700px 使用宽屏规则。",
+      "Do 将视频解析、历史和实时判断保持为渐进披露能力。",
+      "Do 用“解析视频中”和“已就绪，可以开始分析”描述准备状态，不向用户暴露字幕供应商或底层判断材料。",
+      "Do 继续使用 CSS 形状、边框、渐变和系统字体构建主题；shipping UI 中没有 raster 资产。"
+    ],
+    "donts": [
+      "Don't 为暗色主题复制第二套 DOM，或让换肤改变数据、操作顺序和语义。",
+      "Don't 用明亮浅青直接承载浅色票纸上的小号文字；使用混入深色正文的路线色。",
+      "Don't 为视觉效果添加固定假站点，或让最小柱宽改变点击到时间的比例映射。",
+      "Don't 把失败、无内容、未分析和低值合并为同一种弱状态。",
+      "Don't 将 `.impeccable/` 中的参考图当作 shipping raster assets；它们只用于方向与审阅。",
+      "Don't 宣称 Impeccable 固定静态 comp 与动态响应式 DOM 的像素比较门禁已经通过。该自动化门禁尚未建立，属于明确的 process debt；现有审阅截图不是其替代品。"
+    ]
+  }
+}

@@ -1,0 +1,438 @@
+{
+  "tool": "build-phase",
+  "version": 2,
+  "startedAt": "2026-09-28T14:35:10.032Z",
+  "comp": ".impeccable/mocks/time-boarding-pass.webp",
+  "direction": "630b0c20",
+  "breakpoint": "848x1854",
+  "artifact": "extension/sidepanel.html",
+  "phase": "hero",
+  "phases": {
+    "comps": {
+      "status": "closed",
+      "openedAt": "2026-09-28T14:35:10.032Z",
+      "closedAt": "2026-09-28T14:35:34.497Z",
+      "attempts": 1,
+      "notes": [],
+      "gate": {
+        "ok": true,
+        "reasons": [],
+        "summary": "3 comps, 1 approved",
+        "approved": ".impeccable/mocks/time-boarding-pass.webp",
+        "at": "2026-09-28T14:35:34.497Z"
+      },
+      "forced": null
+    },
+    "spec": {
+      "status": "closed",
+      "openedAt": "2026-09-28T14:35:34.578Z",
+      "closedAt": "2026-09-28T14:37:13.337Z",
+      "attempts": 1,
+      "notes": [],
+      "gate": {
+        "ok": true,
+        "reasons": [],
+        "summary": "25 regions, 0 plates, 14 text regions measured",
+        "at": "2026-09-28T14:37:13.337Z"
+      },
+      "forced": null
+    },
+    "plates": {
+      "status": "closed",
+      "openedAt": "2026-09-28T14:37:13.337Z",
+      "closedAt": "2026-09-28T14:37:15.839Z",
+      "attempts": 1,
+      "notes": [],
+      "gate": {
+        "ok": true,
+        "reasons": [],
+        "summary": "no plates owed",
+        "at": "2026-09-28T14:37:15.839Z"
+      },
+      "forced": null
+    },
+    "hero": {
+      "status": "open",
+      "openedAt": "2026-09-28T14:37:15.839Z",
+      "closedAt": null,
+      "attempts": 3,
+      "notes": [],
+      "gate": {
+        "ok": false,
+        "reasons": [
+          "hero overall 57.5% < 72% (structure 43%, color 74%, detail 37%)",
+          "region brand is missing (detail 12%, structure 25%): the comp shows material the build does not",
+          "region masthead-meta is missing (detail 18%, structure 40%): the comp shows material the build does not",
+          "region video-ticket is missing (detail 7%, structure 49%): the comp shows material the build does not",
+          "region video-title is missing (detail 9%, structure 56%): the comp shows material the build does not",
+          "region video-facts is missing (detail 7%, structure 58%): the comp shows material the build does not",
+          "region probe-entry-label is missing (detail 0%, structure 51%): the comp shows material the build does not",
+          "region timeline-axis is missing (detail 9%, structure 93%): the comp shows material the build does not",
+          "region hotspot-heading is missing (detail 5%, structure 62%): the comp shows material the build does not",
+          "region hotspot-table-head is missing (detail 0%, structure 55%): the comp shows material the build does not",
+          "region hotspot-rows is missing (detail 7%, structure 44%): the comp shows material the build does not",
+          "region utility-text is missing (detail 3%, structure 80%): the comp shows material the build does not",
+          "region analyze-action (control) is contradicted (structure 27%, detail added 39%): this control differs from the comp: inspect its lettering and visible shape separately against the crop and the measured readings; preserve the region's control classification",
+          "control probe-entry drifts to 59% (structure 70%, color 72%): open .impeccable/review/diff/hero/regions/probe-entry.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification",
+          "control probe-tickets drifts to 49% (structure 52%, color 65%): open .impeccable/review/diff/hero/regions/probe-tickets.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification",
+          "control timeline-histograms drifts to 52% (structure 59%, color 67%): open .impeccable/review/diff/hero/regions/timeline-histograms.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification"
+        ],
+        "regionReasons": {
+          "brand": [
+            "region brand is missing (detail 12%, structure 25%): the comp shows material the build does not"
+          ],
+          "masthead-meta": [
+            "region masthead-meta is missing (detail 18%, structure 40%): the comp shows material the build does not"
+          ],
+          "video-ticket": [
+            "region video-ticket is missing (detail 7%, structure 49%): the comp shows material the build does not"
+          ],
+          "video-title": [
+            "region video-title is missing (detail 9%, structure 56%): the comp shows material the build does not"
+          ],
+          "video-facts": [
+            "region video-facts is missing (detail 7%, structure 58%): the comp shows material the build does not"
+          ],
+          "probe-entry-label": [
+            "region probe-entry-label is missing (detail 0%, structure 51%): the comp shows material the build does not"
+          ],
+          "timeline-axis": [
+            "region timeline-axis is missing (detail 9%, structure 93%): the comp shows material the build does not"
+          ],
+          "hotspot-heading": [
+            "region hotspot-heading is missing (detail 5%, structure 62%): the comp shows material the build does not"
+          ],
+          "hotspot-table-head": [
+            "region hotspot-table-head is missing (detail 0%, structure 55%): the comp shows material the build does not"
+          ],
+          "hotspot-rows": [
+            "region hotspot-rows is missing (detail 7%, structure 44%): the comp shows material the build does not"
+          ],
+          "utility-text": [
+            "region utility-text is missing (detail 3%, structure 80%): the comp shows material the build does not"
+          ],
+          "analyze-action": [
+            "region analyze-action (control) is contradicted (structure 27%, detail added 39%): this control differs from the comp: inspect its lettering and visible shape separately against the crop and the measured readings; preserve the region's control classification"
+          ],
+          "probe-entry": [
+            "control probe-entry drifts to 59% (structure 70%, color 72%): open .impeccable/review/diff/hero/regions/probe-entry.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification"
+          ],
+          "probe-tickets": [
+            "control probe-tickets drifts to 49% (structure 52%, color 65%): open .impeccable/review/diff/hero/regions/probe-tickets.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification"
+          ],
+          "timeline-histograms": [
+            "control timeline-histograms drifts to 52% (structure 59%, color 67%): open .impeccable/review/diff/hero/regions/timeline-histograms.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification"
+          ]
+        },
+        "summary": "hero 57% (contradicted)",
+        "score": 0.5746,
+        "verdict": "contradicted",
+        "report": ".impeccable/review/diff/hero/report.json",
+        "sideBySide": "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/side-by-side.png",
+        "worst": [
+          "brand missing 33%",
+          "hotspot-table-head missing 35%",
+          "analyze-action contradicted 37%"
+        ],
+        "worstIds": [
+          "brand",
+          "hotspot-table-head",
+          "analyze-action"
+        ],
+        "worstCrops": [
+          {
+            "id": "brand",
+            "verdict": "missing",
+            "score": {
+              "overall": 0.3297,
+              "structure": 0.2531,
+              "color": 0.7379,
+              "colorIntersection": 0.5342,
+              "paletteMatch": 0.8475,
+              "detail": 0.1244,
+              "detailRaw": 0.1505,
+              "detailAdded": 0.0521,
+              "bands": 0
+            },
+            "file": ".impeccable/review/diff/hero/regions/brand.png"
+          },
+          {
+            "id": "hotspot-table-head",
+            "verdict": "missing",
+            "score": {
+              "overall": 0.3459,
+              "structure": 0.5471,
+              "color": 0.2895,
+              "colorIntersection": 0.1941,
+              "paletteMatch": 0.3408,
+              "detail": 0,
+              "detailRaw": 0.0705,
+              "detailAdded": 0.2083,
+              "bands": 0
+            },
+            "file": ".impeccable/review/diff/hero/regions/hotspot-table-head.png"
+          },
+          {
+            "id": "analyze-action",
+            "verdict": "contradicted",
+            "score": {
+              "overall": 0.3714,
+              "structure": 0.2707,
+              "color": 0.7001,
+              "colorIntersection": 0.2674,
+              "paletteMatch": 0.933,
+              "detail": 0.0229,
+              "detailRaw": 0.2156,
+              "detailAdded": 0.3854,
+              "bands": 0.2667
+            },
+            "file": ".impeccable/review/diff/hero/regions/analyze-action.png"
+          }
+        ],
+        "advisories": [
+          "(advisory, unchanged for 3+ attempts) text video-title: cap height 9.1px in the build, 28.8px in the comp (-68%); set font-size so the cap height renders at 28.8px",
+          "(advisory, unchanged for 3+ attempts) text video-id: cap height 9.4px in the build, 13px in the comp (-28%); set font-size so the cap height renders at 13px",
+          "(advisory, unchanged for 3+ attempts) text probe-entry-label: cap height 9.1px in the build, 26.7px in the comp (-66%); set font-size so the cap height renders at 26.7px (font-match ranked Bitcount Grid Double 400 at 44px)",
+          "(advisory, unchanged for 3+ attempts) text probe-examples: cap height 11.4px in the build, 18.8px in the comp (-39%); set font-size so the cap height renders at 18.8px",
+          "(advisory, unchanged for 3+ attempts) text active-probes-heading: cap height 16.6px in the build, 26.8px in the comp (-38%); set font-size so the cap height renders at 26.8px",
+          "(advisory, unchanged for 3+ attempts) text probe-tickets: cap height 6.9px in the build, 21.2px in the comp (-67%); set font-size so the cap height renders at 21.2px",
+          "(advisory, unchanged for 3+ attempts) text timeline-heading: letter-spacing is tighter than the comp's (gap 0.106 vs 0.216 of the cap height); set letter-spacing to open it by about 2px",
+          "(advisory, unchanged for 3+ attempts) text timeline-axis: letter-spacing is tighter than the comp's (gap 0.059 vs 0.246 of the cap height); set letter-spacing to open it by about 2px",
+          "(advisory, unchanged for 3+ attempts) text utility-text: cap height 12.5px in the build, 49.2px in the comp (-75%); set font-size so the cap height renders at 49.2px (font-match ranked Rajdhani 300 at 71px)",
+          "(advisory, unchanged for 3+ attempts) text brand: ink is #788888 in the build, #eff2f3 in the comp; use the comp's colour",
+          "(advisory, unchanged for 3+ attempts) text video-title: ink is #b8b8c6 in the build, #15212b in the comp; use the comp's colour",
+          "(advisory, unchanged for 3+ attempts) text probe-examples: ink is #767e83 in the build, #3c454a in the comp; use the comp's colour",
+          "(advisory, unchanged for 3+ attempts) text probe-tickets: ink is #b7b8c3 in the build, #394448 in the comp; use the comp's colour",
+          "(advisory, unchanged for 3+ attempts) text utility-text: its first line starts 19px lower than in the comp (19px vs 0px into the region box); the spacing above it is too large",
+          "(advisory, unchanged for 3+ attempts) chrome masthead: its ink is 72px tall in the build and 28px in the comp (+44px); match the height, not only the position",
+          "(advisory, unchanged for 3+ attempts) chrome video-ticket: its rule sits 1px into the box in the comp and 31px in the build (+30px), so the strip is taller than the comp's; match the height, not only the position",
+          "(advisory, unchanged for 3+ attempts) control probe-entry: its rule sits 1px into the box in the comp and 25px in the build (+24px), so the strip is taller than the comp's; match the height, not only the position",
+          "(advisory, unchanged for 3+ attempts) control probe-tickets: its rule sits 1px into the box in the comp and 85px in the build (+84px), so the strip is taller than the comp's; match the height, not only the position",
+          "(advisory, unchanged for 3+ attempts) control analyze-action: its rule sits 1px into the box in the comp and 21px in the build (+20px), so the strip is taller than the comp's; match the height, not only the position",
+          "(advisory, unchanged for 3+ attempts) control hotspot-rows: its rule sits 76px into the box in the comp and 53px in the build (-23px), so the strip is shorter than the comp's; match the height, not only the position",
+          "(advisory, unchanged for 3+ attempts) chrome utility-strip: its rule sits 1px into the box in the comp and 50px in the build (+49px), so the strip is taller than the comp's; match the height, not only the position"
+        ],
+        "regionVerdicts": {
+          "masthead": "drift",
+          "probe-zone": "contradicted",
+          "timeline-zone": "drift",
+          "hotspot-zone": "contradicted",
+          "brand": "missing",
+          "masthead-meta": "missing",
+          "video-ticket": "missing",
+          "video-title": "missing",
+          "video-facts": "missing",
+          "video-id": "drift",
+          "probe-entry-label": "missing",
+          "probe-entry": "drift",
+          "probe-examples": "drift",
+          "active-probes-heading": "drift",
+          "probe-tickets": "drift",
+          "analyze-action": "contradicted",
+          "ready-state": "drift",
+          "timeline-heading": "drift",
+          "timeline-axis": "missing",
+          "timeline-histograms": "drift",
+          "hotspot-heading": "missing",
+          "hotspot-table-head": "missing",
+          "hotspot-rows": "missing",
+          "utility-strip": "drift",
+          "utility-text": "missing"
+        },
+        "at": "2026-09-28T14:37:29.479Z"
+      },
+      "forced": null,
+      "readingsSeen": {
+        "text video-title: cap height 9.1px in the build, 28.8px in the comp (-68%); set font-size so the cap height renders at 28.8px": 5,
+        "text video-id: cap height 9.4px in the build, 13px in the comp (-28%); set font-size so the cap height renders at 13px": 5,
+        "text probe-entry-label: cap height 9.1px in the build, 26.7px in the comp (-66%); set font-size so the cap height renders at 26.7px (font-match ranked Bitcount Grid Double 400 at 44px)": 5,
+        "text probe-examples: cap height 11.4px in the build, 18.8px in the comp (-39%); set font-size so the cap height renders at 18.8px": 5,
+        "text active-probes-heading: cap height 16.6px in the build, 26.8px in the comp (-38%); set font-size so the cap height renders at 26.8px": 5,
+        "text probe-tickets: cap height 6.9px in the build, 21.2px in the comp (-67%); set font-size so the cap height renders at 21.2px": 5,
+        "text timeline-heading: letter-spacing is tighter than the comp's (gap 0.106 vs 0.216 of the cap height); set letter-spacing to open it by about 2px": 5,
+        "text timeline-axis: letter-spacing is tighter than the comp's (gap 0.059 vs 0.246 of the cap height); set letter-spacing to open it by about 2px": 5,
+        "text utility-text: cap height 12.5px in the build, 49.2px in the comp (-75%); set font-size so the cap height renders at 49.2px (font-match ranked Rajdhani 300 at 71px)": 5,
+        "text brand: ink is #788888 in the build, #eff2f3 in the comp; use the comp's colour": 5,
+        "text video-title: ink is #b8b8c6 in the build, #15212b in the comp; use the comp's colour": 5,
+        "text probe-examples: ink is #767e83 in the build, #3c454a in the comp; use the comp's colour": 5,
+        "text probe-tickets: ink is #b7b8c3 in the build, #394448 in the comp; use the comp's colour": 5,
+        "text utility-text: its first line starts 19px lower than in the comp (19px vs 0px into the region box); the spacing above it is too large": 5,
+        "chrome masthead: its ink is 72px tall in the build and 28px in the comp (+44px); match the height, not only the position": 5,
+        "chrome video-ticket: its rule sits 1px into the box in the comp and 31px in the build (+30px), so the strip is taller than the comp's; match the height, not only the position": 5,
+        "control probe-entry: its rule sits 1px into the box in the comp and 25px in the build (+24px), so the strip is taller than the comp's; match the height, not only the position": 5,
+        "control probe-tickets: its rule sits 1px into the box in the comp and 85px in the build (+84px), so the strip is taller than the comp's; match the height, not only the position": 5,
+        "control analyze-action: its rule sits 1px into the box in the comp and 21px in the build (+20px), so the strip is taller than the comp's; match the height, not only the position": 5,
+        "control hotspot-rows: its rule sits 76px into the box in the comp and 53px in the build (-23px), so the strip is shorter than the comp's; match the height, not only the position": 5,
+        "chrome utility-strip: its rule sits 1px into the box in the comp and 50px in the build (+49px), so the strip is taller than the comp's; match the height, not only the position": 5
+      },
+      "history": [
+        {
+          "at": "2026-09-28T14:37:16.714Z",
+          "score": 0.5746,
+          "worstIds": [
+            "brand",
+            "hotspot-table-head",
+            "analyze-action"
+          ],
+          "blockingReasons": [
+            "hero overall 57.5% < 72% (structure 43%, color 74%, detail 37%)",
+            "region brand is missing (detail 12%, structure 25%): the comp shows material the build does not",
+            "region masthead-meta is missing (detail 18%, structure 40%): the comp shows material the build does not",
+            "region video-ticket is missing (detail 7%, structure 49%): the comp shows material the build does not",
+            "region video-title is missing (detail 9%, structure 56%): the comp shows material the build does not",
+            "region video-facts is missing (detail 7%, structure 58%): the comp shows material the build does not",
+            "region probe-entry-label is missing (detail 0%, structure 51%): the comp shows material the build does not",
+            "region timeline-axis is missing (detail 9%, structure 93%): the comp shows material the build does not",
+            "region hotspot-heading is missing (detail 5%, structure 62%): the comp shows material the build does not",
+            "region hotspot-table-head is missing (detail 0%, structure 55%): the comp shows material the build does not",
+            "region hotspot-rows is missing (detail 7%, structure 44%): the comp shows material the build does not",
+            "region utility-text is missing (detail 3%, structure 80%): the comp shows material the build does not",
+            "region analyze-action (control) is contradicted (structure 27%, detail added 39%): this control differs from the comp: inspect its lettering and visible shape separately against the crop and the measured readings; preserve the region's control classification",
+            "control probe-entry drifts to 59% (structure 70%, color 72%): open .impeccable/review/diff/hero/regions/probe-entry.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification",
+            "control probe-tickets drifts to 49% (structure 52%, color 65%): open .impeccable/review/diff/hero/regions/probe-tickets.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification",
+            "control timeline-histograms drifts to 52% (structure 59%, color 67%): open .impeccable/review/diff/hero/regions/timeline-histograms.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification",
+            "text video-title: cap height 9.1px in the build, 28.8px in the comp (-68%); set font-size so the cap height renders at 28.8px",
+            "text video-id: cap height 9.4px in the build, 13px in the comp (-28%); set font-size so the cap height renders at 13px",
+            "text probe-entry-label: cap height 9.1px in the build, 26.7px in the comp (-66%); set font-size so the cap height renders at 26.7px (font-match ranked Bitcount Grid Double 400 at 44px)",
+            "text probe-examples: cap height 11.4px in the build, 18.8px in the comp (-39%); set font-size so the cap height renders at 18.8px",
+            "text active-probes-heading: cap height 16.6px in the build, 26.8px in the comp (-38%); set font-size so the cap height renders at 26.8px",
+            "text probe-tickets: cap height 6.9px in the build, 21.2px in the comp (-67%); set font-size so the cap height renders at 21.2px",
+            "text timeline-heading: letter-spacing is tighter than the comp's (gap 0.106 vs 0.216 of the cap height); set letter-spacing to open it by about 2px",
+            "text timeline-axis: letter-spacing is tighter than the comp's (gap 0.059 vs 0.246 of the cap height); set letter-spacing to open it by about 2px"
+          ],
+          "regionVerdicts": {
+            "masthead": "drift",
+            "probe-zone": "contradicted",
+            "timeline-zone": "drift",
+            "hotspot-zone": "contradicted",
+            "brand": "missing",
+            "masthead-meta": "missing",
+            "video-ticket": "missing",
+            "video-title": "missing",
+            "video-facts": "missing",
+            "video-id": "drift",
+            "probe-entry-label": "missing",
+            "probe-entry": "drift",
+            "probe-examples": "drift",
+            "active-probes-heading": "drift",
+            "probe-tickets": "drift",
+            "analyze-action": "contradicted",
+            "ready-state": "drift",
+            "timeline-heading": "drift",
+            "timeline-axis": "missing",
+            "timeline-histograms": "drift",
+            "hotspot-heading": "missing",
+            "hotspot-table-head": "missing",
+            "hotspot-rows": "missing",
+            "utility-strip": "drift",
+            "utility-text": "missing"
+          },
+          "artifactHash": "b72d3c01ef9b"
+        },
+        {
+          "at": "2026-09-28T14:37:18.885Z",
+          "score": 0.5746,
+          "worstIds": [
+            "brand",
+            "hotspot-table-head",
+            "analyze-action"
+          ],
+          "blockingReasons": [
+            "hero overall 57.5% < 72% (structure 43%, color 74%, detail 37%)",
+            "region brand is missing (detail 12%, structure 25%): the comp shows material the build does not",
+            "region masthead-meta is missing (detail 18%, structure 40%): the comp shows material the build does not",
+            "region video-ticket is missing (detail 7%, structure 49%): the comp shows material the build does not",
+            "region video-title is missing (detail 9%, structure 56%): the comp shows material the build does not",
+            "region video-facts is missing (detail 7%, structure 58%): the comp shows material the build does not",
+            "region probe-entry-label is missing (detail 0%, structure 51%): the comp shows material the build does not",
+            "region timeline-axis is missing (detail 9%, structure 93%): the comp shows material the build does not",
+            "region hotspot-heading is missing (detail 5%, structure 62%): the comp shows material the build does not",
+            "region hotspot-table-head is missing (detail 0%, structure 55%): the comp shows material the build does not",
+            "region hotspot-rows is missing (detail 7%, structure 44%): the comp shows material the build does not",
+            "region utility-text is missing (detail 3%, structure 80%): the comp shows material the build does not",
+            "region analyze-action (control) is contradicted (structure 27%, detail added 39%): this control differs from the comp: inspect its lettering and visible shape separately against the crop and the measured readings; preserve the region's control classification",
+            "control probe-entry drifts to 59% (structure 70%, color 72%): open .impeccable/review/diff/hero/regions/probe-entry.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification",
+            "control probe-tickets drifts to 49% (structure 52%, color 65%): open .impeccable/review/diff/hero/regions/probe-tickets.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification",
+            "control timeline-histograms drifts to 52% (structure 59%, color 67%): open .impeccable/review/diff/hero/regions/timeline-histograms.png and compare its lettering and visible shape separately; use the measured readings and preserve the region's control classification",
+            "text video-title: cap height 9.1px in the build, 28.8px in the comp (-68%); set font-size so the cap height renders at 28.8px",
+            "text video-id: cap height 9.4px in the build, 13px in the comp (-28%); set font-size so the cap height renders at 13px",
+            "text probe-entry-label: cap height 9.1px in the build, 26.7px in the comp (-66%); set font-size so the cap height renders at 26.7px (font-match ranked Bitcount Grid Double 400 at 44px)",
+            "text probe-examples: cap height 11.4px in the build, 18.8px in the comp (-39%); set font-size so the cap height renders at 18.8px",
+            "text active-probes-heading: cap height 16.6px in the build, 26.8px in the comp (-38%); set font-size so the cap height renders at 26.8px",
+            "text probe-tickets: cap height 6.9px in the build, 21.2px in the comp (-67%); set font-size so the cap height renders at 21.2px",
+            "text timeline-heading: letter-spacing is tighter than the comp's (gap 0.106 vs 0.216 of the cap height); set letter-spacing to open it by about 2px",
+            "text timeline-axis: letter-spacing is tighter than the comp's (gap 0.059 vs 0.246 of the cap height); set letter-spacing to open it by about 2px"
+          ],
+          "regionVerdicts": {
+            "masthead": "drift",
+            "probe-zone": "contradicted",
+            "timeline-zone": "drift",
+            "hotspot-zone": "contradicted",
+            "brand": "missing",
+            "masthead-meta": "missing",
+            "video-ticket": "missing",
+            "video-title": "missing",
+            "video-facts": "missing",
+            "video-id": "drift",
+            "probe-entry-label": "missing",
+            "probe-entry": "drift",
+            "probe-examples": "drift",
+            "active-probes-heading": "drift",
+            "probe-tickets": "drift",
+            "analyze-action": "contradicted",
+            "ready-state": "drift",
+            "timeline-heading": "drift",
+            "timeline-axis": "missing",
+            "timeline-histograms": "drift",
+            "hotspot-heading": "missing",
+            "hotspot-table-head": "missing",
+            "hotspot-rows": "missing",
+            "utility-strip": "drift",
+            "utility-text": "missing"
+          },
+          "artifactHash": "b72d3c01ef9b"
+        }
+      ],
+      "records": 2
+    },
+    "sections": {
+      "status": "pending",
+      "openedAt": null,
+      "closedAt": null,
+      "attempts": 0,
+      "notes": [],
+      "gate": null,
+      "forced": null
+    },
+    "motion": {
+      "status": "pending",
+      "openedAt": null,
+      "closedAt": null,
+      "attempts": 0,
+      "notes": [],
+      "gate": null,
+      "forced": null
+    },
+    "responsive": {
+      "status": "pending",
+      "openedAt": null,
+      "closedAt": null,
+      "attempts": 0,
+      "notes": [],
+      "gate": null,
+      "forced": null
+    },
+    "review": {
+      "status": "pending",
+      "openedAt": null,
+      "closedAt": null,
+      "attempts": 0,
+      "notes": [],
+      "gate": null,
+      "forced": null
+    }
+  },
+  "finish": null,
+  "sessionId": "dual-theme",
+  "plates": {}
+}

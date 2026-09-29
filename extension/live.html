@@ -4,7 +4,7 @@
 <body>
   <header><div class="brand"><span class="logo">≋</span><div><strong>CueWave</strong><small>REAL-TIME · PHASE 2</small></div></div><span id="connection" class="connection">未连接</span></header>
   <main>
-    <section class="hero"><div><div class="eyebrow">实时语义判断</div><h1>让每一句话的语义信号都可见。</h1><p>中文与英文自动识别。关注表达是否缺乏推进、是否用空洞概念代替说明；读数只评价语言，不判断项目真假或观众真实感受。</p></div><div class="timer"><span id="clock">00:00</span><small id="mic-name">麦克风未开启</small></div></section>
+    <section class="hero"><div><div class="eyebrow">实时语义判断</div><h1>让每一句话的语义信号都可见。</h1><p>中文与英文自动识别。分别观察表达是否容易失去注意力，以及每段话提供了多少可复述的新信息；读数只评价语言，不核验事实真伪或观众真实感受。</p></div><div class="timer"><span id="clock">00:00</span><small id="mic-name">麦克风未开启</small></div></section>
     <section class="notice"><strong>采集说明</strong><p>点击开始后，麦克风音频经本机辅助进程发送至 Gemini 实时转写；定稿文字发送至 Jev 分析。最终字幕与读数会自动保存在此浏览器，点击“新项目”可查看刚结束项目，停止后可查看整场结果。原始录音不保存；本页面须保持打开才能持续采集。请事先告知发言者。</p></section>
     <section class="toolbar"><button id="start" class="primary">开始收音与分析</button><button id="stop" disabled>停止并释放麦克风</button><button id="next-project" disabled>新项目</button><button id="view-results">查看结果／历史 ↗</button><button id="save" disabled>保存 JSON</button><button id="discard" disabled>删除本次场次</button><span id="project-label">项目 1</span></section>
     <div id="status" class="status" role="status">正在检查本机辅助进程…</div>

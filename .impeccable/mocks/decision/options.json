@@ -1,0 +1,133 @@
+{
+  "title": "选择 CueWave 的新视觉方向",
+  "question": "这些方案都服务同一个任务：快速添加语义探针，并立即从时间轴和热点回到视频证据。选择一个方向继续深化，或重新抽取一组。",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "语义换乘图",
+      "kicker": "THE ROLL",
+      "lineage": "公共交通线路图 × 视频时间轴",
+      "thesis": "每个探针是一条彩色线路，热点是可以直接跳转的站点。",
+      "palette": ["#101820", "#F4F1E8", "#1CC8A0", "#FF7657", "#F6C453"],
+      "materials": ["搪瓷导视牌", "印刷线路图", "清晰站点编码"],
+      "viewport": "窄侧栏首屏以新增探针框为入口，已启用探针成为线路标签；视频时间轴占据主体，不同线路上的高峰站点直接通向原句和视频位置。",
+      "risk": "如果线路隐喻过强，会弱化分数高低；草稿必须让柱形强度仍然一眼可读。",
+      "raised": [
+        {"from": "夜航仪表", "raise": "每条线路同时显示当前值与变化趋势，而不是只显示一个颜色。"},
+        {"from": "深海剖面", "raise": "整条视频保持一条连续、可定位的时间深度轴。"},
+        {"from": "球鞋档案墙", "raise": "探针标签采用可快速扫读的固定信息顺序。"},
+        {"from": "精确主义工业板", "raise": "用硬边层级和明确留白压住复杂度，不堆叠卡片。"}
+      ],
+      "comp": ".impeccable/mocks/decision/assigned.webp"
+    },
+    {
+      "id": "model-pick",
+      "label": "语义索引台",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "浏览器命令面板 × 图书馆索引卡",
+      "thesis": "先输入想找的内容，再像翻索引一样查看按时间排列的证据。",
+      "palette": ["#F3EFE5", "#1E292D", "#D9573F", "#2A8C82", "#D7CBB8"],
+      "materials": ["索引标签", "铅字编号", "薄纸分隔线"],
+      "viewport": "顶部是一条极强的探针输入栏，下方只显示已启用探针、分析进度和前三条结果；高级定义、字幕来源与历史收进按需展开区。",
+      "risk": "最接近日常效率工具，学习成本低，但也最容易显得熟悉而缺少 CueWave 自己的记忆点。",
+      "comp": ".impeccable/mocks/decision/model-pick.webp"
+    },
+    {
+      "id": "challenger-one-bit",
+      "label": "像素工作台",
+      "verdict": "competitive",
+      "lineage": "早期单色桌面系统",
+      "thesis": "把 CueWave 做成一件极清晰、极快速的桌面分析工具。",
+      "palette": ["#FAFAF5", "#111111", "#BDBDB5"],
+      "materials": ["一像素窗口框", "有序抖动灰阶", "反相选中状态"],
+      "viewport": "探针输入像系统命令框，时间轴和热点位于两个紧凑窗口；选中探针整行反相，未分析和失败使用不同抖动纹理。",
+      "case": "窄侧栏中的状态辨识和操作速度很强，但复古语法可能让普通 YouTube 用户先注意风格而不是任务。",
+      "risk": "像素语言不够严格时会退化成装饰性复古皮肤。",
+      "comp": ".impeccable/mocks/decision/challenger-one-bit.webp",
+      "hero": "https://impeccable.style/worlds/cards/medium-native-one-bit-desktop-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/medium-native-one-bit-desktop.webp"
+    },
+    {
+      "id": "challenger-gate-board",
+      "label": "时间登机牌",
+      "verdict": "competitive",
+      "lineage": "登机牌 × 实时登机口看板",
+      "thesis": "探针像行程条件，热点像按视频时间持续重排的出发信息。",
+      "palette": ["#F7F6F0", "#18212A", "#F05A3C", "#3B8C74", "#D6D9D8"],
+      "materials": ["分段票据", "固定列时刻板", "变更提示色"],
+      "viewport": "当前视频成为一张紧凑票据；新增探针后，结果按时间和强度出现在固定列看板中，新增高峰在原位置保持提示直至用户查看。",
+      "case": "时间排序、状态变化和快速扫读非常清楚，但票据隐喻对自定义探针的表达不如主方案直接。",
+      "risk": "如果分隔线和编号过多，会变成拥挤的数据表。",
+      "comp": ".impeccable/mocks/decision/challenger-gate-board.webp",
+      "hero": "https://impeccable.style/worlds/cards/vernacular-ephemera-boarding-pass-and-gate-board-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/vernacular-ephemera-boarding-pass-and-gate-board.webp"
+    },
+    {
+      "id": "challenger-flight",
+      "label": "夜航信号仪表",
+      "verdict": "declined",
+      "lineage": "小型飞机夜航六联仪表",
+      "thesis": "每个探针拥有一块可信赖的趋势仪表。",
+      "palette": ["#090D10", "#F1F4EC", "#9FE870", "#E8A548"],
+      "materials": ["哑光仪表板", "夜光刻度", "阻尼指针"],
+      "viewport": "探针读数以固定仪表组呈现，时间轴位于下方。",
+      "case": "读数可信且趋势明确，但新增探针和视频跳转不像飞行仪表的天然任务。",
+      "kept": "每个信号必须同时给出数值、趋势和警示状态。",
+      "risk": "容易成为漂亮但低效的监控大盘。",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-night-flight-six-pack-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/signals-instruments-night-flight-six-pack.webp"
+    },
+    {
+      "id": "challenger-depth",
+      "label": "语义深度剖面",
+      "verdict": "declined",
+      "lineage": "海洋技术潜水剖面",
+      "thesis": "沿视频时间向下潜入，探针热点成为被照亮的观察点。",
+      "palette": ["#061827", "#0D5D78", "#27D6D0", "#F5F2E8"],
+      "materials": ["深度刻度", "冷暖水层", "光束标记"],
+      "viewport": "连续时间轴控制所有结果的明暗和选中证据。",
+      "case": "连续定位感很强，但纵向深度不符合 YouTube 横向进度条的既有心智。",
+      "kept": "所有结果必须共享一条连续、不可断裂的定位轴。",
+      "risk": "氛围会压过操作效率。"
+    },
+    {
+      "id": "challenger-archive",
+      "label": "探针档案墙",
+      "verdict": "declined",
+      "lineage": "球鞋盒标签与档案堆栈",
+      "thesis": "每个探针像一只可抽取、可展开的标记盒。",
+      "palette": ["#C85F32", "#F4E9D5", "#171A1B", "#AFC4B5"],
+      "materials": ["纸板端标", "单线轮廓", "色号标签"],
+      "viewport": "已启用探针堆叠成标签墙，抽出一个就展开它的时间轴。",
+      "case": "探针扫描和管理很强，但会把结果浏览变成不必要的容器操作。",
+      "kept": "探针标签固定显示名称、颜色、类型和可见状态。",
+      "risk": "三维开盒动作会拖慢高频操作。"
+    },
+    {
+      "id": "challenger-industrial",
+      "label": "工业语义板",
+      "verdict": "declined",
+      "lineage": "精确主义工业绘画",
+      "thesis": "用少量硬边平面把复杂分析压缩成明确层级。",
+      "palette": ["#F1EEE3", "#4D5960", "#A34F34", "#171D20"],
+      "materials": ["平涂几何面", "模板数字", "硬边投影"],
+      "viewport": "一个巨大的时间平面主导侧栏，探针和操作作为重叠但严格排序的小平面。",
+      "case": "层级勇敢而清楚，但抽象平面难以解释多探针的具体意义。",
+      "kept": "减少容器数量，用硬边层级和留白建立结构。",
+      "risk": "很容易牺牲细节可读性来追求构图。"
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "comp", "toggle": true},
+  "canon": true,
+  "canonCard": {
+    "label": "Chrome 侧栏标准方案",
+    "thesis": "遵循常见浏览器效率插件的结构，把熟悉和清楚做到完整。",
+    "palette": ["#FFFFFF", "#17212B", "#2563EB", "#E5EAF0"],
+    "materials": ["中性分组", "标准表单", "紧凑状态条"],
+    "viewport": "视频摘要、探针输入、分析按钮和结果列表按常规纵向分组排列。",
+    "risk": "容易使用，但与其他 AI 视频摘要插件难以区分。",
+    "comp": ".impeccable/mocks/decision/canon.webp"
+  },
+  "steer": true
+}

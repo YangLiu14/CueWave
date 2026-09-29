@@ -131,7 +131,7 @@ test("reopening a partial analysis resumes only pending windows", async () => {
 
 test("a saved hotspot restores the YouTube receiver before drawing and seeking", async () => {
   const nodes = new Map();
-  const element = () => ({ textContent: "", style: {}, children: [], listeners: {},
+  const element = (tagName = "div") => ({ tagName: tagName.toUpperCase(), textContent: "", style: {}, children: [], listeners: {},
     classList: { toggle() {}, add() {} }, replaceChildren(...items) { this.children = items; },
     append(...items) { this.children.push(...items); }, addEventListener(type, listener) { this.listeners[type] = listener; },
     setAttribute() {}, remove() {} });
@@ -188,7 +188,10 @@ test("a saved hotspot restores the YouTube receiver before drawing and seeking",
   assert.equal(injections, 1, "a missing receiver should only be injected once");
   assert.equal(seekDelivered, 1, "clicking the saved hotspot should seek the player");
   const firstCell = nodes.get("tracks").children[0].children[1].children[0];
-  assert.ok(parseFloat(firstCell.style.minWidth) >= 8, "an analyzed long-video window needs a usable hit target");
+  assert.equal(nodes.get("tracks").children[0].children[1].tagName, "BUTTON", "the full timeline lane is the accessible hit target");
+  assert.ok(nodes.get("tracks").children[0].children[1].children.some((item) => item.className === "station"), "transit stations must come from ranked hotspots");
+  assert.equal(firstCell.tagName, "SPAN", "narrow histogram bars must not pretend to be standalone tap targets");
+  assert.ok(parseFloat(firstCell.style.minWidth) >= 8, "an analyzed long-video window stays visible without distorting time alignment");
   assert.ok(Number(firstCell.style.zIndex) > 0, "pending windows must not cover the completed one");
   firstCell.listeners.click();
   await new Promise((resolve) => setTimeout(resolve, 20));

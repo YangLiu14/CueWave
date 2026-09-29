@@ -1,0 +1,958 @@
+{
+  "tool": "comp-diff",
+  "version": 1,
+  "createdAt": "2026-09-28T14:37:29.086Z",
+  "label": "hero",
+  "comp": ".impeccable/mocks/time-boarding-pass.webp",
+  "build": ".impeccable/review/hero-repro.png",
+  "spec": ".impeccable/build/spec.json",
+  "compSize": "848x1854",
+  "buildSize": "848x1854",
+  "align": "top",
+  "overall": 0.5746,
+  "verdict": "contradicted",
+  "scores": {
+    "overall": 0.5746,
+    "structure": 0.4273,
+    "color": 0.744,
+    "colorIntersection": 0.5369,
+    "paletteMatch": 0.8554,
+    "detail": 0.3712,
+    "detailRaw": 0.3764,
+    "detailAdded": 0.0104,
+    "bands": 0.975
+  },
+  "palette": {
+    "comp": [
+      {
+        "hex": "#f7f7f0",
+        "coverage": 0.8263
+      },
+      {
+        "hex": "#1c2834",
+        "coverage": 0.1147
+      },
+      {
+        "hex": "#babfc1",
+        "coverage": 0.0276
+      },
+      {
+        "hex": "#51595d",
+        "coverage": 0.0171
+      },
+      {
+        "hex": "#82888b",
+        "coverage": 0.0142
+      }
+    ],
+    "build": [
+      {
+        "hex": "#f7f7f7",
+        "coverage": 0.8916
+      },
+      {
+        "hex": "#182838",
+        "coverage": 0.0536
+      },
+      {
+        "hex": "#369686",
+        "coverage": 0.0182
+      },
+      {
+        "hex": "#b7b8c3",
+        "coverage": 0.018
+      },
+      {
+        "hex": "#e8b898",
+        "coverage": 0.0102
+      },
+      {
+        "hex": "#798586",
+        "coverage": 0.0084
+      }
+    ]
+  },
+  "regions": [
+    {
+      "id": "masthead",
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 0.039,
+      "kind": "chrome",
+      "score": {
+        "overall": 0.4568,
+        "structure": 0.5953,
+        "color": 0.7922,
+        "colorIntersection": 0.5081,
+        "paletteMatch": 0.9452,
+        "detail": 0.2014,
+        "detailRaw": 0.2848,
+        "detailAdded": 0.1667,
+        "bands": 0
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 27,
+          "y": 22,
+          "w": 789,
+          "h": 28
+        },
+        "build": {
+          "x": 0,
+          "y": 0,
+          "w": 848,
+          "h": 72
+        }
+      }
+    },
+    {
+      "id": "probe-zone",
+      "x": 0,
+      "y": 0.134,
+      "w": 1,
+      "h": 0.266,
+      "kind": "chrome",
+      "score": {
+        "overall": 0.5393,
+        "structure": 0.4604,
+        "color": 0.7234,
+        "colorIntersection": 0.4994,
+        "paletteMatch": 0.844,
+        "detail": 0.339,
+        "detailRaw": 0.3546,
+        "detailAdded": 0.0313,
+        "bands": 0.75
+      },
+      "verdict": "contradicted",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 0,
+          "w": 848,
+          "h": 494
+        },
+        "build": {
+          "x": 33,
+          "y": 0,
+          "w": 815,
+          "h": 494
+        }
+      }
+    },
+    {
+      "id": "timeline-zone",
+      "x": 0,
+      "y": 0.4,
+      "w": 1,
+      "h": 0.258,
+      "kind": "chrome",
+      "score": {
+        "overall": 0.5108,
+        "structure": 0.5498,
+        "color": 0.6929,
+        "colorIntersection": 0.4691,
+        "paletteMatch": 0.8134,
+        "detail": 0.2669,
+        "detailRaw": 0.2877,
+        "detailAdded": 0.0417,
+        "bands": 0.5227
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 0,
+          "w": 848,
+          "h": 478
+        },
+        "build": {
+          "x": 33,
+          "y": 0,
+          "w": 815,
+          "h": 478
+        }
+      }
+    },
+    {
+      "id": "hotspot-zone",
+      "x": 0,
+      "y": 0.658,
+      "w": 1,
+      "h": 0.25,
+      "kind": "chrome",
+      "score": {
+        "overall": 0.4666,
+        "structure": 0.433,
+        "color": 0.7188,
+        "colorIntersection": 0.4539,
+        "paletteMatch": 0.8615,
+        "detail": 0.1815,
+        "detailRaw": 0.218,
+        "detailAdded": 0.0729,
+        "bands": 0.6
+      },
+      "verdict": "contradicted",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 0,
+          "w": 848,
+          "h": 463
+        },
+        "build": {
+          "x": 33,
+          "y": 0,
+          "w": 815,
+          "h": 463
+        }
+      }
+    },
+    {
+      "id": "brand",
+      "x": 0.025,
+      "y": 0.007,
+      "w": 0.2,
+      "h": 0.024,
+      "kind": "text",
+      "score": {
+        "overall": 0.3297,
+        "structure": 0.2531,
+        "color": 0.7379,
+        "colorIntersection": 0.5342,
+        "paletteMatch": 0.8475,
+        "detail": 0.1244,
+        "detailRaw": 0.1505,
+        "detailAdded": 0.0521,
+        "bands": 0
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 6,
+          "y": 9,
+          "w": 164,
+          "h": 28
+        },
+        "build": {
+          "x": 0,
+          "y": 0,
+          "w": 170,
+          "h": 44
+        }
+      }
+    },
+    {
+      "id": "masthead-meta",
+      "x": 0.58,
+      "y": 0.008,
+      "w": 0.38,
+      "h": 0.022,
+      "kind": "text",
+      "score": {
+        "overall": 0.4149,
+        "structure": 0.4028,
+        "color": 0.7478,
+        "colorIntersection": 0.562,
+        "paletteMatch": 0.8479,
+        "detail": 0.1767,
+        "detailRaw": 0.1976,
+        "detailAdded": 0.0417,
+        "bands": 0
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 4,
+          "y": 12,
+          "w": 318,
+          "h": 19
+        },
+        "build": {
+          "x": 0,
+          "y": 0,
+          "w": 322,
+          "h": 41
+        }
+      }
+    },
+    {
+      "id": "video-ticket",
+      "x": 0,
+      "y": 0.039,
+      "w": 1,
+      "h": 0.095,
+      "kind": "chrome",
+      "score": {
+        "overall": 0.4702,
+        "structure": 0.4935,
+        "color": 0.7326,
+        "colorIntersection": 0.5241,
+        "paletteMatch": 0.8448,
+        "detail": 0.0733,
+        "detailRaw": 0.1879,
+        "detailAdded": 0.2292,
+        "bands": 0.64
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 0,
+          "w": 848,
+          "h": 176
+        },
+        "build": {
+          "x": 33,
+          "y": 0,
+          "w": 815,
+          "h": 176
+        }
+      }
+    },
+    {
+      "id": "video-title",
+      "x": 0.035,
+      "y": 0.052,
+      "w": 0.45,
+      "h": 0.04,
+      "kind": "text",
+      "score": {
+        "overall": 0.5416,
+        "structure": 0.5552,
+        "color": 0.7723,
+        "colorIntersection": 0.5828,
+        "paletteMatch": 0.8743,
+        "detail": 0.0949,
+        "detailRaw": 0.1991,
+        "detailAdded": 0.2083,
+        "bands": 0.5667
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 9,
+          "y": 2,
+          "w": 372,
+          "h": 69
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 378,
+          "h": 75
+        }
+      }
+    },
+    {
+      "id": "video-facts",
+      "x": 0.53,
+      "y": 0.053,
+      "w": 0.43,
+      "h": 0.052,
+      "kind": "text",
+      "score": {
+        "overall": 0.529,
+        "structure": 0.5757,
+        "color": 0.6953,
+        "colorIntersection": 0.4344,
+        "paletteMatch": 0.8358,
+        "detail": 0.0677,
+        "detailRaw": 0.1042,
+        "detailAdded": 0.0729,
+        "bands": 0.5714
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 15,
+          "y": 0,
+          "w": 339,
+          "h": 81
+        },
+        "build": {
+          "x": 0,
+          "y": 0,
+          "w": 365,
+          "h": 57
+        }
+      }
+    },
+    {
+      "id": "video-id",
+      "x": 0.035,
+      "y": 0.104,
+      "w": 0.91,
+      "h": 0.018,
+      "kind": "text",
+      "score": {
+        "overall": 0.6396,
+        "structure": 0.8726,
+        "color": 0.7153,
+        "colorIntersection": 0.4569,
+        "paletteMatch": 0.8545,
+        "detail": 0.1632,
+        "detailRaw": 0.2205,
+        "detailAdded": 0.1146,
+        "bands": 0
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 6,
+          "y": 12,
+          "w": 765,
+          "h": 16
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 264,
+          "h": 33
+        }
+      }
+    },
+    {
+      "id": "probe-entry-label",
+      "x": 0.035,
+      "y": 0.145,
+      "w": 0.36,
+      "h": 0.027,
+      "kind": "text",
+      "score": {
+        "overall": 0.463,
+        "structure": 0.506,
+        "color": 0.7466,
+        "colorIntersection": 0.5263,
+        "paletteMatch": 0.8652,
+        "detail": 0,
+        "detailRaw": 0.0934,
+        "detailAdded": 0.1979,
+        "bands": 0.2333
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 10,
+          "w": 179,
+          "h": 29
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 302,
+          "h": 50
+        }
+      }
+    },
+    {
+      "id": "probe-entry",
+      "x": 0.035,
+      "y": 0.175,
+      "w": 0.93,
+      "h": 0.036,
+      "kind": "control",
+      "score": {
+        "overall": 0.5917,
+        "structure": 0.7045,
+        "color": 0.715,
+        "colorIntersection": 0.4608,
+        "paletteMatch": 0.8519,
+        "detail": 0.1223,
+        "detailRaw": 0.2108,
+        "detailAdded": 0.1771,
+        "bands": 0
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 1,
+          "y": 0,
+          "w": 786,
+          "h": 67
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 785,
+          "h": 67
+        }
+      }
+    },
+    {
+      "id": "probe-examples",
+      "x": 0.035,
+      "y": 0.215,
+      "w": 0.87,
+      "h": 0.022,
+      "kind": "text",
+      "score": {
+        "overall": 0.6214,
+        "structure": 0.7656,
+        "color": 0.681,
+        "colorIntersection": 0.4588,
+        "paletteMatch": 0.8006,
+        "detail": 0.1892,
+        "detailRaw": 0.2517,
+        "detailAdded": 0.125,
+        "bands": 0.4
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 1,
+          "y": 7,
+          "w": 474,
+          "h": 22
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 366,
+          "h": 40
+        }
+      }
+    },
+    {
+      "id": "active-probes-heading",
+      "x": 0.035,
+      "y": 0.258,
+      "w": 0.31,
+      "h": 0.027,
+      "kind": "text",
+      "score": {
+        "overall": 0.4992,
+        "structure": 0.5028,
+        "color": 0.6836,
+        "colorIntersection": 0.4367,
+        "paletteMatch": 0.8166,
+        "detail": 0.2649,
+        "detailRaw": 0.3222,
+        "detailAdded": 0.1146,
+        "bands": 0.3714
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 2,
+          "y": 7,
+          "w": 199,
+          "h": 28
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 260,
+          "h": 50
+        }
+      }
+    },
+    {
+      "id": "probe-tickets",
+      "x": 0.035,
+      "y": 0.286,
+      "w": 0.93,
+      "h": 0.055,
+      "kind": "control",
+      "score": {
+        "overall": 0.4931,
+        "structure": 0.5192,
+        "color": 0.6471,
+        "colorIntersection": 0.4353,
+        "paletteMatch": 0.7612,
+        "detail": 0.1647,
+        "detailRaw": 0.2063,
+        "detailAdded": 0.0833,
+        "bands": 0.475
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 0,
+          "w": 788,
+          "h": 102
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 785,
+          "h": 102
+        }
+      }
+    },
+    {
+      "id": "analyze-action",
+      "x": 0.035,
+      "y": 0.353,
+      "w": 0.54,
+      "h": 0.039,
+      "kind": "control",
+      "score": {
+        "overall": 0.3714,
+        "structure": 0.2707,
+        "color": 0.7001,
+        "colorIntersection": 0.2674,
+        "paletteMatch": 0.933,
+        "detail": 0.0229,
+        "detailRaw": 0.2156,
+        "detailAdded": 0.3854,
+        "bands": 0.2667
+      },
+      "verdict": "contradicted",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 0,
+          "w": 458,
+          "h": 73
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 455,
+          "h": 73
+        }
+      }
+    },
+    {
+      "id": "ready-state",
+      "x": 0.61,
+      "y": 0.363,
+      "w": 0.35,
+      "h": 0.023,
+      "kind": "text",
+      "score": {
+        "overall": 0.538,
+        "structure": 0.6327,
+        "color": 0.6052,
+        "colorIntersection": 0.3212,
+        "paletteMatch": 0.7582,
+        "detail": 0.2465,
+        "detailRaw": 0.2673,
+        "detailAdded": 0.0417,
+        "bands": 0.3333
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 2,
+          "y": 11,
+          "w": 295,
+          "h": 21
+        },
+        "build": {
+          "x": 0,
+          "y": 13,
+          "w": 297,
+          "h": 3
+        }
+      }
+    },
+    {
+      "id": "timeline-heading",
+      "x": 0.035,
+      "y": 0.419,
+      "w": 0.92,
+      "h": 0.025,
+      "kind": "text",
+      "score": {
+        "overall": 0.6951,
+        "structure": 0.8694,
+        "color": 0.7524,
+        "colorIntersection": 0.5491,
+        "paletteMatch": 0.8619,
+        "detail": 0.2153,
+        "detailRaw": 0.2413,
+        "detailAdded": 0.0521,
+        "bands": 0.4
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 11,
+          "w": 780,
+          "h": 29
+        },
+        "build": {
+          "x": 3,
+          "y": 5,
+          "w": 771,
+          "h": 41
+        }
+      }
+    },
+    {
+      "id": "timeline-axis",
+      "x": 0.1,
+      "y": 0.454,
+      "w": 0.86,
+      "h": 0.026,
+      "kind": "text",
+      "score": {
+        "overall": 0.6876,
+        "structure": 0.9258,
+        "color": 0.6826,
+        "colorIntersection": 0.4225,
+        "paletteMatch": 0.8227,
+        "detail": 0.0936,
+        "detailRaw": 0.1301,
+        "detailAdded": 0.0729,
+        "bands": 0.4
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 2,
+          "y": 6,
+          "w": 727,
+          "h": 41
+        },
+        "build": {
+          "x": 0,
+          "y": 2,
+          "w": 729,
+          "h": 46
+        }
+      }
+    },
+    {
+      "id": "timeline-histograms",
+      "x": 0.035,
+      "y": 0.487,
+      "w": 0.93,
+      "h": 0.16,
+      "kind": "control",
+      "score": {
+        "overall": 0.5244,
+        "structure": 0.5942,
+        "color": 0.6724,
+        "colorIntersection": 0.4469,
+        "paletteMatch": 0.7938,
+        "detail": 0.1084,
+        "detailRaw": 0.2074,
+        "detailAdded": 0.1979,
+        "bands": 0.2357
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 0,
+          "w": 781,
+          "h": 266
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 785,
+          "h": 297
+        }
+      }
+    },
+    {
+      "id": "hotspot-heading",
+      "x": 0.035,
+      "y": 0.666,
+      "w": 0.93,
+      "h": 0.031,
+      "kind": "text",
+      "score": {
+        "overall": 0.5266,
+        "structure": 0.6196,
+        "color": 0.6942,
+        "colorIntersection": 0.3602,
+        "paletteMatch": 0.8741,
+        "detail": 0.0547,
+        "detailRaw": 0.086,
+        "detailAdded": 0.0625,
+        "bands": 0.35
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 0,
+          "w": 788,
+          "h": 57
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 783,
+          "h": 57
+        }
+      }
+    },
+    {
+      "id": "hotspot-table-head",
+      "x": 0.035,
+      "y": 0.704,
+      "w": 0.93,
+      "h": 0.024,
+      "kind": "text",
+      "score": {
+        "overall": 0.3459,
+        "structure": 0.5471,
+        "color": 0.2895,
+        "colorIntersection": 0.1941,
+        "paletteMatch": 0.3408,
+        "detail": 0,
+        "detailRaw": 0.0705,
+        "detailAdded": 0.2083,
+        "bands": 0
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 0,
+          "w": 788,
+          "h": 45
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 785,
+          "h": 45
+        }
+      }
+    },
+    {
+      "id": "hotspot-rows",
+      "x": 0.035,
+      "y": 0.728,
+      "w": 0.93,
+      "h": 0.145,
+      "kind": "control",
+      "score": {
+        "overall": 0.4641,
+        "structure": 0.4421,
+        "color": 0.717,
+        "colorIntersection": 0.4671,
+        "paletteMatch": 0.8515,
+        "detail": 0.0711,
+        "detailRaw": 0.1388,
+        "detailAdded": 0.1354,
+        "bands": 0.5667
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 14,
+          "y": 5,
+          "w": 764,
+          "h": 245
+        },
+        "build": {
+          "x": 3,
+          "y": 0,
+          "w": 785,
+          "h": 264
+        }
+      }
+    },
+    {
+      "id": "utility-strip",
+      "x": 0,
+      "y": 0.908,
+      "w": 1,
+      "h": 0.09,
+      "kind": "chrome",
+      "score": {
+        "overall": 0.5048,
+        "structure": 0.6645,
+        "color": 0.8131,
+        "colorIntersection": 0.6901,
+        "paletteMatch": 0.8794,
+        "detail": 0.0838,
+        "detailRaw": 0.1723,
+        "detailAdded": 0.1771,
+        "bands": 0.32
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 0,
+          "w": 848,
+          "h": 167
+        },
+        "build": {
+          "x": 33,
+          "y": 0,
+          "w": 815,
+          "h": 117
+        }
+      }
+    },
+    {
+      "id": "utility-text",
+      "x": 0.04,
+      "y": 0.925,
+      "w": 0.91,
+      "h": 0.045,
+      "kind": "text",
+      "score": {
+        "overall": 0.6286,
+        "structure": 0.7965,
+        "color": 0.7683,
+        "colorIntersection": 0.5812,
+        "paletteMatch": 0.8691,
+        "detail": 0.033,
+        "detailRaw": 0.1007,
+        "detailAdded": 0.1354,
+        "bands": 0.3333
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 3,
+          "y": 0,
+          "w": 756,
+          "h": 60
+        },
+        "build": {
+          "x": 0,
+          "y": 19,
+          "w": 772,
+          "h": 61
+        }
+      }
+    }
+  ],
+  "files": {
+    "sideBySide": "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/side-by-side.png",
+    "heatmap": "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/heatmap.png",
+    "regionFiles": [
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/masthead.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/probe-zone.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/timeline-zone.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/hotspot-zone.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/brand.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/masthead-meta.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/video-ticket.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/video-title.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/video-facts.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/video-id.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/probe-entry-label.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/probe-entry.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/probe-examples.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/active-probes-heading.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/probe-tickets.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/analyze-action.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/ready-state.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/timeline-heading.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/timeline-axis.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/timeline-histograms.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/hotspot-heading.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/hotspot-table-head.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/hotspot-rows.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/utility-strip.png",
+      "/Users/kloping/projects/CueWave/.impeccable/review/diff/hero/regions/utility-text.png"
+    ]
+  }
+}

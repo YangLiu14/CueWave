@@ -1,0 +1,29 @@
+{
+  "regions": [
+    { "id": "masthead", "kind": "chrome", "box": { "x": 0, "y": 0, "w": 1, "h": 0.039 }, "note": "navy masthead" },
+    { "id": "probe-zone", "kind": "chrome", "box": { "x": 0, "y": 0.134, "w": 1, "h": 0.266 }, "container": true, "note": "ticket body behind probe workflow" },
+    { "id": "timeline-zone", "kind": "chrome", "box": { "x": 0, "y": 0.400, "w": 1, "h": 0.258 }, "container": true, "note": "timeline section with rule guides" },
+    { "id": "hotspot-zone", "kind": "chrome", "box": { "x": 0, "y": 0.658, "w": 1, "h": 0.250 }, "note": "ranked hotspot table section" },
+    { "id": "brand", "kind": "text", "box": { "x": 0.025, "y": 0.007, "w": 0.20, "h": 0.024 }, "note": "CueWave wordmark" },
+    { "id": "masthead-meta", "kind": "text", "box": { "x": 0.58, "y": 0.008, "w": 0.38, "h": 0.022 }, "note": "tool title and version" },
+    { "id": "video-ticket", "kind": "chrome", "box": { "x": 0, "y": 0.039, "w": 1, "h": 0.095 }, "note": "current video ticket row" },
+    { "id": "video-title", "kind": "text", "box": { "x": 0.035, "y": 0.052, "w": 0.45, "h": 0.04 }, "note": "current video heading and title" },
+    { "id": "video-facts", "kind": "text", "box": { "x": 0.53, "y": 0.053, "w": 0.43, "h": 0.052 }, "note": "duration source and demo badge" },
+    { "id": "video-id", "kind": "text", "box": { "x": 0.035, "y": 0.104, "w": 0.91, "h": 0.018 }, "note": "video id and loaded time" },
+    { "id": "probe-entry-label", "kind": "text", "box": { "x": 0.035, "y": 0.145, "w": 0.36, "h": 0.027 }, "note": "add semantic probe heading" },
+    { "id": "probe-entry", "kind": "control", "box": { "x": 0.035, "y": 0.175, "w": 0.93, "h": 0.036 }, "note": "dominant probe input and add button" },
+    { "id": "probe-examples", "kind": "text", "box": { "x": 0.035, "y": 0.215, "w": 0.87, "h": 0.022 }, "note": "example probes" },
+    { "id": "active-probes-heading", "kind": "text", "box": { "x": 0.035, "y": 0.258, "w": 0.31, "h": 0.027 }, "note": "current probes heading" },
+    { "id": "probe-tickets", "kind": "control", "box": { "x": 0.035, "y": 0.286, "w": 0.93, "h": 0.055 }, "note": "three active probe cards" },
+    { "id": "analyze-action", "kind": "control", "box": { "x": 0.035, "y": 0.353, "w": 0.54, "h": 0.039 }, "note": "primary analyze button" },
+    { "id": "ready-state", "kind": "text", "box": { "x": 0.61, "y": 0.363, "w": 0.35, "h": 0.023 }, "note": "caption readiness" },
+    { "id": "timeline-heading", "kind": "text", "box": { "x": 0.035, "y": 0.419, "w": 0.92, "h": 0.025 }, "note": "timeline heading and duration" },
+    { "id": "timeline-axis", "kind": "text", "box": { "x": 0.10, "y": 0.454, "w": 0.86, "h": 0.026 }, "note": "time ticks and peak labels" },
+    { "id": "timeline-histograms", "kind": "control", "box": { "x": 0.035, "y": 0.487, "w": 0.93, "h": 0.16 }, "note": "three aligned semantic histograms" },
+    { "id": "hotspot-heading", "kind": "text", "box": { "x": 0.035, "y": 0.666, "w": 0.93, "h": 0.031 }, "note": "top hotspots heading and count" },
+    { "id": "hotspot-table-head", "kind": "text", "box": { "x": 0.035, "y": 0.704, "w": 0.93, "h": 0.024 }, "note": "hotspot column labels" },
+    { "id": "hotspot-rows", "kind": "control", "box": { "x": 0.035, "y": 0.728, "w": 0.93, "h": 0.145 }, "note": "ranked hotspot rows and jump buttons" },
+    { "id": "utility-strip", "kind": "chrome", "box": { "x": 0, "y": 0.908, "w": 1, "h": 0.09 }, "note": "perforated secondary tools footer" },
+    { "id": "utility-text", "kind": "text", "box": { "x": 0.04, "y": 0.925, "w": 0.91, "h": 0.045 }, "note": "caption, probe definition, history, usage" }
+  ]
+}

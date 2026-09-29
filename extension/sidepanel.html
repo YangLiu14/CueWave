@@ -1,45 +1,146 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="gate">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>CueWave</title><link rel="stylesheet" href="sidepanel.css"><link rel="stylesheet" href="manual.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CueWave</title>
+  <link rel="stylesheet" href="sidepanel.css">
+  <link rel="stylesheet" href="manual.css">
 </head>
 <body>
-  <header><div class="brand"><span class="logo">≋</span><div><h1>CueWave</h1><small>SEE WHAT MATTERS</small></div></div><span class="pill">YOUTUBE · PHASE 1</span></header>
+  <header class="masthead">
+    <a class="brand" href="#probe-input" aria-label="CueWave，前往新增语义探针">
+      <span class="brand-mark" aria-hidden="true">CW</span>
+      <span>CueWave</span>
+    </a>
+    <div class="theme-switch" role="group" aria-label="界面主题">
+      <button id="theme-gate" type="button" aria-pressed="true" title="时间登机牌（浅色）">登机牌</button>
+      <button id="theme-transit" type="button" aria-pressed="false" title="语义换乘图（深色）">换乘图</button>
+    </div>
+  </header>
+
   <main>
-    <section class="card"><div class="section-head"><div><span class="eyebrow">PHASE 2 · LIVE</span><h3>实时判断</h3></div><button id="live-button">打开实时判断 ↗</button></div><p class="hint">在独立标签页使用麦克风；YouTube 视频分析不会启动收音。</p></section>
-    <section class="video"><div class="eyebrow">当前视频</div><h2 id="video-title">正在连接 YouTube…</h2><div id="video-meta" class="muted"></div><div id="player-status" class="notice error" role="alert" hidden></div></section>
+    <section class="video-ticket ticket-section" aria-labelledby="video-title">
+      <div class="video-copy">
+        <span class="section-label">当前视频</span>
+        <h1 id="video-title">正在连接 YouTube…</h1>
+        <div id="video-meta" class="mono muted"></div>
+      </div>
+      <span class="source-stamp">YOUTUBE</span>
+      <div id="player-status" class="notice error" role="alert" hidden></div>
+    </section>
+
     <div id="status" role="status" class="notice">启动本机辅助进程后开始。</div>
-    <section class="card"><div class="section-head"><div><span class="eyebrow">01 · DEFINE</span><h3>语义探针</h3></div><span id="probe-count" class="muted">0 / 5</span></div>
-      <p id="probe-hint" class="hint">Gemini 已暂停。先输入探针，再手动校准标准、正反例和 Jev 读数类型。</p>
-      <div class="chips"><button class="seed" data-value="具体程度">具体程度 +</button><button class="seed" data-value="实操步骤">实操步骤 +</button><button class="seed" data-value="知识科普">知识科普 +</button><button class="seed" data-value="推广信息">推广信息 +</button><button class="seed" data-value="幽默程度">幽默程度 +</button><button class="seed" data-value="buzzword含量">buzzword含量 +</button><button class="seed" data-value="无聊程度">无聊程度 +</button></div>
-      <form id="probe-form"><input id="probe-input" maxlength="400" placeholder="或输入自定义探针，例如：训练数据采集" aria-label="探针描述"><button id="probe-submit" type="submit">编辑定义</button></form>
-      <div id="options"></div><div id="probes"></div>
+
+    <section class="probe-workflow ticket-section" aria-labelledby="probe-heading">
+      <div class="section-head">
+        <h2 id="probe-heading">新增语义探针</h2>
+        <span id="probe-count" class="counter mono">0 / 5</span>
+      </div>
+
+      <form id="probe-form" class="probe-form">
+        <input id="probe-input" maxlength="400" placeholder="输入你想在视频里寻找的内容…" aria-label="探针描述" autocomplete="off">
+        <button id="probe-submit" class="add-probe" type="submit"><span aria-hidden="true">＋</span> 添加</button>
+      </form>
+      <p id="probe-hint" class="hint">输入探针后校准判断标准、正反例和 Jev 读数类型。</p>
+
+      <div class="seed-strip" aria-label="推荐语义探针">
+        <span>例如</span>
+        <button class="seed" data-value="知识科普">知识科普</button>
+        <button class="seed" data-value="具体程度">具体程度</button>
+        <button class="seed" data-value="实操步骤">实操步骤</button>
+        <button class="seed" data-value="推广信息">推广信息</button>
+        <button class="seed" data-value="幽默程度">幽默程度</button>
+        <button class="seed" data-value="buzzword含量">buzzword</button>
+        <button class="seed" data-value="无聊程度">无聊程度</button>
+      </div>
+
+      <div id="options" class="probe-options"></div>
+
+      <div class="active-probes-head">
+        <h3>当前探针</h3>
+        <span class="muted">显示开关只影响可视化</span>
+      </div>
+      <div id="probes" class="probe-grid"></div>
+
+      <div class="analysis-command">
+        <button id="analyze-button" class="primary" disabled><span aria-hidden="true">▶</span> 分析视频</button>
+        <div class="analysis-ready">
+          <span id="analysis-state" class="state-dot">未开始</span>
+          <span id="transcript-info" class="muted">等待解析视频</span>
+        </div>
+      </div>
+      <div class="progress" aria-hidden="true"><div id="progress-fill"></div></div>
+      <p id="progress-text" class="hint">确认探针并等待视频解析完成。</p>
+
+      <details class="analysis-tools">
+        <summary>分析工具与用量</summary>
+        <div class="actions">
+          <button id="cancel-button" hidden>停止后续请求</button>
+          <button id="refine-button" disabled>细化广告边界</button>
+          <button id="save-button" disabled>保存结果 JSON</button>
+        </div>
+        <p id="estimate-text" class="hint">视频解析完成并确认探针后显示预计请求量。</p>
+      </details>
     </section>
-    <section class="card"><div class="section-head"><div><span class="eyebrow">02 · TRANSCRIPT</span><h3>完整时间戳字幕</h3></div></div>
-      <p class="hint">优先取视频原生字幕；也可导入对应视频的 SRT / VTT。字幕文本会送至 Jev 分析。</p>
-      <div class="actions"><button id="auto-button">自动获取字幕</button><label class="file-button">导入 SRT / VTT<input id="import-file" type="file" accept=".srt,.vtt,text/vtt"></label></div>
-      <div id="transcript-info" class="muted">尚无字幕</div>
-      <label class="caption-choice"><input id="caption-toggle" type="checkbox"> 在视频底部显示 CueWave 同步字幕</label>
-      <p class="hint">若 YouTube 自带字幕已开启，可关闭其中一处以免重叠；CueWave 字幕依据当前导入/获取的时间戳显示。</p>
+
+    <section class="timeline ticket-section" aria-labelledby="timeline-heading">
+      <div class="section-head">
+        <h2 id="timeline-heading">语义时间轴</h2>
+        <span class="mono muted">与视频时间对齐</span>
+      </div>
+      <div class="legend" aria-label="时间轴图例">
+        <span><i class="pending"></i>未分析</span>
+        <span><i class="no-text"></i>无内容</span>
+        <span><i class="failed"></i>失败</span>
+        <span><i class="low"></i>低值</span>
+      </div>
+      <div id="tracks" class="timeline-tracks">
+        <p class="empty-copy">分析完成后，每个探针会在这里生成独立的时间直方图。</p>
+      </div>
     </section>
-    <section class="card analysis"><div class="section-head"><div><span class="eyebrow">03 · ANALYZE</span><h3>视频语义时间轴</h3></div><span id="analysis-state" class="muted">未开始</span></div>
-      <div class="actions"><button id="analyze-button" class="primary" disabled>分析视频</button><button id="refine-button" disabled>细化广告边界</button><button id="save-button" disabled>保存结果</button><button id="cancel-button" hidden>停止后续请求</button></div>
-      <p class="hint">保存结果会下载 JSON 文件，包含字幕时间戳、探针定义和对应时间窗口的读数；分析未完成时保存当前进度。</p>
-      <div class="progress"><div id="progress-fill"></div></div><p id="progress-text" class="hint">确认探针并取得字幕后手动开始。</p>
-      <p id="estimate-text" class="hint">取得字幕和确认探针后显示预计请求量。</p>
-      <div class="legend"><span><i class="pending"></i>未分析</span><span><i class="no-text"></i>无文本</span><span><i class="failed"></i>失败</span><span><i class="low"></i>低值</span></div>
-      <div id="tracks"></div>
+
+    <section class="rankings ticket-section" aria-labelledby="rankings-heading">
+      <div class="section-head">
+        <h2 id="rankings-heading">最高热点</h2>
+        <span class="muted">按探针独立排名</span>
+      </div>
+      <div id="rankings" class="muted">分析后显示各探针的最高热点。</div>
     </section>
-    <section class="card"><div class="section-head"><div><span class="eyebrow">04 · VERIFY</span><h3>独立排名热点</h3></div></div><div id="rankings" class="muted">分析后显示各探针的最高热点。</div></section>
-    <section class="card"><div class="section-head"><div><span class="eyebrow">05 · LIBRARY</span><h3>已保存视频</h3></div></div>
-      <p class="hint">本机历史记录可重开原视频的字幕、探针和时间轴；也可导入之前下载的 CueWave JSON。导入其他视频的文件不会覆盖当前画面。</p>
-      <label class="file-button">导入 CueWave JSON<input id="import-analysis-file" type="file" accept=".json,application/json"></label>
-      <p id="storage-text" class="hint">正在检查本机存储容量…</p>
-      <div id="history-list" class="history-list"></div>
+
+    <section class="evidence ticket-section" aria-labelledby="evidence-heading">
+      <div class="section-head">
+        <h2 id="evidence-heading">原句核对</h2>
+        <span class="muted">证据窗口</span>
+      </div>
+      <div id="evidence">点击直方图或热点，可查看对应时间窗口与原句。</div>
     </section>
-    <section class="card evidence"><div class="eyebrow">EVIDENCE · 原句核对</div><div id="evidence">点击柱形、轨道或热点可查看实际分析窗口与原句。</div></section>
+
+    <section class="utility-zone" aria-label="更多工具">
+      <details class="utility-drawer">
+        <summary><span>视频解析与播放器</span><span class="summary-action">设置</span></summary>
+        <p class="hint">CueWave 会自动解析视频内容；自动解析失败时，也可以导入兼容的时间轴文件。</p>
+        <div class="actions">
+          <button id="auto-button">重新解析视频</button>
+          <label class="file-button">导入时间轴文件<input id="import-file" type="file" accept=".srt,.vtt,text/vtt"></label>
+        </div>
+        <label class="caption-choice"><input id="caption-toggle" type="checkbox"> 在视频底部显示 CueWave 同步文字</label>
+      </details>
+
+      <details class="utility-drawer">
+        <summary><span>历史记录</span><span class="summary-action">查看</span></summary>
+        <p id="storage-text" class="hint">正在检查本机存储容量…</p>
+        <label class="file-button">导入 CueWave JSON<input id="import-analysis-file" type="file" accept=".json,application/json"></label>
+        <div id="history-list" class="history-list"></div>
+      </details>
+
+      <div class="live-utility">
+        <div><strong>实时判断</strong><span>在独立标签页使用麦克风</span></div>
+        <button id="live-button">打开 ↗</button>
+      </div>
+    </section>
   </main>
+
   <script type="module" src="sidepanel.js"></script>
 </body>
 </html>

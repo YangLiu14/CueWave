@@ -10,12 +10,16 @@ import { pitchProbes } from "../server/live-probes.js";
 import { attachLiveAsr, liveAsrSetup, providerTranscript } from "../server/live-asr.js";
 import { addProject, commitFinal, createLiveSession, nextLiveWindow, shouldAutoStartProject } from "../extension/live-core.js";
 
-test("pitch probes distinguish boredom from unsupported abstract claims", () => {
+test("live probes separately score boredom and information density", () => {
   const probes = pitchProbes();
-  assert.deepEqual(probes.map((probe) => probe.name), ["无聊程度", "空洞概念"]);
+  assert.deepEqual(probes.map((probe) => probe.name), ["无聊程度", "信息量程度"]);
   assert.equal(probes.every((probe) => probe.primitive === "score" && probe.criteria.length === 3), true);
   assert.match(probes[0].criterion, /没有新增事实/);
-  assert.match(probes[1].criterion, /不推断项目真实能力/);
+  assert.match(probes[1].criterion, /新信息/);
+  assert.match(probes[1].criterion, /不核验事实真伪/);
+  assert.match(probes[1].positive, /具体/);
+  assert.match(probes[1].negative, /重复/);
+  assert.notEqual(probes[1].criterion, probes[0].criterion);
   assert.notEqual(probes[1].criterion, draftManualProbe("buzzword含量").options[0].criterion);
 });
 
