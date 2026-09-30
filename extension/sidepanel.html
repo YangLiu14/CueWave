@@ -13,9 +13,15 @@
       <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 13h4l2-7 4 13 3-9 2 3h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>CueWave</span>
     </a>
-    <div class="masthead-status mono" aria-live="polite">
-      <span id="masthead-clock" class="gate-only">--  --:--</span>
-      <span id="masthead-analysis" class="transit-only">READY TO SCAN</span>
+    <div class="masthead-tools">
+      <div class="theme-switch" role="group" aria-label="界面主题">
+        <button id="theme-gate" type="button" aria-pressed="true" title="浅色模式">浅色</button>
+        <button id="theme-transit" type="button" aria-pressed="false" title="深色模式">深色</button>
+      </div>
+      <div class="masthead-status mono" aria-live="polite">
+        <span id="masthead-clock" class="gate-only">--  --:--</span>
+        <span id="masthead-analysis" class="transit-only">READY TO SCAN</span>
+      </div>
     </div>
   </header>
 
@@ -47,11 +53,15 @@
         <span id="probe-count" class="counter mono">0 / 5</span>
       </div>
 
+      <div class="probe-intent-switch" role="group" aria-label="新探针的关注方向">
+        <button id="probe-intent-find" type="button" aria-pressed="true">我想找什么 <span aria-hidden="true">↑</span></button>
+        <button id="probe-intent-avoid" type="button" aria-pressed="false">我不想看到什么 <span aria-hidden="true">↓</span></button>
+      </div>
       <form id="probe-form" class="probe-form">
-        <input id="probe-input" maxlength="400" placeholder="输入你想在视频里寻找的内容…" aria-label="探针描述" autocomplete="off">
+        <input id="probe-input" maxlength="400" placeholder="例如：知识科普、实操步骤、精彩观点" aria-label="描述想寻找的内容" autocomplete="off">
         <button id="probe-submit" class="add-probe" type="submit" aria-label="添加语义探针"><span aria-hidden="true">＋</span><span id="probe-submit-label" class="button-label">添加</span></button>
       </form>
-      <p id="probe-hint" class="hint probe-hint">输入探针后校准判断标准、正反例和 Jev 读数类型。</p>
+      <p id="probe-hint" class="hint probe-hint">只需描述你的需求；CueWave 会自动生成基础定义，之后仍可打开高级设置。</p>
 
       <div class="preset-probes" aria-labelledby="preset-probes-label">
         <span id="preset-probes-label" class="preset-label">预设探针</span>
@@ -68,7 +78,11 @@
 
       <div id="options" class="probe-options"></div>
 
-      <nav id="probe-lines" class="probe-lines" aria-label="选择语义探针"></nav>
+      <div id="probe-view-bar" class="probe-view-bar">
+        <span class="mono muted">已添加探针</span>
+        <button id="probe-expand-toggle" type="button" aria-controls="probe-lines" aria-expanded="false">展开全部 ↓</button>
+      </div>
+      <nav id="probe-lines" class="probe-lines" aria-label="语义探针"></nav>
 
       <div class="analysis-command">
         <button id="analyze-button" class="primary" disabled><span aria-hidden="true">▶</span> 分析视频</button>
@@ -115,20 +129,6 @@
     </details>
 
     <section class="utility-zone" aria-label="更多工具">
-      <div class="theme-utility">
-        <div><strong>界面外观</strong><span>浅色登机牌 / 深色换乘图</span></div>
-        <div class="theme-switch" role="group" aria-label="界面主题">
-          <button id="theme-gate" type="button" aria-pressed="true" title="时间登机牌（浅色）">登机牌</button>
-          <button id="theme-transit" type="button" aria-pressed="false" title="语义换乘图（深色）">换乘图</button>
-        </div>
-      </div>
-
-      <details class="probe-management utility-drawer">
-        <summary><span>探针管理</span><span class="summary-action">显示与定义</span></summary>
-        <p class="hint">显示开关只影响时间轴和播放器可视化，不会删除已有读数。</p>
-        <div id="probes" class="probe-grid"></div>
-      </details>
-
       <details class="analysis-tools utility-drawer">
         <summary><span>分析工具与用量</span><span class="summary-action">查看</span></summary>
         <div class="actions">

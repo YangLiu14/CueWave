@@ -108,25 +108,48 @@ const PRESETS = {
 
 const NEGATIVE_PRESETS = new Set(["推广信息", "buzzword含量", "无聊程度", "空洞概念"]);
 
-export function draftManualProbe(input) {
+function normalizeIntent(input) {
+  return String(input || "").trim()
+    .replace(/^(?:我想找(?:到)?|我想看(?:到)?|我不想看(?:到)?|我不想听(?:到)?|帮我找(?:到)?|找出|定位|识别)\s*[：:，,]?\s*/u, "")
+    .replace(/^(?:视频(?:里|中)?|内容(?:里|中)?|片段(?:里|中)?)\s*/u, "")
+    .trim();
+}
+
+function prefersScore(phrase) {
+  return /(?:程度|含量|密度|强度|水平|质量|频率|多不多|有多|是否太|高低|多少)/u.test(phrase);
+}
+
+export function draftManualProbe(input, { polarity } = {}) {
   const phrase = String(input || "").trim();
   if (!phrase || phrase.length > 400) throw new Error("请输入不超过 400 字的探针描述");
-  const presetName = phrase === "推广信号" ? "推广信息" : phrase;
+  const intent = normalizeIntent(phrase);
+  if (!intent) throw new Error("请说明想寻找或不想看到的内容");
+  const presetName = intent === "推广信号" ? "推广信息" : intent;
   const preset = PRESETS[presetName];
   if (preset) return { ambiguous: false, manual: true, reason: preset.reason,
-    options: [{ ...preset.option, polarity: NEGATIVE_PRESETS.has(presetName) ? "negative" : "positive" }] };
+    options: [{ ...preset.option, polarity: ["positive", "negative"].includes(polarity) ? polarity : NEGATIVE_PRESETS.has(presetName) ? "negative" : "positive" }] };
+  const primitive = prefersScore(intent) ? "score" : "noul";
+  const direction = polarity === "negative" ? "negative" : "positive";
+  const option = primitive === "score" ? {
+    name: intent.slice(0, 40),
+    description: `target 中「${intent}」这一语言现象的表现强度`,
+    criterion: `只根据 target 中可以直接观察到的措辞、信息与表达结构，评估「${intent}」的强弱；context 仅用于理解指代与话题延续，不把 context 本身计入当前读数。不核验事实真伪，也不推断画面、语气或观众心理。`,
+    positive: `target 持续或多次出现支持「${intent}」的明确语言证据，构成主要表达特征。`,
+    middle: `target 出现部分支持「${intent}」的语言证据，但强度有限、持续时间短或同时存在相反线索。`,
+    negative: `target 没有出现支持「${intent}」的明确语言证据，或只有无法构成该特征的轻微关联。`,
+    primitive
+  } : {
+    name: intent.slice(0, 40),
+    description: `target 是否明确出现或表达「${intent}」`,
+    criterion: `只判断 target 本身是否存在足以支持「${intent}」的明确语言证据；context 仅用于理解指代与话题延续，不能用前文证据替代 target。仅仅提到相关词、预告之后会谈到或需要依赖画面和语气推断时，不算命中；不核验事实真伪。`,
+    positive: `target 直接表达「${intent}」，或给出能够明确支持该判断的具体语言证据。`,
+    negative: `target 没有表达「${intent}」，只有模糊关联、关键词偶然出现、话题预告或证据仅存在于 context。`,
+    primitive
+  };
   return {
     ambiguous: false,
     manual: true,
-    reason: "Gemini 暂停；以下只是可编辑草稿，未进行歧义检查。",
-    options: [{
-      name: phrase.slice(0, 40),
-      description: phrase,
-      criterion: `只根据目标字幕判断是否明确表达「${phrase}」，不核验事实真伪。`,
-      positive: `目标字幕有明确支持「${phrase}」的语言线索。`,
-      negative: `目标字幕没有明确支持「${phrase}」的语言线索。`,
-      polarity: "positive",
-      primitive: "noul"
-    }]
+    reason: "CueWave 已根据需求生成基础定义；如有特殊判断边界，可在高级设置中修改。",
+    options: [{ ...option, polarity: direction }]
   };
 }

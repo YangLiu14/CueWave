@@ -44,6 +44,32 @@ test("manual draft rejects empty or oversized probe input", () => {
   assert.throws(() => draftManualProbe("字".repeat(401)), /请输入/);
 });
 
+test("free-form intent compiles into a usable binary probe without a model", () => {
+  const result = draftManualProbe("我不想看到视频里重复的自我介绍", { polarity: "negative" });
+  const probe = result.options[0];
+  assert.equal(result.manual, true);
+  assert.equal(probe.name, "重复的自我介绍");
+  assert.equal(probe.primitive, "noul");
+  assert.equal(probe.polarity, "negative");
+  assert.match(probe.description, /重复的自我介绍/);
+  assert.match(probe.criterion, /target/);
+  assert.ok(probe.positive);
+  assert.ok(probe.negative);
+});
+
+test("degree-like free-form intent compiles into a three-level score probe", () => {
+  const probe = draftManualProbe("信息密度").options[0];
+  assert.equal(probe.name, "信息密度");
+  assert.equal(probe.primitive, "score");
+  assert.equal(probe.polarity, "positive");
+  for (const field of ["negative", "middle", "positive"]) assert.ok(probe[field]);
+});
+
+test("explicit intent direction overrides a preset default", () => {
+  assert.equal(draftManualProbe("推广信息", { polarity: "positive" }).options[0].polarity, "positive");
+  assert.equal(draftManualProbe("知识科普", { polarity: "negative" }).options[0].polarity, "negative");
+});
+
 test("promotion probe finds spoken ad inserts across video genres", () => {
   for (const input of ["推广信息", "推广信号"]) {
     const result = draftManualProbe(input);

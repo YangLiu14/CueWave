@@ -31,12 +31,52 @@ test("preset probes stay visible in the primary workflow and wrap instead of cli
   assert.doesNotMatch(css, /\.seed-strip\s*\{[^}]*overflow-x:\s*auto/);
 });
 
-test("probe definition mode exposes one destructive cancel action", () => {
+test("both themes share compact routes and reveal management only after expanding", () => {
+  assert.match(html, /id="probe-expand-toggle"[^>]+aria-controls="probe-lines"[^>]+aria-expanded="false"/);
+  assert.doesNotMatch(html, /class="probe-management utility-drawer"/);
+  assert.match(js, /probesExpanded: false/);
+  assert.match(js, /if \(!state\.probesExpanded\) \{ routeRow\.append\(route\); lines\.append\(routeRow\); continue; \}/);
+  assert.match(js, /buttons\.append\(visibility, revise, remove\)/);
+  assert.match(js, /routeRow\.append\(route, buttons\); lines\.append\(routeRow\)/);
+  assert.match(js, /remove\.textContent = "删除"/);
+  assert.match(js, /remove\.textContent = "确认删除"/);
+  assert.match(js, /remove\.disabled = state\.running \|\| Boolean\(state\.options\)/);
+  assert.match(css, /\.probe-lines\.expanded \.probe-line-row\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) auto/);
+  assert.match(css, /:root\[data-theme="transit"\] \.probe-lines\.expanded/);
+});
+
+test("collapsed probe routes stay on one horizontally scrollable row in the light theme", () => {
+  assert.match(css, /\.probe-lines:not\(\.expanded\)\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*overflow-x:\s*auto/);
+  assert.match(css, /\.probe-lines:not\(\.expanded\) \.probe-line-row\s*\{[^}]*flex:\s*0 0 auto/);
+  assert.match(css, /\.probe-lines\.expanded\s*\{[^}]*display:\s*block/);
+});
+
+test("probe definition mode is optional and exposes one destructive cancel action", () => {
   assert.match(js, /className = "cancel-definition"/);
-  assert.match(js, /取消添加探针/);
-  assert.match(js, /取消修改/);
+  assert.match(js, /取消高级设置/);
+  assert.match(js, /高级设置/);
   assert.match(readFileSync(new URL("../extension/manual.css", import.meta.url), "utf8"), /\.cancel-definition[^}]*var\(--danger\)/);
   assert.doesNotMatch(js, /重新输入探针|这些定义不合适/);
+});
+
+test("quick probe entry separates desired and avoided content", () => {
+  assert.match(html, /id="probe-intent-find"[^>]+aria-pressed="true"[^>]*>我想找什么/);
+  assert.match(html, /id="probe-intent-avoid"[^>]+aria-pressed="false"[^>]*>我不想看到什么/);
+  assert.match(js, /addQuickProbe\(input/);
+  assert.match(js, /api\("\/probe\/check", \{ input, polarity \}\)/);
+  assert.match(js, /button\.dataset\.polarity/);
+});
+
+test("every advanced probe field includes accessible contextual help", () => {
+  for (const key of ["name", "description", "criterion", "positive", "middle", "negative", "primitive", "polarity"]) {
+    assert.match(js, new RegExp(`\\b${key}: \\"`));
+  }
+  assert.match(js, /setAttribute\("role", "tooltip"\)/);
+  assert.match(js, /setAttribute\("aria-expanded"/);
+  const manualCss = readFileSync(new URL("../extension/manual.css", import.meta.url), "utf8");
+  assert.match(manualCss, /\.field-help:hover \.field-tooltip/);
+  assert.match(manualCss, /\.field-help:focus-within \.field-tooltip/);
+  assert.match(manualCss, /\.field-help\.open \.field-tooltip/);
 });
 
 test("probe labels and histograms expose positive and negative direction", () => {

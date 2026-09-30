@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getTranscript, decide, checkProbe } from "../server/suppliers.js";
+import { getTranscript, decide } from "../server/suppliers.js";
 
 test("Supadata native contract preserves offset and duration", async () => {
   const original = globalThis.fetch;
@@ -68,29 +68,4 @@ test("Jev retries a temporary network failure", async () => {
     assert.equal((await decide({ text: "点击保存", context: "" }, [probe], "test-key")).answers[0].raw, .9);
     assert.equal(calls, 2);
   } finally { globalThis.fetch = originalFetch; globalThis.setTimeout = originalTimeout; }
-});
-
-test("Gemini returns reviewable options", async () => {
-  const original = globalThis.fetch;
-  globalThis.fetch = async (url, options) => {
-    assert.match(url, /gemini-3\.8-flash:generateContent$/);
-    assert.equal(JSON.parse(options.body).generationConfig.responseMimeType, "application/json");
-    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ ambiguous: true, reason: "两种含义", options: [{ name: "A", description: "A", criterion: "B", positive: "C", negative: "D", polarity: "positive", primitive: "noul" }] }) }] } }] }), { status: 200 });
-  };
-  try { assert.equal((await checkProbe("测试", "test-key")).options[0].name, "A"); }
-  finally { globalThis.fetch = original; }
-});
-
-test("Gemini 402 reports billing action without exposing the supplier body", async () => {
-  const original = globalThis.fetch;
-  globalThis.fetch = async () => new Response(JSON.stringify({ error: { message: "private upstream detail" } }), { status: 402 });
-  try {
-    await assert.rejects(checkProbe("实操步骤", "test-key"), (error) => {
-      assert.equal(error.code, "GEMINI_PAYMENT_REQUIRED");
-      assert.equal(error.retryable, false);
-      assert.match(error.message, /预付额度/);
-      assert.doesNotMatch(error.message, /private upstream detail/);
-      return true;
-    });
-  } finally { globalThis.fetch = original; }
 });

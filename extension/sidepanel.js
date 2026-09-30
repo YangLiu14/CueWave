@@ -5,13 +5,13 @@ const COLORS = ["#178d78", "#ec6445", "#8470cf", "#e879a2", "#8eb7f3"];
 const LEGACY_COLORS = new Map([["#5ddbc8", COLORS[0]], ["#f4b860", COLORS[1]], ["#a895f2", COLORS[2]]]);
 const API = "http://127.0.0.1:4318";
 const THEME_KEY = "cuewave:theme";
-const state = { tabId: null, videoId: null, durationMs: 0, currentTimeMs: 0, segments: [], source: "", probes: [], options: null, revisingId: null, windows: [], readings: [], adCueReadings: [], adBoundaries: [], usage: { inputTokens: 0, requests: 0, reportedRequests: 0 }, history: [], selectedId: null, subtitleEnabled: false, cacheWarning: false, resumeOnOpen: false, running: false, cancelled: false, helper: null };
+const state = { tabId: null, videoId: null, durationMs: 0, currentTimeMs: 0, segments: [], source: "", probes: [], probesExpanded: false, options: null, revisingId: null, newProbePolarity: "positive", addingProbe: false, windows: [], readings: [], adCueReadings: [], adBoundaries: [], usage: { inputTokens: 0, requests: 0, reportedRequests: 0 }, history: [], selectedId: null, subtitleEnabled: false, cacheWarning: false, resumeOnOpen: false, running: false, cancelled: false, helper: null };
 const normalizeProbeColors = (probes) => probes.map((probe) => ({ ...probe,
   color: LEGACY_COLORS.get(String(probe.color).toLowerCase()) || probe.color,
   polarity: probePolarity(probe) }));
 const polarityLabel = (probe) => probePolarity(probe) === "negative" ? "反向 ↓" : "正向 ↑";
 let transcriptEpoch = 0;
-let checkSequence = 0;
+let optionFieldSerial = 0;
 const format = (ms) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms % 60000 / 1000)).padStart(2, "0")}`;
 function setCssVariable(node, name, value) {
   if (node?.style?.setProperty) node.style.setProperty(name, value);
@@ -143,114 +143,145 @@ function probeFromOption(input, option) {
     criteria: option.primitive === "score" ? [option.negative, option.middle, option.positive] : null,
     color: previous?.color || COLORS[state.probes.length], enabled: previous?.enabled !== false, revision: (previous?.revision || 0) + 1, previousId: previous?.id || null };
 }
-async function checkInput(input) {
-  if (state.running) return status("请等待本轮分析结束或停止后修改探针。", true);
-  if (state.probes.length >= 5 && !state.revisingId) return status("最多可启用 5 个探针", true);
-  const sequence = ++checkSequence;
-  if (state.helper?.capabilities.gemini) {
-    const cache = (await chrome.storage.local.get("cuewave:checked"))["cuewave:checked"] || {};
-    if (sequence !== checkSequence) return;
-    if (cache[input]) { state.options = { input, result: cache[input], cached: true }; renderOptions(); return; }
-  }
-  status(state.helper?.capabilities.manualProbes ? "正在准备手动探针草稿…" : "Gemini 正在检查探针含义…");
+function setNewProbePolarity(polarity) {
+  state.newProbePolarity = polarity === "negative" ? "negative" : "positive";
+  const finding = state.newProbePolarity === "positive";
+  $("probe-intent-find").setAttribute("aria-pressed", String(finding));
+  $("probe-intent-avoid").setAttribute("aria-pressed", String(!finding));
+  $("probe-input").placeholder = finding ? "例如：知识科普、实操步骤、精彩观点" : "例如：插入口播广告、无聊片段、术语堆砌";
+  $("probe-input").setAttribute("aria-label", finding ? "描述想寻找的内容" : "描述不想看到的内容");
+}
+async function addQuickProbe(input, polarity = state.newProbePolarity) {
+  if (state.addingProbe) return;
+  if (state.running) return status("请等待本轮分析结束或停止后添加探针。", true);
+  if (state.options) return status("请先保存或取消当前探针的高级设置。", true);
+  if (state.probes.length >= 5) return status("最多可启用 5 个探针", true);
+  state.addingProbe = true; renderPresetButtons();
+  status("正在生成基础定义…");
   try {
-    const result = await api("/probe/check", { input });
-    if (sequence !== checkSequence) return;
-    const previous = state.probes.find((probe) => probe.id === state.revisingId);
-    const legacyPromotion = ["推广信息", "推广信号"].includes(previous?.input)
-      && ((previous.description === previous.input
-        && previous.criterion === `只根据目标字幕判断是否明确表达「${previous.input}」，不核验事实真伪。`)
-        || (previous.description === "目标片段是否包含与当前视频主线无关的广告推荐或销售口播。"
-          && previous.criterion === "先用 videoTitle 和 context 确定视频原本介绍或评测的对象。仅当 target 明确转向推荐或推销另一独立商品或服务、形成偏离主线的插播广告时为是；即使同属一个领域，自家产品的独立销售口播也算。原本评测对象的正常介绍、优缺点及购买建议不算；无法判断是否偏离主线时不算。"));
-    const legacyGeneric = ["具体程度", "实操步骤", "知识科普", "幽默程度", "buzzword含量", "无聊程度"].includes(previous?.input)
-      && previous.description === previous.input
-      && previous.criterion === `只根据目标字幕判断是否明确表达「${previous.input}」，不核验事实真伪。`;
-    if (result.manual && previous?.input === input && !legacyPromotion && !legacyGeneric) {
-      result.options = [{ name: previous.name, description: previous.description, criterion: previous.criterion,
-        positive: previous.positive, middle: previous.middle || previous.criteria?.[1] || "", negative: previous.negative,
-        polarity: probePolarity(previous), primitive: previous.primitive }];
-    }
-    state.options = { input, result, cached: false }; renderOptions();
-    status(result.manual ? "请手动校准判断标准和读数类型，然后确认。" : result.ambiguous ? "发现歧义：请选择最符合意图的定义。" : "请核对标准与例子，然后确认。");
-  } catch (error) {
-    if (sequence === checkSequence) status(error.code === "GEMINI_PAYMENT_REQUIRED" ? `${error.message}。额度恢复后再检查；已确认探针仍可使用。` : `${error.message}。请稍后重试。`, true);
-  }
+    const result = await api("/probe/check", { input, polarity });
+    const option = result.options?.[0];
+    if (!option) throw new Error("未能生成基础定义");
+    if (state.probes.some((probe) => probe.input === input || probe.name === option.name)) return status(`「${option.name}」已经在语义线路中。`, true);
+    const probe = probeFromOption(input, option);
+    state.probes.push(probe); state.selectedId = probe.id;
+    const stored = await storeDefinitions();
+    $("probe-input").value = ""; render(); void pushGraph();
+    if (stored) status(`已添加「${probe.name}」· ${polarityLabel(probe)}。需要调整判断边界时，可点击「展开全部 → 高级设置」。`);
+  } catch (error) { status(`${error.message}。请稍后重试。`, true); }
+  finally { state.addingProbe = false; renderPresetButtons(); }
+}
+function openAdvancedSettings(probe) {
+  if (state.running) return status("请等待本轮分析结束或停止后修改探针。", true);
+  state.revisingId = probe.id;
+  state.options = { input: probe.input, result: { manual: true,
+    reason: "基础定义已可直接使用；这里只用于修改特殊判断边界。",
+    options: [{ name: probe.name, description: probe.description, criterion: probe.criterion,
+      positive: probe.positive, middle: probe.middle || probe.criteria?.[1] || "", negative: probe.negative,
+      polarity: probePolarity(probe), primitive: probe.primitive }] } };
+  render();
+  $("options").scrollIntoView?.({ behavior: "smooth", block: "nearest" });
+  status(`正在调整「${probe.name}」的高级定义；取消不会改变当前探针。`);
 }
 function renderPresetButtons() {
+  const blocked = state.addingProbe || Boolean(state.options) || state.running || state.probes.length >= 5;
+  $("probe-submit").disabled = blocked;
+  $("probe-submit-label").textContent = state.addingProbe ? "生成中" : "添加";
+  $("probe-submit").setAttribute("aria-label", state.addingProbe ? "正在生成语义探针" : "添加语义探针");
+  $("probe-intent-find").disabled = state.addingProbe || Boolean(state.options) || state.running;
+  $("probe-intent-avoid").disabled = state.addingProbe || Boolean(state.options) || state.running;
   document.querySelectorAll(".seed").forEach((button) => {
     const added = state.probes.some((probe) => probe.input === button.dataset.value || probe.name === button.dataset.value);
     const direction = button.dataset.polarity === "negative" ? "反向" : "正向";
-    button.disabled = added || Boolean(state.options) || state.running || state.probes.length >= 5;
+    button.disabled = added || blocked;
     button.classList.toggle("seed-added", added);
     button.setAttribute("aria-label", added ? `${button.dataset.value}${direction}探针已添加` : state.options ? `请先完成或取消当前探针定义` : `使用${direction}预设探针${button.dataset.value}`);
   });
 }
+const FIELD_HELP = {
+  name: "用于线路、时间轴和结果中的简短名称。建议 2–12 个字，只描述一个判断目标。",
+  description: "用一句话说明这个探针观察什么。描述判断对象，不需要在这里写规则或例子。",
+  criterion: "写清命中需要哪些可观察的语言证据、哪些情况应排除，以及前文 context 是否只能用于理解指代。",
+  positive: "描述明确命中或高值时应该出现的语言证据。尽量给出可判断的表达特征，而不是只写“很好”或“很多”。",
+  middle: "只用于程度型探针。描述介于低值和高值之间、证据存在但不充分的情况。",
+  negative: "描述不命中或低值时的情况，包括容易误判但应该排除的反例。",
+  primitive: "“是否出现”适合明确的有／无判断；“程度高低”适合从弱到强的连续评价。",
+  polarity: "正向表示高值内容更值得关注，柱形向上；反向表示高值内容更需要警惕，柱形向下。"
+};
+function makeField(card, draft, key, label, kind = "textarea") {
+  const id = `probe-option-${key}-${++optionFieldSerial}`;
+  const field = document.createElement("div"); field.className = "option-field";
+  const head = document.createElement("div"); head.className = "option-field-head";
+  const fieldLabel = document.createElement("label"); fieldLabel.htmlFor = id; fieldLabel.textContent = label;
+  const help = document.createElement("span"); help.className = "field-help";
+  const helpButton = document.createElement("button"); helpButton.type = "button"; helpButton.className = "field-help-button";
+  helpButton.textContent = "?"; helpButton.setAttribute("aria-label", `${label}填写帮助`); helpButton.setAttribute("aria-expanded", "false");
+  const tooltip = document.createElement("span"); tooltip.id = `${id}-help`; tooltip.className = "field-tooltip"; tooltip.setAttribute("role", "tooltip"); tooltip.textContent = FIELD_HELP[key];
+  helpButton.setAttribute("aria-describedby", tooltip.id);
+  helpButton.addEventListener("click", () => {
+    const open = !help.classList.contains("open"); help.classList.toggle("open", open); helpButton.setAttribute("aria-expanded", String(open));
+  });
+  help.append(helpButton, tooltip); head.append(fieldLabel, help);
+  const control = document.createElement(kind); control.id = id; control.value = draft[key] || "";
+  field.append(head, control); card.append(field);
+  return { field, control };
+}
 function renderOptions() {
   const box = $("options"); box.replaceChildren();
   if (!state.options) { renderPresetButtons(); return; }
-  const { input, result, cached } = state.options;
+  const { input, result } = state.options;
   state.options.drafts ||= result.options.map((option) => ({ ...option }));
-  const intro = document.createElement("p"); intro.className = "hint"; intro.textContent = `${result.manual ? "手动定义 · 未检查歧义" : result.ambiguous ? "有歧义" : "含义较明确"} · ${result.reason}${cached ? " · 已缓存检查" : ""}`; box.append(intro);
+  const heading = document.createElement("h3"); heading.className = "advanced-heading"; heading.textContent = "高级设置";
+  const intro = document.createElement("p"); intro.className = "hint"; intro.textContent = result.reason;
+  box.append(heading, intro);
   for (const draft of state.options.drafts) {
     const card = document.createElement("div"); card.className = "option";
     let middleField;
-    for (const [key, label] of [["name", "探针名称"], ["description", "观察什么"], ["criterion", "判断标准"], ["positive", "高值 / 是"], ["middle", "中值（仅 Score）"], ["negative", "低值 / 否"]]) {
-      const field = document.createElement("label"); field.className = "option-field"; field.textContent = label;
-      const control = document.createElement(key === "name" ? "input" : "textarea");
-      control.value = draft[key] || ""; control.maxLength = key === "name" ? 40 : 800;
+    for (const [key, label] of [["name", "探针名称"], ["description", "观察什么"], ["criterion", "判断标准"], ["positive", "高值 / 是"], ["middle", "中值（仅程度型）"], ["negative", "低值 / 否"]]) {
+      const { field, control } = makeField(card, draft, key, label, key === "name" ? "input" : "textarea");
+      control.maxLength = key === "name" ? 40 : 800;
       if (key !== "name") control.rows = 2;
       control.addEventListener("input", () => { draft[key] = control.value; });
       if (key === "middle") middleField = field;
-      field.append(control); card.append(field);
     }
-    const typeField = document.createElement("label"); typeField.className = "option-field"; typeField.textContent = "Jev 读数类型";
-    const primitive = document.createElement("select");
-    for (const [value, label] of [["noul", "Noul · 是否明确出现"], ["score", "Score · 强度分级"]]) {
+    const { control: primitive } = makeField(card, draft, "primitive", "判断方式", "select");
+    for (const [value, label] of [["noul", "是否出现"], ["score", "程度高低"]]) {
       const choice = document.createElement("option"); choice.value = value; choice.textContent = label; primitive.append(choice);
     }
     primitive.value = draft.primitive;
     middleField.hidden = draft.primitive !== "score";
     primitive.addEventListener("change", () => { draft.primitive = primitive.value; middleField.hidden = primitive.value !== "score"; });
-    typeField.append(primitive); card.append(typeField);
-    const polarityField = document.createElement("label"); polarityField.className = "option-field"; polarityField.textContent = "探针方向";
-    const polarity = document.createElement("select");
+    const { control: polarity } = makeField(card, draft, "polarity", "探针方向", "select");
     for (const [value, label] of [["positive", "正向 ↑ · 高值表示更值得关注"], ["negative", "反向 ↓ · 高值表示更需要警惕"]]) {
       const choice = document.createElement("option"); choice.value = value; choice.textContent = label; polarity.append(choice);
     }
     draft.polarity = draft.polarity === "negative" ? "negative" : "positive";
     polarity.value = draft.polarity;
     polarity.addEventListener("change", () => { draft.polarity = polarity.value; });
-    polarityField.append(polarity); card.append(polarityField);
-    const button = document.createElement("button"); button.textContent = "确认此定义";
+    const button = document.createElement("button"); button.textContent = "保存高级设置";
     button.addEventListener("click", async () => {
-      if (state.running || !state.options || state.options.input !== input || (state.probes.length >= 5 && !state.revisingId)) return;
+      if (state.running || !state.options || state.options.input !== input || !state.revisingId) return;
       const option = Object.fromEntries(["name", "description", "criterion", "positive", "middle", "negative", "primitive", "polarity"].map((key) => [key, String(draft[key] || "").trim()]));
       if (["name", "description", "criterion", "positive", "negative"].some((key) => !option[key])) return status("请填写完整的名称、观察内容、标准和高低值定义。", true);
-      if (option.primitive === "score" && !option.middle) return status("Score 探针还需要填写中值标准。", true);
-      state.options = null; renderOptions();
+      if (option.primitive === "score" && !option.middle) return status("程度型探针还需要填写中值标准。", true);
       const probe = probeFromOption(input, option);
       const previous = state.probes.find((p) => p.id === state.revisingId);
-      if (previous) {
-        const archived = (await chrome.storage.local.get("cuewave:archivedDefinitions"))["cuewave:archivedDefinitions"] || [];
-        archived.push(previous); await chrome.storage.local.set({ "cuewave:archivedDefinitions": archived });
-        state.probes = state.probes.map((p) => p.id === previous.id ? probe : p);
-      } else state.probes.push(probe);
+      if (!previous) return status("没有找到要修改的探针，请关闭高级设置后重试。", true);
+      const archived = (await chrome.storage.local.get("cuewave:archivedDefinitions"))["cuewave:archivedDefinitions"] || [];
+      archived.push(previous); await chrome.storage.local.set({ "cuewave:archivedDefinitions": archived });
+      state.probes = state.probes.map((p) => p.id === previous.id ? probe : p);
+      state.options = null;
       state.revisingId = null; state.selectedId = probe.id;
-      if (!result.manual) {
-        const cache = (await chrome.storage.local.get("cuewave:checked"))["cuewave:checked"] || {};
-        cache[input] = result; await chrome.storage.local.set({ "cuewave:checked": cache });
-      }
       const stored = await storeDefinitions(); $("probe-input").value = ""; render(); pushGraph();
-      if (stored) status(`已确认「${probe.name}」。分析前可继续添加探针。`);
+      if (stored) status(`已保存「${probe.name}」的高级设置；已有旧读数仍会保留，可重新分析生成新定义的读数。`);
     });
     card.append(button); box.append(card);
   }
   const cancel = document.createElement("button"); cancel.type = "button"; cancel.className = "cancel-definition";
-  cancel.textContent = state.revisingId ? "取消修改" : "取消添加探针";
+  cancel.textContent = "取消高级设置";
   cancel.addEventListener("click", () => {
-    const wasRevising = Boolean(state.revisingId);
     state.revisingId = null; state.options = null; $("probe-input").value = ""; render();
-    $("probe-input").focus(); status(wasRevising ? "已取消修改，原探针保持不变。" : "已取消添加探针。");
+    status("已取消高级设置，原探针保持不变。");
   });
   box.append(cancel);
   renderPresetButtons();
@@ -259,7 +290,13 @@ function renderProbes() {
   $("probe-count").textContent = `${state.probes.length} / 5`;
   $("route-count-fact").textContent = String(state.probes.length).padStart(2, "0");
   const lines = $("probe-lines"); lines.replaceChildren();
-  const box = $("probes"); box.replaceChildren();
+  lines.classList.toggle("expanded", state.probesExpanded);
+  const expand = $("probe-expand-toggle");
+  $("probe-view-bar").hidden = state.probes.length === 0;
+  expand.hidden = state.probes.length === 0;
+  expand.disabled = Boolean(state.options);
+  expand.textContent = state.probesExpanded ? "收起全部 ↑" : "展开全部 ↓";
+  expand.setAttribute("aria-expanded", String(state.probesExpanded));
   renderPresetButtons();
   if (!state.probes.length) {
     const empty = document.createElement("p"); empty.className = "probe-lines-empty"; empty.textContent = "添加探针后，它会成为一条可选择的语义线路。"; lines.append(empty);
@@ -279,22 +316,10 @@ function renderProbes() {
     const routeStat = document.createElement("span"); routeStat.className = "route-stat"; routeStat.textContent = `${hotspotCount} HOT`;
     route.append(routeCode, routeSwatch, routeName, routePolarity, routeStat);
     route.addEventListener("click", () => { state.selectedId = probe.id; render(); void pushGraph(); });
-    lines.append(route);
+    const routeRow = document.createElement("div"); routeRow.className = "probe-line-row";
+    if (!state.probesExpanded) { routeRow.append(route); lines.append(routeRow); continue; }
 
-    const row = document.createElement("div"); row.className = "probe-row";
-    setCssVariable(row, "--probe-color", probe.color);
-    row.classList.toggle("hidden-probe", !isProbeVisible(probe));
-    row.classList.toggle("selected-probe", state.selectedId === probe.id);
-    const left = document.createElement("button"); left.type = "button"; left.className = "probe-left";
-    left.setAttribute("aria-pressed", String(state.selectedId === probe.id));
-    left.setAttribute("aria-label", `选择${polarityLabel(probe)}语义探针「${probe.name}」`);
-    const code = document.createElement("span"); code.className = "probe-code"; code.textContent = `P${String(index + 1).padStart(2, "0")}`;
-    const dot = document.createElement("span"); dot.className = "dot"; dot.style.background = probe.color;
-    const label = document.createElement("div"); label.textContent = probe.name;
-    const type = document.createElement("small"); type.textContent = `${hotspotCount} 个热点 · ${polarityLabel(probe)} · ${probe.primitive === "score" ? "SCORE" : "NOUL"}`; label.append(type);
-    left.addEventListener("click", () => { state.selectedId = probe.id; render(); void pushGraph(); });
-    const buttons = document.createElement("div");
-    buttons.className = "probe-actions";
+    const buttons = document.createElement("div"); buttons.className = "probe-actions";
     const visibility = document.createElement("label"); visibility.className = "probe-visibility";
     const toggle = document.createElement("input"); toggle.type = "checkbox"; toggle.setAttribute("role", "switch");
     toggle.setAttribute("aria-label", `显示「${probe.name}」的时间轴、热点和播放器柱形图`);
@@ -309,9 +334,49 @@ function renderProbes() {
       if (stored) status(`「${probe.name}」已${toggle.checked ? "显示" : "隐藏"}；已有读数和分析任务不受影响。`);
     });
     visibility.append(toggle, visibilityText);
-    const revise = document.createElement("button"); revise.textContent = state.revisingId === probe.id ? "取消修改" : "修改"; revise.addEventListener("click", () => { if (state.running) return; if (state.revisingId === probe.id) { state.revisingId = null; state.options = null; $("probe-input").value = ""; status("已取消修改。"); } else { state.revisingId = probe.id; state.options = null; $("probe-input").value = probe.input; $("probe-input").focus(); status(`正在修改「${probe.name}」：重新设置判断标准，旧读数会保留。`); } render(); });
-    const remove = document.createElement("button"); remove.textContent = "移除"; remove.addEventListener("click", async () => { if (state.running) return; const archived = (await chrome.storage.local.get("cuewave:archivedDefinitions"))["cuewave:archivedDefinitions"] || []; archived.push(probe); await chrome.storage.local.set({ "cuewave:archivedDefinitions": archived }); state.probes = state.probes.filter((p) => p.id !== probe.id); state.selectedId = selectedVisibleProbeId(state.probes, state.selectedId); await storeDefinitions(); render(); pushGraph(); });
-    buttons.append(visibility, revise, remove); left.append(code, dot, label); row.append(left, buttons); box.append(row);
+    const revise = document.createElement("button"); revise.type = "button";
+    revise.textContent = state.revisingId === probe.id ? "正在设置" : "高级设置";
+    revise.disabled = state.running || Boolean(state.options);
+    revise.addEventListener("click", () => openAdvancedSettings(probe));
+    const remove = document.createElement("button"); remove.type = "button"; remove.className = "probe-delete";
+    remove.textContent = "删除";
+    remove.setAttribute("aria-label", `删除语义探针「${probe.name}」`);
+    remove.disabled = state.running || Boolean(state.options);
+    remove.addEventListener("blur", () => {
+      if (!remove.disabled && remove.classList.contains("confirming")) {
+        remove.classList.remove("confirming");
+        remove.textContent = "删除";
+        remove.setAttribute("aria-label", `删除语义探针「${probe.name}」`);
+      }
+    });
+    remove.addEventListener("click", async () => {
+      if (state.running || state.options) return;
+      if (!remove.classList.contains("confirming")) {
+        remove.classList.add("confirming");
+        remove.textContent = "确认删除";
+        remove.setAttribute("aria-label", `确认删除语义探针「${probe.name}」`);
+        return;
+      }
+      remove.disabled = true;
+      remove.textContent = "删除中…";
+      try {
+        const archived = (await chrome.storage.local.get("cuewave:archivedDefinitions"))["cuewave:archivedDefinitions"] || [];
+        archived.push(probe);
+        await chrome.storage.local.set({ "cuewave:archivedDefinitions": archived });
+        state.probes = state.probes.filter((p) => p.id !== probe.id);
+        if (!state.probes.length) state.probesExpanded = false;
+        state.selectedId = selectedVisibleProbeId(state.probes, state.selectedId);
+        const stored = await storeDefinitions();
+        render(); void pushGraph();
+        if (stored) status(`已删除语义探针「${probe.name}」。`);
+      } catch (error) {
+        remove.disabled = false;
+        remove.textContent = "确认删除";
+        status(`删除「${probe.name}」失败：${error.message}`, true);
+      }
+    });
+    buttons.append(visibility, revise, remove);
+    routeRow.append(route, buttons); lines.append(routeRow);
   }
 }
 function renderTranscript() {
@@ -627,11 +692,14 @@ async function analyze(resumeOnly = false) {
   }
 }
 
-$("probe-form").addEventListener("submit", (event) => { event.preventDefault(); const input = $("probe-input").value.trim(); if (input) checkInput(input); });
+$("probe-form").addEventListener("submit", (event) => { event.preventDefault(); const input = $("probe-input").value.trim(); if (input) void addQuickProbe(input); });
+$("probe-expand-toggle").addEventListener("click", () => { if (state.options) return; state.probesExpanded = !state.probesExpanded; renderProbes(); });
+$("probe-intent-find").addEventListener("click", () => setNewProbePolarity("positive"));
+$("probe-intent-avoid").addEventListener("click", () => setNewProbePolarity("negative"));
 $("theme-gate").addEventListener("click", () => void chooseTheme("gate"));
 $("theme-transit").addEventListener("click", () => void chooseTheme("transit"));
 $("live-button").addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("live.html") }));
-document.querySelectorAll(".seed").forEach((button) => button.addEventListener("click", () => checkInput(button.dataset.value)));
+document.querySelectorAll(".seed").forEach((button) => button.addEventListener("click", () => void addQuickProbe(button.dataset.value, button.dataset.polarity)));
 let fetchingTranscript = false;
 async function fetchAuto() {
   if (!state.videoId || fetchingTranscript) return;
@@ -726,6 +794,7 @@ function startPlaybackSync() {
 }
 
 async function init() {
+  setNewProbePolarity("positive");
   setHeaderClock();
   const settings = await chrome.storage.local.get(["cuewave:captionOverlay", THEME_KEY]);
   state.subtitleEnabled = settings["cuewave:captionOverlay"] === true;
@@ -746,16 +815,10 @@ async function init() {
   await loadDefinitions(); await loadVideo();
   try {
     const response = await fetch(`${API}/health`); state.helper = await response.json();
-    if (state.helper.capabilities.manualProbes) {
-      $("probe-hint").textContent = "Gemini 已暂停。先输入探针，再手动校准标准、正反例和 Jev 读数类型。";
-      $("probe-submit-label").textContent = "编辑定义";
-      $("probe-submit").setAttribute("aria-label", "编辑并添加语义探针");
-    } else {
-      $("probe-hint").textContent = "先用 Gemini 检查含义；有歧义时请选择具体判断对象。";
-      $("probe-submit-label").textContent = "检查含义";
-      $("probe-submit").setAttribute("aria-label", "检查并添加语义探针");
-    }
-    status(`本机辅助进程已连接 · Gemini ${state.helper.capabilities.manualProbes ? "已暂停" : state.helper.capabilities.gemini ? "已配置" : "未配置"} · Jev ${state.helper.capabilities.jev ? "已配置" : "未配置"} · 视频解析 ${state.helper.capabilities.supadata ? "已配置" : "未配置"}（使用时验证）`);
+    $("probe-hint").textContent = "只需描述你的需求；CueWave 会自动生成基础定义，之后仍可打开高级设置。";
+    $("probe-submit-label").textContent = "添加";
+    $("probe-submit").setAttribute("aria-label", "添加语义探针");
+    status(`本机辅助进程已连接 · 探针定义由本机规则生成 · Jev ${state.helper.capabilities.jev ? "已配置" : "未配置"} · 视频解析 ${state.helper.capabilities.supadata ? "已配置" : "未配置"}（使用时验证）`);
   }
   catch { status("本机辅助进程未启动：在仓库运行 npm start。", true); }
   render(); pushGraph(); pushCaptions(); updateStorageUsage(true);
@@ -770,6 +833,7 @@ async function init() {
 }
 
 function initPreview() {
+  setNewProbePolarity("positive");
   const previewParams = new URLSearchParams(location.search);
   applyTheme(previewParams.get("theme"));
   setHeaderClock(new Date(2026, 8, 28, 9, 41));
@@ -820,7 +884,7 @@ function initPreview() {
   })));
   $("video-title").textContent = "Why AI Agents Will Change How We Work";
   $("video-meta").textContent = "CueWaveDemo · 18:42";
-  $("probe-hint").textContent = "输入探针后校准判断标准、正反例和 Jev 读数类型。";
+  $("probe-hint").textContent = "只需描述你的需求；CueWave 会自动生成基础定义，之后仍可打开高级设置。";
   status("设计预览：使用固定演示数据展示实际扩展组件。 ");
   render();
   setPlaybackTime(state.currentTimeMs);

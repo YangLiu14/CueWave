@@ -11,10 +11,8 @@ try {
   console.log("helper", health.ok, health.capabilities);
   const windows = buildWindows(parseCaptions(sample), 24000);
   console.log("imported SRT windows", windows.map((w) => w.status));
-  if (health.capabilities.gemini) {
-    try { const checked = await post("/probe/check", { input: "实操步骤" }); console.log("Gemini options", checked.options.length, "ambiguous", checked.ambiguous); }
-    catch (error) { console.log("Gemini unavailable", error.message); }
-  }
+  try { const checked = await post("/probe/check", { input: "实操步骤", polarity: "positive" }); console.log("Local probe options", checked.options.length, "primitive", checked.options[0]?.primitive); }
+  catch (error) { console.log("Local probe compiler unavailable", error.message); }
   if (health.capabilities.jev) {
     const probe = { id: "smoke", primitive: "noul", description: "是否明确给出可执行的操作步骤", criterion: "需要具体动作和顺序", positive: "提供点击或操作动作", negative: "只抽象提及教程" };
     try { const result = await post("/decide", { window: windows[1], probes: [probe] }); console.log("Jev model", result.answers[0].model, "noul", result.answers[0].raw, "status", "ok", "input tokens", result.usage?.inputTokens ?? "unavailable"); }
