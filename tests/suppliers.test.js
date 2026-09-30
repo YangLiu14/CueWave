@@ -29,6 +29,38 @@ test("Supadata async jobs keep the original job id across polls", async () => {
   finally { globalThis.fetch = originalFetch; globalThis.setTimeout = originalTimeout; }
 });
 
+test("unavailable native transcript exposes a specific error without starting paid generation", async () => {
+  const originalFetch = globalThis.fetch;
+  const urls = [];
+  globalThis.fetch = async (url) => {
+    urls.push(String(url));
+    return new Response(JSON.stringify({ error: "transcript-unavailable" }), { status: 206 });
+  };
+  try {
+    await assert.rejects(getTranscript("iNzrTnRIZm8", "test-key"), (error) => {
+      assert.equal(error.code, "TRANSCRIPT_UNAVAILABLE");
+      return true;
+    });
+    assert.equal(urls.length, 1);
+    assert.match(urls[0], /mode=native/);
+  } finally { globalThis.fetch = originalFetch; }
+});
+
+test("AI transcript generation only starts when explicitly requested", async () => {
+  const originalFetch = globalThis.fetch;
+  const urls = [];
+  globalThis.fetch = async (url) => {
+    urls.push(String(url));
+    return new Response(JSON.stringify({ content: [{ text: "An opening line", offset: 1200, duration: 900 }], lang: "en" }), { status: 200 });
+  };
+  try {
+    const result = await getTranscript("iNzrTnRIZm8", "test-key", { mode: "generate" });
+    assert.match(urls[0], /mode=generate/);
+    assert.equal(result.segments.length, 1);
+    assert.equal(result.segments[0].startMs, 1200);
+  } finally { globalThis.fetch = originalFetch; }
+});
+
 test("Jev request batches typed questions and validates response", async () => {
   const original = globalThis.fetch;
   globalThis.fetch = async (url, options) => {

@@ -42,7 +42,7 @@ async function chooseTheme(theme) {
   const value = applyTheme(theme);
   if (globalThis.chrome?.storage?.local) await chrome.storage.local.set({ [THEME_KEY]: value });
 }
-function status(message, error = false) { $("status").textContent = message; $("status").classList.toggle("error", error); }
+function status(message, error = false) { $("status").textContent = message; $("status").classList.toggle("error", error); $("status").setAttribute("role", error ? "alert" : "status"); }
 const playerIssues = new Map();
 function playerStatus(area, message = "") {
   if (message) playerIssues.set(area, message); else playerIssues.delete(area);
@@ -644,6 +644,7 @@ async function refineAds() {
 async function useSegments(segments, source) {
   await assertBoundTab();
   transcriptEpoch++;
+  $("transcript-fallback").hidden = true;
   if (state.running) state.cancelled = true;
   state.segments = normalizeSegments(segments); state.source = source; state.windows = buildWindows(state.segments, state.durationMs);
   state.readings = []; state.adCueReadings = []; state.adBoundaries = []; state.resumeOnOpen = false;
@@ -701,15 +702,39 @@ $("theme-transit").addEventListener("click", () => void chooseTheme("transit"));
 $("live-button").addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("live.html") }));
 document.querySelectorAll(".seed").forEach((button) => button.addEventListener("click", () => void addQuickProbe(button.dataset.value, button.dataset.polarity)));
 let fetchingTranscript = false;
-async function fetchAuto() {
+async function fetchAuto(mode = "native") {
   if (!state.videoId || fetchingTranscript) return;
   const epoch = transcriptEpoch; const videoId = state.videoId;
-  fetchingTranscript = true; $("auto-button").disabled = true; renderTranscript(); status("解析视频中…");
-  try { await assertBoundTab(); const result = await api("/transcript", { videoId }); if (epoch === transcriptEpoch && videoId === state.videoId) await useSegments(result.segments, "自动解析"); }
-  catch { if (epoch === transcriptEpoch && videoId === state.videoId) status("视频解析失败。可以稍后重试，或在「视频解析与播放器」中导入时间轴文件。", true); }
-  finally { fetchingTranscript = false; $("auto-button").disabled = false; renderTranscript(); }
+  fetchingTranscript = true;
+  $("transcript-fallback").hidden = true;
+  $("auto-button").disabled = true;
+  $("generate-transcript").disabled = true;
+  renderTranscript();
+  status(mode === "generate" ? "正在使用 AI 转写视频，可能需要数分钟…" : "解析视频中…");
+  try {
+    await assertBoundTab();
+    const result = await api("/transcript", { videoId, mode });
+    if (epoch === transcriptEpoch && videoId === state.videoId) await useSegments(result.segments, mode === "generate" ? "AI 转写" : "自动解析");
+  } catch (error) {
+    if (epoch !== transcriptEpoch || videoId !== state.videoId) return;
+    if (error.code === "TRANSCRIPT_UNAVAILABLE" && mode === "native") {
+      const estimatedCredits = state.durationMs > 0 ? `约 ${Math.ceil(state.durationMs / 60000) * 2} credits（2 credits/分钟）` : "约 2 credits/分钟";
+      $("transcript-fallback-cost").textContent = `AI 转写按视频时长计费：${estimatedCredits}。`;
+      $("transcript-fallback").hidden = false;
+      status("哎呀，这个视频暂时解析不了。换一个视频试试？也可以选择下方的 AI 转写，或导入时间轴文件。", true);
+    } else {
+      if (mode === "generate") $("transcript-fallback").hidden = false;
+      status(`哎呀，${mode === "generate" ? "AI 转写" : "视频解析"}没成功：${error.message}。稍后再试试，或换一个视频吧？`, true);
+    }
+  } finally {
+    fetchingTranscript = false;
+    $("auto-button").disabled = false;
+    $("generate-transcript").disabled = false;
+    renderTranscript();
+  }
 }
-$("auto-button").addEventListener("click", fetchAuto);
+$("auto-button").addEventListener("click", () => void fetchAuto());
+$("generate-transcript").addEventListener("click", () => void fetchAuto("generate"));
 $("import-file").addEventListener("change", async (event) => { const file = event.target.files?.[0]; if (!file) return; try { await useSegments(parseCaptions(await file.text()), `导入 ${file.name}`); } catch (error) { status(error.message, true); } event.target.value = ""; });
 $("caption-toggle").addEventListener("change", async (event) => {
   state.subtitleEnabled = event.target.checked;

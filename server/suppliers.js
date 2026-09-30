@@ -16,29 +16,35 @@ async function fetchJson(url, options, timeoutMs = 30000) {
   return { body, status: response.status };
 }
 
-export async function getTranscript(videoId, key) {
+export async function getTranscript(videoId, key, { mode = "native" } = {}) {
   // Adapted from youtube-digest bb2f7b1: native timestamped fetch and async polling (MIT notice in repository root).
   if (!key) throw new Error("未配置 SUPADATA_API_KEY，请导入 SRT/VTT 字幕");
   if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) throw new Error("无效 YouTube 视频 ID");
+  if (!["native", "generate"].includes(mode)) throw new Error("无效的视频解析模式");
   const url = new URL(SUPADATA_URL);
   url.searchParams.set("url", `https://www.youtube.com/watch?v=${videoId}`);
   url.searchParams.set("text", "false");
-  url.searchParams.set("mode", "native");
+  url.searchParams.set("mode", mode);
   const options = { headers: { "x-api-key": key } };
-  let { body, status } = await fetchJson(url, options);
-  if (status === 206) throw new Error("此视频没有可用的原生字幕，请导入 SRT/VTT");
+  let { body, status } = await fetchJson(url, options, mode === "generate" ? 120000 : 30000);
+  if (status === 206) {
+    const error = new Error(mode === "native" ? "此视频没有可用的原生字幕" : "此视频无法生成时间轴文字");
+    error.code = "TRANSCRIPT_UNAVAILABLE";
+    throw error;
+  }
   if (status === 202) {
     if (!body.jobId || !/^[a-zA-Z0-9-]+$/.test(body.jobId)) throw new Error("Supadata 返回了无效任务 ID");
     const jobId = body.jobId;
-    for (let i = 0; i < 90; i++) {
+    for (let i = 0; i < (mode === "generate" ? 600 : 90); i++) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       ({ body } = await fetchJson(`${SUPADATA_URL}/${jobId}`, options));
-      if (body.status === "failed") throw new Error("Supadata 字幕任务失败");
+      if (body.status === "failed") throw new Error("Supadata 视频转写任务失败");
       if (body.status === "completed") break;
     }
-    if (body.status !== "completed") throw new Error("Supadata 字幕任务超时");
+    if (body.status !== "completed") throw new Error("Supadata 视频转写任务超时");
   }
   if (!Array.isArray(body.content)) throw new Error("Supadata 未返回时间戳字幕");
+  if (!body.content.length) throw new Error("视频中未检测到可分析的语音");
   return { segments: normalizeSegments(body.content.map((chunk) => ({ startMs: chunk.offset, endMs: chunk.offset + chunk.duration, text: chunk.text }))), language: body.lang || null };
 }
 

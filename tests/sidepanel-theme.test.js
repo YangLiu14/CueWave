@@ -101,7 +101,16 @@ test("user-facing video preparation copy does not expose the subtitle implementa
   assert.doesNotMatch(html, /字幕|SRT|VTT/);
   assert.match(html, /等待解析视频/);
   assert.match(html, /视频解析与播放器/);
-  assert.match(js, /status\("解析视频中…"\)/);
+  assert.match(js, /"解析视频中…"/);
   assert.match(js, /status\("已就绪，可以开始分析。"\)/);
   assert.doesNotMatch(js, /正在获取原生时间戳字幕|Supadata 原生字幕|已恢复此视频的字幕/);
+});
+
+test("missing native timeline offers an explicit metered transcription action", () => {
+  assert.match(html, /id="transcript-fallback"[^>]*hidden/);
+  assert.match(html, /id="generate-transcript"[^>]*>使用 AI 转写此视频/);
+  assert.match(js, /error\.code === "TRANSCRIPT_UNAVAILABLE" && mode === "native"/);
+  assert.match(js, /fetchAuto\("generate"\)/);
+  assert.match(js, /2 credits\/分钟/);
+  assert.match(js, /哎呀，这个视频暂时解析不了。换一个视频试试？/);
 });

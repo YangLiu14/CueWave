@@ -107,6 +107,9 @@ h3 { margin: 0; font-size: 13px; }
 main > .notice:not(.error) { position: absolute; width: 1px; height: 1px; overflow: hidden; padding: 0; border: 0; clip-path: inset(50%); }
 main > .notice.error { margin: 10px 18px; }
 .notice.error { color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
+.transcript-fallback { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 9px 12px; border-bottom: 1px solid var(--rule); color: var(--muted); background: var(--paper-2); font-size: 11px; }
+.transcript-fallback[hidden] { display: none; }
+.transcript-fallback button { min-height: 44px; border-color: var(--accent); color: var(--accent); font-weight: 700; }
 .video-ticket .notice { grid-column: 1 / -1; }
 
 .probe-workflow { padding: 15px 18px 13px; border-bottom: 1px solid var(--rule-strong); }

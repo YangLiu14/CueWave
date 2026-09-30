@@ -37,7 +37,7 @@ const server = http.createServer(async (request, response) => {
     if (request.url === "/probe/check") {
       if (typeof data.input !== "string" || !data.input.trim() || data.input.length > 400) throw new Error("请输入不超过 400 字的探针描述");
       result = draftManualProbe(data.input, { polarity: data.polarity });
-    } else if (request.url === "/transcript") result = await getTranscript(data.videoId, env.SUPADATA_API_KEY);
+    } else if (request.url === "/transcript") result = await getTranscript(data.videoId, env.SUPADATA_API_KEY, { mode: data.mode });
     else {
       if (!data.window || !Array.isArray(data.probes)) throw new Error("无效分析请求");
       result = await decide(data.window, data.probes, env.JEV_API_KEY);
